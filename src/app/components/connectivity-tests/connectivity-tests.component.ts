@@ -1214,7 +1214,27 @@ export class ConnectivityTestsComponent implements OnInit {
             },
             error: (error) => {
               console.error('Error creating connectivity test:', error);
-              this.snackBar.open('Error creating connectivity test', 'Close', { duration: 3000 });
+              
+              let errorMessage = 'Error creating connectivity test';
+              
+              // Provide more specific error messages based on the error
+              if (error.status === 400) {
+                if (error.error?.error?.message) {
+                  errorMessage = `Invalid request: ${error.error.error.message}`;
+                } else {
+                  errorMessage = 'Invalid request format. Please check your input parameters.';
+                }
+              } else if (error.status === 403) {
+                errorMessage = 'Permission denied. Please check your Network Management API permissions.';
+              } else if (error.status === 409) {
+                errorMessage = 'A connectivity test with this name already exists.';
+              } else if (error.status >= 500) {
+                errorMessage = 'Server error. Please try again later.';
+              } else if (error.status === 0) {
+                errorMessage = 'Network error. Please check your connection.';
+              }
+              
+              this.snackBar.open(errorMessage, 'Close', { duration: 5000 });
             }
           });
         }

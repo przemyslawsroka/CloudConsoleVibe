@@ -200,7 +200,9 @@ export class ConnectivityTestsService {
       return of(newTest);
     }
 
-    const url = `${this.baseUrl}/projects/${projectId}/locations/global/connectivityTests`;
+    // Generate a unique test ID from display name
+    const testId = this.generateTestId(testData.displayName);
+    const url = `${this.baseUrl}/projects/${projectId}/locations/global/connectivityTests?connectivityTestId=${testId}`;
     
     // Build the payload according to Google Cloud API specification
     const payload: any = {
@@ -231,21 +233,23 @@ export class ConnectivityTestsService {
       payload.bypassFirewallChecks = testData.bypassFirewallChecks;
     }
 
+    console.log('Creating connectivity test with URL:', url);
     console.log('Creating connectivity test with payload:', payload);
 
-    return this.http.post<GcpConnectivityTest>(url, payload, { headers: this.getHeaders() }).pipe(
-      map(test => this.convertGcpTest(test)),
+    return this.http.post<any>(url, payload, { headers: this.getHeaders() }).pipe(
+      map(apiResponse => this.convertDetailedGcpTest(apiResponse)),
       catchError(error => {
         console.warn('Failed to create connectivity test via API, using mock response:', error);
         if (error.status === 400) {
           console.warn('Network Management API might not be enabled or request format is invalid');
+          console.warn('Error details:', error.error);
         } else if (error.status === 403) {
           console.warn('Insufficient permissions for Network Management API');
         }
         
         // Return mock test even on API failure
         const mockTest: ConnectivityTest = {
-          name: testData.displayName.toLowerCase().replace(/\s+/g, '-'),
+          name: testId,
           protocol: testData.protocol.toLowerCase(),
           source: testData.source.ipAddress || testData.source.instance || testData.source.gceInstance || 'Unknown',
           destination: testData.destination.ipAddress || testData.destination.instance || testData.destination.gceInstance || 'Unknown',
@@ -259,6 +263,35 @@ export class ConnectivityTestsService {
         return of(mockTest);
       })
     );
+  }
+
+  private generateTestId(displayName: string): string {
+    // Generate a test ID that follows GCP naming conventions
+    // Must be 1-63 characters, lowercase letters, numbers, and hyphens
+    // Must start with a letter and end with a letter or number
+    
+    let testId = displayName
+      .toLowerCase()
+      .replace(/[^a-z0-9\s\-]/g, '') // Remove invalid characters
+      .replace(/\s+/g, '-') // Replace spaces with hyphens
+      .replace(/-+/g, '-') // Replace multiple hyphens with single
+      .replace(/^-|-$/g, ''); // Remove leading/trailing hyphens
+    
+    // Ensure it starts with a letter
+    if (testId.length === 0 || !/^[a-z]/.test(testId)) {
+      testId = 'test-' + testId;
+    }
+    
+    // Add timestamp suffix to ensure uniqueness
+    const timestamp = Date.now().toString().slice(-6); // Last 6 digits
+    testId = `${testId}-${timestamp}`;
+    
+    // Ensure max length of 63 characters
+    if (testId.length > 63) {
+      testId = testId.substring(0, 57) + '-' + timestamp;
+    }
+    
+    return testId;
   }
 
   private buildEndpointPayload(endpoint: any): any {
