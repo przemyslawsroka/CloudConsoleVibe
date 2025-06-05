@@ -67,6 +67,7 @@ import { CreateTlsInspectionPolicyDialogComponent } from './components/tls-inspe
 import { LoadBalancingComponent } from './components/load-balancing/load-balancing.component';
 import { CreateLoadBalancerComponent } from './components/load-balancing/create-load-balancer.component';
 import { LoadBalancerConfigureComponent } from './components/load-balancing/load-balancer-configure.component';
+import { DocumentationComponent } from './components/documentation/documentation.component';
 
 @NgModule({
   declarations: [
@@ -102,7 +103,8 @@ import { LoadBalancerConfigureComponent } from './components/load-balancing/load
     CreateTlsInspectionPolicyDialogComponent,
     LoadBalancingComponent,
     CreateLoadBalancerComponent,
-    LoadBalancerConfigureComponent
+    LoadBalancerConfigureComponent,
+    DocumentationComponent
   ],
   imports: [
     BrowserModule,

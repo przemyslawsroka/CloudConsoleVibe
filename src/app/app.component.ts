@@ -33,6 +33,12 @@ interface NavItem {
           {{ (currentProject$ | async)?.name || 'Select project' }}
         </button>
         <span class="toolbar-spacer"></span>
+        <button mat-icon-button 
+                routerLink="/documentation" 
+                matTooltip="Documentation"
+                class="doc-button">
+          <mat-icon>description</mat-icon>
+        </button>
         <button mat-button *ngIf="!(isAuthenticated$ | async)" (click)="login()">
           <mat-icon>login</mat-icon>
           Sign In
@@ -103,6 +109,15 @@ interface NavItem {
     
     .project-picker-btn { 
       margin-left: 16px; 
+    }
+    
+    .doc-button {
+      margin-right: 8px;
+      color: white;
+    }
+    
+    .doc-button:hover {
+      background-color: rgba(255, 255, 255, 0.1);
     }
     
     .sidenav-container { 

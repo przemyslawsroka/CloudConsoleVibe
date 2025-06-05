@@ -21,11 +21,13 @@ import { TlsInspectionPoliciesComponent } from './components/tls-inspection-poli
 import { LoadBalancingComponent } from './components/load-balancing/load-balancing.component';
 import { CreateLoadBalancerComponent } from './components/load-balancing/create-load-balancer.component';
 import { LoadBalancerConfigureComponent } from './components/load-balancing/load-balancer-configure.component';
+import { DocumentationComponent } from './components/documentation/documentation.component';
 
 const routes: Routes = [
   { path: '', redirectTo: '/vpc', pathMatch: 'full' },
   { path: 'login', component: LoginComponent },
   { path: 'auth/callback', component: AuthCallbackComponent },
+  { path: 'documentation', component: DocumentationComponent },
   { 
     path: 'vpc', 
     component: VpcListComponent,
