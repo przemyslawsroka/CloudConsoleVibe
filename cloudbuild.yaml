@@ -1,0 +1,39 @@
+steps:
+  # Build the Docker image for AMD64 platform
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['buildx', 'build', '--platform', 'linux/amd64', '-t', 'gcr.io/$PROJECT_ID/cloud-console-vibe:$COMMIT_SHA', '.']
+
+  # Push the Docker image to Container Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$PROJECT_ID/cloud-console-vibe:$COMMIT_SHA']
+
+  # Deploy to Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'gcloud'
+    args:
+      - 'run'
+      - 'deploy'
+      - 'cloud-console-vibe'
+      - '--image'
+      - 'gcr.io/$PROJECT_ID/cloud-console-vibe:$COMMIT_SHA'
+      - '--region'
+      - 'us-central1'
+      - '--platform'
+      - 'managed'
+      - '--allow-unauthenticated'
+      - '--port'
+      - '8080'
+      - '--memory'
+      - '1Gi'
+      - '--cpu'
+      - '1'
+      - '--max-instances'
+      - '10'
+      - '--set-env-vars'
+      - 'ENVIRONMENT=production'
+
+images:
+  - 'gcr.io/$PROJECT_ID/cloud-console-vibe:$COMMIT_SHA'
+
+options:
+  logging: CLOUD_LOGGING_ONLY 

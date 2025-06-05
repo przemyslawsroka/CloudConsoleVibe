@@ -1,0 +1,26 @@
+{
+  "/api/logging/**": {
+    "target": "https://logging.googleapis.com",
+    "secure": true,
+    "changeOrigin": true,
+    "logLevel": "debug",
+    "pathRewrite": {
+      "^/api/logging": ""
+    },
+    "headers": {
+      "host": "logging.googleapis.com"
+    }
+  },
+  "/api/compute/**": {
+    "target": "https://compute.googleapis.com",
+    "secure": true,
+    "changeOrigin": true,
+    "logLevel": "debug",
+    "pathRewrite": {
+      "^/api/compute": ""
+    },
+    "headers": {
+      "host": "compute.googleapis.com"
+    }
+  }
+} 

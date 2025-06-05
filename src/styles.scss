@@ -1,0 +1,76 @@
+/* You can add global styles to this file, and also import other style files */
+html, body {
+  height: 100%;
+  margin: 0;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+}
+
+.mat-typography {
+  h1 {
+    font-size: 24px;
+    font-weight: 400;
+    margin: 0;
+  }
+
+  h2 {
+    font-size: 20px;
+    font-weight: 400;
+    margin: 0;
+  }
+
+  h3 {
+    font-size: 16px;
+    font-weight: 400;
+    margin: 0;
+  }
+}
+
+.mat-mdc-card {
+  margin-bottom: 20px;
+}
+
+.mat-mdc-table {
+  width: 100%;
+}
+
+.mat-column-actions {
+  width: 80px;
+  text-align: center;
+}
+
+.mat-mdc-row:hover {
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
+.mat-mdc-menu-item {
+  .mat-icon {
+    margin-right: 8px;
+  }
+}
+
+.mat-mdc-button {
+  .mat-icon {
+    margin-right: 8px;
+  }
+}
+
+.mat-mdc-raised-button {
+  .mat-icon {
+    margin-right: 8px;
+  }
+}
+
+/* Snackbar styles */
+.success-snackbar {
+  .mat-mdc-snack-bar-container {
+    background-color: #4caf50;
+    color: white;
+  }
+}
+
+.error-snackbar {
+  .mat-mdc-snack-bar-container {
+    background-color: #f44336;
+    color: white;
+  }
+} 
