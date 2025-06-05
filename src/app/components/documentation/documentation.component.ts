@@ -589,9 +589,10 @@ gcloud services enable dns.googleapis.com</code></pre>
   `,
   styles: [`
     .documentation-container {
-      max-width: 1200px;
-      margin: 0 auto;
+      margin: 0;
       padding: 0;
+      width: 100vw;
+      min-height: 100vh;
     }
 
     .doc-header {
@@ -629,6 +630,7 @@ gcloud services enable dns.googleapis.com</code></pre>
       position: sticky;
       top: 0;
       height: fit-content;
+      flex-shrink: 0;
     }
 
     .doc-nav mat-list-item {
@@ -647,9 +649,10 @@ gcloud services enable dns.googleapis.com</code></pre>
 
     .doc-main {
       flex: 1;
-      padding: 24px;
+      padding: 24px 32px;
       overflow-y: auto;
       max-height: calc(100vh - 200px);
+      max-width: calc(100vw - 280px);
     }
 
     .doc-section {
@@ -687,8 +690,8 @@ gcloud services enable dns.googleapis.com</code></pre>
 
     .feature-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 16px;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
       margin: 24px 0;
     }
 
@@ -741,9 +744,9 @@ gcloud services enable dns.googleapis.com</code></pre>
 
     .api-cards {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-      gap: 20px;
-      margin: 24px 0;
+      grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+      gap: 24px;
+      margin: 32px 0;
     }
 
     .api-card {
@@ -791,18 +794,48 @@ gcloud services enable dns.googleapis.com</code></pre>
     }
 
     .endpoint-list {
-      margin-top: 8px;
-      margin-left: 24px;
+      margin-top: 12px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+      gap: 8px;
     }
     
     .endpoint-list code {
       display: block;
-      margin: 4px 0;
-      padding: 6px 8px;
-      background: #f0f0f0;
-      border-radius: 4px;
-      font-size: 12px;
+      padding: 8px 12px;
+      background: #f8f9fa;
+      border-radius: 6px;
+      font-size: 13px;
       border-left: 3px solid #1976d2;
+      font-family: 'JetBrains Mono', 'Courier New', monospace;
+      word-break: break-all;
+      white-space: pre-wrap;
+      line-height: 1.4;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 1200px) {
+      .doc-content {
+        flex-direction: column;
+      }
+      
+      .doc-nav {
+        width: 100%;
+        position: relative;
+      }
+      
+      .doc-main {
+        max-width: 100%;
+        padding: 24px;
+      }
+      
+      .api-cards {
+        grid-template-columns: 1fr;
+      }
+      
+      .endpoint-list {
+        grid-template-columns: 1fr;
+      }
     }
   `]
 })

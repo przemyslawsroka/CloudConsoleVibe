@@ -1,8 +1,10 @@
-import { Component } from '@angular/core';
-import { Router } from '@angular/router';
+import { Component, OnInit, ViewChild } from '@angular/core';
+import { Router, NavigationEnd } from '@angular/router';
 import { AuthService } from './services/auth.service';
 import { Observable } from 'rxjs';
+import { filter, map } from 'rxjs/operators';
 import { MatDialog } from '@angular/material/dialog';
+import { MatSidenav } from '@angular/material/sidenav';
 import { ProjectPickerComponent, Project } from './components/project-picker/project-picker.component';
 import { ProjectService } from './services/project.service';
 
@@ -24,11 +26,11 @@ interface NavItem {
   template: `
     <div class="app-container">
       <mat-toolbar color="primary" class="toolbar">
-        <button mat-icon-button (click)="sidenav.toggle()">
+        <button mat-icon-button (click)="sidenav.toggle()" *ngIf="!isDocumentationRoute">
           <mat-icon>menu</mat-icon>
         </button>
         <span>Google Cloud Console</span>
-        <button mat-stroked-button color="accent" class="project-picker-btn" (click)="openProjectPicker()">
+        <button mat-stroked-button color="accent" class="project-picker-btn" (click)="openProjectPicker()" *ngIf="!isDocumentationRoute">
           <mat-icon>folder_open</mat-icon>
           {{ (currentProject$ | async)?.name || 'Select project' }}
         </button>
@@ -50,7 +52,7 @@ interface NavItem {
       </mat-toolbar>
 
       <mat-sidenav-container class="sidenav-container">
-        <mat-sidenav #sidenav mode="side" opened class="sidenav">
+        <mat-sidenav #sidenav [mode]="isDocumentationRoute ? 'over' : 'side'" [opened]="!isDocumentationRoute" class="sidenav">
           <div class="nav-header">
             <h3>Networking</h3>
             <p>Manage, connect, secure, and scale your networks</p>
@@ -82,7 +84,7 @@ interface NavItem {
           </div>
         </mat-sidenav>
 
-        <mat-sidenav-content class="content">
+        <mat-sidenav-content class="content" [class.full-width]="isDocumentationRoute">
           <router-outlet></router-outlet>
         </mat-sidenav-content>
       </mat-sidenav-container>
@@ -132,6 +134,12 @@ interface NavItem {
     
     .content { 
       padding: 20px; 
+    }
+
+    .content.full-width {
+      padding: 0;
+      margin: 0;
+      width: 100%;
     }
     
     .nav-header {
@@ -245,9 +253,11 @@ interface NavItem {
     `
   ]
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
+  @ViewChild('sidenav') sidenav!: MatSidenav;
   isAuthenticated$: Observable<boolean>;
   currentProject$: Observable<Project | null>;
+  isDocumentationRoute = false;
 
   navCategories: NavCategory[] = [
     {
@@ -308,6 +318,23 @@ export class AppComponent {
   ) {
     this.isAuthenticated$ = this.authService.isAuthenticated$;
     this.currentProject$ = this.projectService.currentProject$;
+  }
+
+  ngOnInit() {
+    this.router.events.pipe(
+      filter((event) => event instanceof NavigationEnd),
+      map((event) => event as NavigationEnd)
+    ).subscribe((event) => {
+      this.isDocumentationRoute = event.url === '/documentation';
+      
+      if (this.sidenav) {
+        if (this.isDocumentationRoute) {
+          this.sidenav.close();
+        } else {
+          this.sidenav.open();
+        }
+      }
+    });
   }
 
   login() {
