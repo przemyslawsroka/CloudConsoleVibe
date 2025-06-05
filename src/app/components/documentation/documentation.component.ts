@@ -223,7 +223,19 @@ interface DocumentationSection {
                       <li>Analyze network paths and trace packets</li>
                       <li>Detect configuration issues</li>
                       <li>Live data plane testing</li>
+                      <li>VPC Flow Logs configuration</li>
                     </ul>
+                    <p><strong>Endpoints Used:</strong></p>
+                    <div class="endpoint-list">
+                      <code>GET /v1/projects/{{ '{project}' }}/locations/global/connectivityTests</code>
+                      <code>GET /v1/projects/{{ '{project}' }}/locations/global/connectivityTests/{{ '{testId}' }}</code>
+                      <code>POST /v1/projects/{{ '{project}' }}/locations/global/connectivityTests</code>
+                      <code>DELETE /v1/projects/{{ '{project}' }}/locations/global/connectivityTests/{{ '{testId}' }}</code>
+                      <code>POST /v1/projects/{{ '{project}' }}/locations/global/connectivityTests/{{ '{testId}' }}:rerun</code>
+                      <code>GET /v1/projects/{{ '{project}' }}/locations/{{ '{location}' }}/vpcFlowLogsConfigs</code>
+                      <code>POST /v1/projects/{{ '{project}' }}/locations/{{ '{location}' }}/vpcFlowLogsConfigs</code>
+                      <code>DELETE /v1/{{ '{configName}' }}</code>
+                    </div>
                     <p><strong>Scopes Required:</strong></p>
                     <mat-chip-set>
                       <mat-chip>https://www.googleapis.com/auth/cloud-platform</mat-chip>
@@ -238,14 +250,38 @@ interface DocumentationSection {
                     <mat-card-subtitle>compute.googleapis.com</mat-card-subtitle>
                   </mat-card-header>
                   <mat-card-content>
-                    <p><strong>Purpose:</strong> Virtual machine and network resource management</p>
+                    <p><strong>Purpose:</strong> Virtual machine and network resource management, including Cloud Armor security policies</p>
                     <p><strong>Key Features:</strong></p>
                     <ul>
                       <li>VPC network management</li>
                       <li>Subnet and route configuration</li>
                       <li>Firewall rule management</li>
                       <li>Instance and network interface details</li>
+                      <li>Load balancer configuration</li>
+                      <li>IP address reservation</li>
+                      <li>Cloud Armor security policies</li>
                     </ul>
+                    <p><strong>Endpoints Used:</strong></p>
+                    <div class="endpoint-list">
+                      <code>GET /compute/v1/projects/{{ '{project}' }}/global/networks</code>
+                      <code>GET /compute/v1/projects/{{ '{project}' }}/regions/{{ '{region}' }}/subnetworks</code>
+                      <code>GET /compute/v1/projects/{{ '{project}' }}/global/routes</code>
+                      <code>GET /compute/v1/projects/{{ '{project}' }}/global/firewalls</code>
+                      <code>POST /compute/v1/projects/{{ '{project}' }}/global/firewalls</code>
+                      <code>DELETE /compute/v1/projects/{{ '{project}' }}/global/firewalls/{{ '{firewall}' }}</code>
+                      <code>GET /compute/v1/projects/{{ '{project}' }}/global/forwardingRules</code>
+                      <code>GET /compute/v1/projects/{{ '{project}' }}/regions/{{ '{region}' }}/forwardingRules</code>
+                      <code>GET /compute/v1/projects/{{ '{project}' }}/global/backendServices</code>
+                      <code>GET /compute/v1/projects/{{ '{project}' }}/regions/{{ '{region}' }}/backendServices</code>
+                      <code>GET /compute/v1/projects/{{ '{project}' }}/global/urlMaps</code>
+                      <code>GET /compute/v1/projects/{{ '{project}' }}/regions/{{ '{region}' }}/targetPools</code>
+                      <code>GET /compute/v1/projects/{{ '{project}' }}/global/addresses</code>
+                      <code>GET /compute/v1/projects/{{ '{project}' }}/regions/{{ '{region}' }}/addresses</code>
+                      <code>POST /compute/v1/projects/{{ '{project}' }}/regions/{{ '{region}' }}/addresses</code>
+                      <code>GET /compute/v1/projects/{{ '{project}' }}/global/securityPolicies</code>
+                      <code>POST /compute/v1/projects/{{ '{project}' }}/global/securityPolicies</code>
+                      <code>DELETE /compute/v1/projects/{{ '{project}' }}/global/securityPolicies/{{ '{policy}' }}</code>
+                    </div>
                     <p><strong>Scopes Required:</strong></p>
                     <mat-chip-set>
                       <mat-chip>https://www.googleapis.com/auth/cloud-platform</mat-chip>
@@ -269,6 +305,10 @@ interface DocumentationSection {
                       <li>Service account management</li>
                       <li>Access token management</li>
                     </ul>
+                    <p><strong>Endpoints Used:</strong></p>
+                    <div class="endpoint-list">
+                      <code>Used for OAuth 2.0 token validation and refresh</code>
+                    </div>
                     <p><strong>Scopes Required:</strong></p>
                     <mat-chip-set>
                       <mat-chip>https://www.googleapis.com/auth/cloud-platform</mat-chip>
@@ -291,6 +331,10 @@ interface DocumentationSection {
                       <li>Project metadata and billing info</li>
                       <li>Organization policies</li>
                     </ul>
+                    <p><strong>Endpoints Used:</strong></p>
+                    <div class="endpoint-list">
+                      <code>GET /v1/projects/{{ '{projectId}' }}</code>
+                    </div>
                     <p><strong>Scopes Required:</strong></p>
                     <mat-chip-set>
                       <mat-chip>https://www.googleapis.com/auth/cloud-platform</mat-chip>
@@ -313,6 +357,14 @@ interface DocumentationSection {
                       <li>DNSSEC support</li>
                       <li>Private DNS zones</li>
                     </ul>
+                    <p><strong>Endpoints Used:</strong></p>
+                    <div class="endpoint-list">
+                      <code>GET /dns/v1/projects/{{ '{project}' }}/managedZones</code>
+                      <code>GET /dns/v1/projects/{{ '{project}' }}/managedZones/{{ '{zone}' }}</code>
+                      <code>POST /dns/v1/projects/{{ '{project}' }}/managedZones</code>
+                      <code>DELETE /dns/v1/projects/{{ '{project}' }}/managedZones/{{ '{zone}' }}</code>
+                      <code>GET /dns/v1/projects/{{ '{project}' }}/managedZones/{{ '{zone}' }}/rrsets</code>
+                    </div>
                     <p><strong>Scopes Required:</strong></p>
                     <mat-chip-set>
                       <mat-chip>https://www.googleapis.com/auth/cloud-platform</mat-chip>
@@ -323,21 +375,88 @@ interface DocumentationSection {
                 <mat-card class="api-card">
                   <mat-card-header>
                     <mat-icon mat-card-avatar color="primary">security</mat-icon>
-                    <mat-card-title>Cloud Armor API</mat-card-title>
-                    <mat-card-subtitle>compute.googleapis.com (Security Policies)</mat-card-subtitle>
+                    <mat-card-title>Network Security API</mat-card-title>
+                    <mat-card-subtitle>networksecurity.googleapis.com</mat-card-subtitle>
                   </mat-card-header>
                   <mat-card-content>
-                    <p><strong>Purpose:</strong> DDoS protection and WAF security policies</p>
+                    <p><strong>Purpose:</strong> Advanced network security features</p>
                     <p><strong>Key Features:</strong></p>
                     <ul>
-                      <li>Security policy management</li>
-                      <li>DDoS protection rules</li>
-                      <li>Rate limiting configuration</li>
-                      <li>Bot management</li>
+                      <li>TLS inspection policy management</li>
+                      <li>Address group configuration</li>
+                      <li>Network security rule enforcement</li>
+                      <li>Certificate management</li>
                     </ul>
+                    <p><strong>Endpoints Used:</strong></p>
+                    <div class="endpoint-list">
+                      <code>GET /v1/projects/{{ '{project}' }}/locations/global/tlsInspectionPolicies</code>
+                      <code>POST /v1/projects/{{ '{project}' }}/locations/global/tlsInspectionPolicies</code>
+                      <code>DELETE /v1/projects/{{ '{project}' }}/locations/global/tlsInspectionPolicies/{{ '{policy}' }}</code>
+                      <code>GET /v1/projects/{{ '{project}' }}/locations/{{ '{location}' }}/addressGroups</code>
+                      <code>POST /v1/projects/{{ '{project}' }}/locations/{{ '{location}' }}/addressGroups</code>
+                      <code>DELETE /v1/projects/{{ '{project}' }}/locations/{{ '{location}' }}/addressGroups/{{ '{group}' }}</code>
+                    </div>
                     <p><strong>Scopes Required:</strong></p>
                     <mat-chip-set>
                       <mat-chip>https://www.googleapis.com/auth/cloud-platform</mat-chip>
+                    </mat-chip-set>
+                  </mat-card-content>
+                </mat-card>
+
+                <mat-card class="api-card">
+                  <mat-card-header>
+                    <mat-icon mat-card-avatar color="primary">analytics</mat-icon>
+                    <mat-card-title>Cloud Logging API</mat-card-title>
+                    <mat-card-subtitle>logging.googleapis.com</mat-card-subtitle>
+                  </mat-card-header>
+                  <mat-card-content>
+                    <p><strong>Purpose:</strong> VPC Flow Logs analysis and network monitoring</p>
+                    <p><strong>Key Features:</strong></p>
+                    <ul>
+                      <li>VPC Flow Logs querying</li>
+                      <li>Network traffic analysis</li>
+                      <li>Log-based metrics</li>
+                      <li>Real-time log streaming</li>
+                    </ul>
+                    <p><strong>Endpoints Used:</strong></p>
+                    <div class="endpoint-list">
+                      <code>POST /v2/entries:list</code>
+                      <code>POST /v2/projects/{{ '{project}' }}/logs:list</code>
+                      <code>Log queries for VPC Flow Logs analysis</code>
+                    </div>
+                    <p><strong>Scopes Required:</strong></p>
+                    <mat-chip-set>
+                      <mat-chip>https://www.googleapis.com/auth/cloud-platform</mat-chip>
+                      <mat-chip>https://www.googleapis.com/auth/logging.read</mat-chip>
+                    </mat-chip-set>
+                  </mat-card-content>
+                </mat-card>
+
+                <mat-card class="api-card">
+                  <mat-card-header>
+                    <mat-icon mat-card-avatar color="primary">trending_up</mat-icon>
+                    <mat-card-title>Cloud Monitoring API</mat-card-title>
+                    <mat-card-subtitle>monitoring.googleapis.com</mat-card-subtitle>
+                  </mat-card-header>
+                  <mat-card-content>
+                    <p><strong>Purpose:</strong> Network performance monitoring and metrics</p>
+                    <p><strong>Key Features:</strong></p>
+                    <ul>
+                      <li>Network performance metrics</li>
+                      <li>Custom dashboards</li>
+                      <li>Alerting and notifications</li>
+                      <li>Time series data analysis</li>
+                    </ul>
+                    <p><strong>Endpoints Used:</strong></p>
+                    <div class="endpoint-list">
+                      <code>POST /v3/projects/{{ '{project}' }}/timeSeries:query</code>
+                      <code>GET /v3/projects/{{ '{project}' }}/metricDescriptors</code>
+                      <code>GET /v3/projects/{{ '{project}' }}/timeSeries</code>
+                    </div>
+                    <p><strong>Scopes Required:</strong></p>
+                    <mat-chip-set>
+                      <mat-chip>https://www.googleapis.com/auth/cloud-platform</mat-chip>
+                      <mat-chip>https://www.googleapis.com/auth/monitoring.read</mat-chip>
                     </mat-chip-set>
                   </mat-card-content>
                 </mat-card>
@@ -669,6 +788,21 @@ gcloud services enable dns.googleapis.com</code></pre>
 
     li {
       margin-bottom: 8px;
+    }
+
+    .endpoint-list {
+      margin-top: 8px;
+      margin-left: 24px;
+    }
+    
+    .endpoint-list code {
+      display: block;
+      margin: 4px 0;
+      padding: 6px 8px;
+      background: #f0f0f0;
+      border-radius: 4px;
+      font-size: 12px;
+      border-left: 3px solid #1976d2;
     }
   `]
 })
