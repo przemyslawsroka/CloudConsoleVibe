@@ -9,7 +9,6 @@ import { ProjectService } from './services/project.service';
 interface NavCategory {
   name: string;
   icon: string;
-  description: string;
   items: NavItem[];
   expanded?: boolean;
 }
@@ -29,11 +28,11 @@ interface NavItem {
           <mat-icon>menu</mat-icon>
         </button>
         <span>Google Cloud Console</span>
-        <span class="toolbar-spacer"></span>
         <button mat-stroked-button color="accent" class="project-picker-btn" (click)="openProjectPicker()">
           <mat-icon>folder_open</mat-icon>
           {{ (currentProject$ | async)?.name || 'Select project' }}
         </button>
+        <span class="toolbar-spacer"></span>
         <button mat-button *ngIf="!(isAuthenticated$ | async)" (click)="login()">
           <mat-icon>login</mat-icon>
           Sign In
@@ -56,10 +55,7 @@ interface NavItem {
               <div class="category-header" (click)="toggleCategory(category)">
                 <div class="category-info">
                   <mat-icon class="category-icon">{{ category.icon }}</mat-icon>
-                  <div class="category-text">
-                    <span class="category-name">{{ category.name }}</span>
-                    <span class="category-description">{{ category.description }}</span>
-                  </div>
+                  <span class="category-name">{{ category.name }}</span>
                 </div>
                 <mat-icon class="expand-icon" [class.expanded]="category.expanded">
                   {{ category.expanded ? 'expand_less' : 'expand_more' }}
@@ -106,7 +102,7 @@ interface NavItem {
     }
     
     .project-picker-btn { 
-      margin-right: 16px; 
+      margin-left: 16px; 
     }
     
     .sidenav-container { 
@@ -177,22 +173,10 @@ interface NavItem {
       font-size: 20px;
     }
     
-    .category-text {
-      display: flex;
-      flex-direction: column;
-    }
-    
     .category-name {
       font-weight: 500;
       color: #1a73e8;
       font-size: 14px;
-      line-height: 1.2;
-    }
-    
-    .category-description {
-      font-size: 12px;
-      color: #5f6368;
-      margin-top: 2px;
     }
     
     .expand-icon {
@@ -254,7 +238,6 @@ export class AppComponent {
     {
       name: 'VPC Network',
       icon: 'cloud',
-      description: 'Virtual private cloud',
       expanded: true,
       items: [
         { name: 'VPC networks', route: '/vpc', icon: 'cloud' },
@@ -265,7 +248,6 @@ export class AppComponent {
     {
       name: 'Network Services',
       icon: 'settings_applications',
-      description: 'Network management tools',
       expanded: true,
       items: [
         { name: 'Load balancing', route: '/load-balancing', icon: 'balance' },
@@ -275,7 +257,6 @@ export class AppComponent {
     {
       name: 'Network Connectivity',
       icon: 'hub',
-      description: 'Network and hybrid connectivity options',
       expanded: false,
       items: [
         { name: 'Network Solutions', route: '/network-solutions', icon: 'hub' }
@@ -284,7 +265,6 @@ export class AppComponent {
     {
       name: 'Network Security',
       icon: 'shield',
-      description: 'Tools that power safe networking',
       expanded: false,
       items: [
         { name: 'Firewall', route: '/firewall', icon: 'security' },
@@ -296,7 +276,6 @@ export class AppComponent {
     {
       name: 'Network Observability',
       icon: 'analytics',
-      description: 'Network monitoring and topology',
       expanded: false,
       items: [
         { name: 'Flow Analyzer', route: '/flow-analyzer', icon: 'analytics' },
