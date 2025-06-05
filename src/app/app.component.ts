@@ -6,6 +6,20 @@ import { MatDialog } from '@angular/material/dialog';
 import { ProjectPickerComponent, Project } from './components/project-picker/project-picker.component';
 import { ProjectService } from './services/project.service';
 
+interface NavCategory {
+  name: string;
+  icon: string;
+  description: string;
+  items: NavItem[];
+  expanded?: boolean;
+}
+
+interface NavItem {
+  name: string;
+  route: string;
+  icon: string;
+}
+
 @Component({
   selector: 'app-root',
   template: `
@@ -32,15 +46,38 @@ import { ProjectService } from './services/project.service';
 
       <mat-sidenav-container class="sidenav-container">
         <mat-sidenav #sidenav mode="side" opened class="sidenav">
-          <mat-nav-list>
-            <a mat-list-item 
-               *ngFor="let item of navItems" 
-               [routerLink]="item.route" 
-               routerLinkActive="active">
-              <mat-icon>{{ item.icon }}</mat-icon>
-              <span>{{ item.name }}</span>
-            </a>
-          </mat-nav-list>
+          <div class="nav-header">
+            <h3>Networking</h3>
+            <p>Manage, connect, secure, and scale your networks</p>
+          </div>
+          
+          <div class="nav-content">
+            <div *ngFor="let category of navCategories" class="nav-category">
+              <div class="category-header" (click)="toggleCategory(category)">
+                <div class="category-info">
+                  <mat-icon class="category-icon">{{ category.icon }}</mat-icon>
+                  <div class="category-text">
+                    <span class="category-name">{{ category.name }}</span>
+                    <span class="category-description">{{ category.description }}</span>
+                  </div>
+                </div>
+                <mat-icon class="expand-icon" [class.expanded]="category.expanded">
+                  {{ category.expanded ? 'expand_less' : 'expand_more' }}
+                </mat-icon>
+              </div>
+              
+              <div class="category-items" [class.expanded]="category.expanded">
+                <a mat-list-item 
+                   *ngFor="let item of category.items" 
+                   [routerLink]="item.route" 
+                   routerLinkActive="active"
+                   class="nav-item">
+                  <mat-icon class="item-icon">{{ item.icon }}</mat-icon>
+                  <span>{{ item.name }}</span>
+                </a>
+              </div>
+            </div>
+          </div>
         </mat-sidenav>
 
         <mat-sidenav-content class="content">
@@ -50,14 +87,162 @@ import { ProjectService } from './services/project.service';
     </div>
   `,
   styles: [
-    `.app-container { display: flex; flex-direction: column; height: 100vh; }
-    .toolbar { position: fixed; top: 0; left: 0; right: 0; z-index: 2; }
-    .toolbar-spacer { flex: 1 1 auto; }
-    .project-picker-btn { margin-right: 16px; }
-    .sidenav-container { flex: 1; margin-top: 64px; }
-    .sidenav { width: 250px; }
-    .content { padding: 20px; }
-    .active { background-color: rgba(0, 0, 0, 0.04); }
+    `.app-container { 
+      display: flex; 
+      flex-direction: column; 
+      height: 100vh; 
+    }
+    
+    .toolbar { 
+      position: fixed; 
+      top: 0; 
+      left: 0; 
+      right: 0; 
+      z-index: 2; 
+    }
+    
+    .toolbar-spacer { 
+      flex: 1 1 auto; 
+    }
+    
+    .project-picker-btn { 
+      margin-right: 16px; 
+    }
+    
+    .sidenav-container { 
+      flex: 1; 
+      margin-top: 64px; 
+    }
+    
+    .sidenav { 
+      width: 300px; 
+      background-color: #fafafa;
+    }
+    
+    .content { 
+      padding: 20px; 
+    }
+    
+    .nav-header {
+      padding: 24px 20px 16px;
+      border-bottom: 1px solid #e0e0e0;
+      background: white;
+    }
+    
+    .nav-header h3 {
+      margin: 0 0 4px 0;
+      font-size: 20px;
+      font-weight: 400;
+      color: #202124;
+    }
+    
+    .nav-header p {
+      margin: 0;
+      font-size: 14px;
+      color: #5f6368;
+    }
+    
+    .nav-content {
+      padding: 8px 0;
+    }
+    
+    .nav-category {
+      margin-bottom: 4px;
+    }
+    
+    .category-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 20px;
+      cursor: pointer;
+      background: white;
+      border-bottom: 1px solid #e8eaed;
+      transition: background-color 0.2s;
+    }
+    
+    .category-header:hover {
+      background-color: #f8f9fa;
+    }
+    
+    .category-info {
+      display: flex;
+      align-items: center;
+      flex: 1;
+    }
+    
+    .category-icon {
+      color: #1a73e8;
+      margin-right: 12px;
+      font-size: 20px;
+    }
+    
+    .category-text {
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .category-name {
+      font-weight: 500;
+      color: #1a73e8;
+      font-size: 14px;
+      line-height: 1.2;
+    }
+    
+    .category-description {
+      font-size: 12px;
+      color: #5f6368;
+      margin-top: 2px;
+    }
+    
+    .expand-icon {
+      color: #5f6368;
+      font-size: 18px;
+      transition: transform 0.2s;
+    }
+    
+    .expand-icon.expanded {
+      transform: rotate(180deg);
+    }
+    
+    .category-items {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease-out;
+      background: #f8f9fa;
+    }
+    
+    .category-items.expanded {
+      max-height: 1000px;
+    }
+    
+    .nav-item {
+      display: flex !important;
+      align-items: center !important;
+      padding: 8px 20px 8px 52px !important;
+      text-decoration: none;
+      color: #5f6368;
+      font-size: 14px;
+      min-height: 36px !important;
+      transition: background-color 0.2s;
+    }
+    
+    .nav-item:hover {
+      background-color: #e8f0fe !important;
+      color: #1a73e8;
+    }
+    
+    .nav-item.active {
+      background-color: #e8f0fe !important;
+      color: #1a73e8;
+      font-weight: 500;
+    }
+    
+    .item-icon {
+      margin-right: 12px;
+      font-size: 18px;
+      color: inherit;
+    }
     `
   ]
 })
@@ -65,20 +250,60 @@ export class AppComponent {
   isAuthenticated$: Observable<boolean>;
   currentProject$: Observable<Project | null>;
 
-  navItems = [
-    { name: 'VPC networks', route: '/vpc', icon: 'cloud' },
-    { name: 'Load balancing', route: '/load-balancing', icon: 'balance' },
-    { name: 'IP addresses', route: '/ip-addresses', icon: 'language' },
-    { name: 'Cloud DNS', route: '/dns-management', icon: 'dns' },
-    { name: 'Firewall', route: '/firewall', icon: 'security' },
-    { name: 'Cloud Armor', route: '/cloud-armor-policies', icon: 'shield' },
-    { name: 'TLS inspection policies', route: '/tls-inspection-policies', icon: 'security_scan' },
-    { name: 'Address groups', route: '/address-groups', icon: 'group_work' },
-    { name: 'Flow Analyzer', route: '/flow-analyzer', icon: 'analytics' },
-    { name: 'Connectivity Tests', route: '/connectivity-tests', icon: 'network_check' },
-    { name: 'Routes', route: '/routes', icon: 'route' },
-    { name: 'Network topology', route: '/topology', icon: 'account_tree' },
-    { name: 'Network Solutions', route: '/network-solutions', icon: 'hub' }
+  navCategories: NavCategory[] = [
+    {
+      name: 'VPC Network',
+      icon: 'cloud',
+      description: 'Virtual private cloud',
+      expanded: true,
+      items: [
+        { name: 'VPC networks', route: '/vpc', icon: 'cloud' },
+        { name: 'IP addresses', route: '/ip-addresses', icon: 'language' },
+        { name: 'Routes', route: '/routes', icon: 'route' }
+      ]
+    },
+    {
+      name: 'Network Services',
+      icon: 'settings_applications',
+      description: 'Network management tools',
+      expanded: true,
+      items: [
+        { name: 'Load balancing', route: '/load-balancing', icon: 'balance' },
+        { name: 'Cloud DNS', route: '/dns-management', icon: 'dns' }
+      ]
+    },
+    {
+      name: 'Network Connectivity',
+      icon: 'hub',
+      description: 'Network and hybrid connectivity options',
+      expanded: false,
+      items: [
+        { name: 'Network Solutions', route: '/network-solutions', icon: 'hub' }
+      ]
+    },
+    {
+      name: 'Network Security',
+      icon: 'shield',
+      description: 'Tools that power safe networking',
+      expanded: false,
+      items: [
+        { name: 'Firewall', route: '/firewall', icon: 'security' },
+        { name: 'Cloud Armor', route: '/cloud-armor-policies', icon: 'shield' },
+        { name: 'TLS inspection policies', route: '/tls-inspection-policies', icon: 'security_scan' },
+        { name: 'Address groups', route: '/address-groups', icon: 'group_work' }
+      ]
+    },
+    {
+      name: 'Network Observability',
+      icon: 'analytics',
+      description: 'Network monitoring and topology',
+      expanded: false,
+      items: [
+        { name: 'Flow Analyzer', route: '/flow-analyzer', icon: 'analytics' },
+        { name: 'Connectivity Tests', route: '/connectivity-tests', icon: 'network_check' },
+        { name: 'Network topology', route: '/topology', icon: 'account_tree' }
+      ]
+    }
   ];
 
   constructor(
@@ -111,5 +336,9 @@ export class AppComponent {
         // Optionally: trigger reload of data in the app
       }
     });
+  }
+
+  toggleCategory(category: NavCategory) {
+    category.expanded = !category.expanded;
   }
 } 
