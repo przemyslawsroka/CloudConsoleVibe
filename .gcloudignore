@@ -1,0 +1,54 @@
+# This file specifies files that are *not* uploaded to Google Cloud Platform
+# using gcloud. It follows the same syntax as .gitignore, with the addition of
+# "#!include" directives (which insert the entries of the given .gitignore-style
+# file at that point).
+
+#!include:.gitignore
+
+# Additional files to ignore for Cloud Build
+.git
+.gitignore
+README.md
+README-CLOUDRUN.md
+*.md
+
+# Development and testing files
+src/**/*.spec.ts
+e2e/
+karma.conf.js
+protractor.conf.js
+
+# IDE files
+.vscode/
+.idea/
+
+# Local environment files
+.env*
+
+# Development dependencies and cache
+node_modules/
+.npm/
+.angular/
+
+# Build artifacts (will be built in Cloud Build)
+dist/
+
+# Local Docker files
+docker-compose*.yml
+
+# Documentation
+docs/
+
+# Git hooks
+.git/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Temporary files
+tmp/
+temp/ 

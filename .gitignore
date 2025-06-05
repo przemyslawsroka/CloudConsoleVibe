@@ -125,10 +125,8 @@ jspm_packages/
 # Docker
 Dockerfile.dev
 docker-compose.override.yml
-.dockerignore
 
 # Cloud deployment secrets and configurations
-.gcloudignore
 gcp-key.json
 service-account-key.json
 *.pem
