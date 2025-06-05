@@ -202,7 +202,7 @@ export class ConnectivityTestsService {
 
     // Generate a unique test ID from display name
     const testId = this.generateTestId(testData.displayName);
-    const url = `${this.baseUrl}/projects/${projectId}/locations/global/connectivityTests?connectivityTestId=${testId}`;
+    const url = `${this.baseUrl}/projects/${projectId}/locations/global/connectivityTests?testId=${testId}`;
     
     // Build the payload according to Google Cloud API specification
     const payload: any = {
