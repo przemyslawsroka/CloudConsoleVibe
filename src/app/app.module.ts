@@ -30,6 +30,7 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { TextFieldModule } from '@angular/cdk/text-field';
 import { MatSortModule } from '@angular/material/sort';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -84,6 +85,7 @@ import { CreateNetworkPathDialogComponent } from './components/cloud-network-ins
 import { CreateWebPathDialogComponent } from './components/cloud-network-insights/create-web-path-dialog.component';
 import { CreateMonitoringPolicyDialogComponent } from './components/cloud-network-insights/create-monitoring-policy-dialog.component';
 import { AppNetaService } from './services/appneta.service';
+import { CNRComponent } from './components/cnr/cnr.component';
 
 @NgModule({
   declarations: [
@@ -132,7 +134,8 @@ import { AppNetaService } from './services/appneta.service';
     CloudNetworkInsightsComponent,
     CreateNetworkPathDialogComponent,
     CreateWebPathDialogComponent,
-    CreateMonitoringPolicyDialogComponent
+    CreateMonitoringPolicyDialogComponent,
+    CNRComponent
   ],
   imports: [
     BrowserModule,
@@ -166,7 +169,8 @@ import { AppNetaService } from './services/appneta.service';
     MatSlideToggleModule,
     MatButtonToggleModule,
     TextFieldModule,
-    MatSortModule
+    MatSortModule,
+    MatProgressBarModule
   ],
   providers: [AuthService, VpcService, TPPIService, PacketMirroringService, NetworkHealthMonitorService, AppNetaService],
   bootstrap: [AppComponent]
