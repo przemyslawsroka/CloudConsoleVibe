@@ -27,6 +27,7 @@ import { TPPIManagementComponent } from './components/tppi-management/tppi-manag
 import { PacketMirroringManagementComponent } from './components/packet-mirroring-management/packet-mirroring-management.component';
 import { NetworkHealthMonitorComponent } from './components/network-health-monitor/network-health-monitor.component';
 import { NetworkHealthMonitorDetailsComponent } from './components/network-health-monitor-details/network-health-monitor-details.component';
+import { CloudNetworkInsightsComponent } from './components/cloud-network-insights/cloud-network-insights.component';
 
 const routes: Routes = [
   { path: '', redirectTo: '/vpc', pathMatch: 'full' },
@@ -70,6 +71,7 @@ const routes: Routes = [
   { path: 'load-balancing', component: LoadBalancingComponent, canActivate: [AuthGuard] },
   { path: 'load-balancing/create', component: CreateLoadBalancerComponent, canActivate: [AuthGuard] },
   { path: 'load-balancing/configure', component: LoadBalancerConfigureComponent, canActivate: [AuthGuard] },
+  { path: 'cloud-network-insights', component: CloudNetworkInsightsComponent, canActivate: [AuthGuard] },
   {
     path: 'network-health-monitor',
     component: NetworkHealthMonitorComponent

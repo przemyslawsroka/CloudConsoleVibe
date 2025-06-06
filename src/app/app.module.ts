@@ -79,6 +79,11 @@ import { NetworkHealthMonitorComponent } from './components/network-health-monit
 import { NetworkHealthMonitorDetailsComponent } from './components/network-health-monitor-details/network-health-monitor-details.component';
 import { CreateHealthMonitorDialogComponent } from './components/network-health-monitor/create-health-monitor-dialog.component';
 import { NetworkHealthMonitorService } from './services/network-health-monitor.service';
+import { CloudNetworkInsightsComponent } from './components/cloud-network-insights/cloud-network-insights.component';
+import { CreateNetworkPathDialogComponent } from './components/cloud-network-insights/create-network-path-dialog.component';
+import { CreateWebPathDialogComponent } from './components/cloud-network-insights/create-web-path-dialog.component';
+import { CreateMonitoringPolicyDialogComponent } from './components/cloud-network-insights/create-monitoring-policy-dialog.component';
+import { AppNetaService } from './services/appneta.service';
 
 @NgModule({
   declarations: [
@@ -123,7 +128,11 @@ import { NetworkHealthMonitorService } from './services/network-health-monitor.s
     PacketMirroringSetupWizardComponent,
     NetworkHealthMonitorComponent,
     NetworkHealthMonitorDetailsComponent,
-    CreateHealthMonitorDialogComponent
+    CreateHealthMonitorDialogComponent,
+    CloudNetworkInsightsComponent,
+    CreateNetworkPathDialogComponent,
+    CreateWebPathDialogComponent,
+    CreateMonitoringPolicyDialogComponent
   ],
   imports: [
     BrowserModule,
@@ -159,7 +168,7 @@ import { NetworkHealthMonitorService } from './services/network-health-monitor.s
     TextFieldModule,
     MatSortModule
   ],
-  providers: [AuthService, VpcService, TPPIService, PacketMirroringService, NetworkHealthMonitorService],
+  providers: [AuthService, VpcService, TPPIService, PacketMirroringService, NetworkHealthMonitorService, AppNetaService],
   bootstrap: [AppComponent]
 })
 export class AppModule { } 

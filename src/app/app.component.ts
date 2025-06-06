@@ -306,9 +306,9 @@ export class AppComponent implements OnInit {
       expanded: false,
       items: [
         { name: 'Flow Analyzer', route: '/flow-analyzer', icon: 'analytics' },
-        { name: 'Network Intelligence', route: '/network-intelligence', icon: 'insights' },
-        { name: 'Network Topology', route: '/network-topology', icon: 'hub' },
+        { name: 'Network Topology', route: '/topology', icon: 'hub' },
         { name: 'Network Health Monitor', route: '/network-health-monitor', icon: 'health_and_safety' },
+        { name: 'Cloud Network Insights', route: '/cloud-network-insights', icon: 'insights' },
         { name: 'Connectivity Tests', route: '/connectivity-tests', icon: 'lan' }
       ]
     }
