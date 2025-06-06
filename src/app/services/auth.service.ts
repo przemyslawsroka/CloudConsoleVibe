@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, Injector } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../environments/environment';
@@ -11,12 +11,17 @@ export class AuthService {
   isAuthenticated$ = this.isAuthenticatedSubject.asObservable();
   private accessToken: string | null = null;
 
-  constructor(private http: HttpClient) {
+  constructor(
+    private http: HttpClient,
+    private injector: Injector
+  ) {
     // Check if user is already authenticated
     const token = localStorage.getItem('access_token');
     if (token) {
       this.accessToken = token;
       this.isAuthenticatedSubject.next(true);
+      // Load projects after restoring authentication state
+      this.loadProjectsAfterAuth();
     }
   }
 
@@ -39,11 +44,17 @@ export class AuthService {
     this.accessToken = token;
     localStorage.setItem('access_token', token);
     this.isAuthenticatedSubject.next(true);
+    
+    console.log('🔑 Authentication successful, loading projects...');
+    // Load projects after successful authentication
+    this.loadProjectsAfterAuth();
   }
 
   logout() {
     this.accessToken = null;
     localStorage.removeItem('access_token');
+    localStorage.removeItem('currentProject');
+    localStorage.removeItem('starredProjects');
     this.isAuthenticatedSubject.next(false);
   }
 
@@ -53,5 +64,28 @@ export class AuthService {
 
   isAuthenticated(): boolean {
     return this.isAuthenticatedSubject.value;
+  }
+
+  private loadProjectsAfterAuth() {
+    // Use setTimeout to avoid circular dependency issues
+    setTimeout(() => {
+      try {
+        // Get ProjectService using injector to avoid circular dependency
+        const ProjectService = this.injector.get<any>('ProjectService' as any);
+        if (ProjectService) {
+          ProjectService.loadProjects().subscribe({
+            next: (projects: any[]) => {
+              console.log(`✅ Auto-loaded ${projects.length} projects after authentication`);
+            },
+            error: (error: any) => {
+              console.warn('⚠️  Failed to auto-load projects after authentication:', error);
+            }
+          });
+        }
+      } catch (error) {
+        // Handle case where ProjectService might not be available yet
+        console.warn('⚠️  ProjectService not available yet, projects will be loaded on first access');
+      }
+    }, 100);
   }
 } 

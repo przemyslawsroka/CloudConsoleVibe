@@ -1,12 +1,6 @@
-import { Component, Inject } from '@angular/core';
+import { Component, Inject, OnInit } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-
-export interface Project {
-  name: string;
-  id: string;
-  type: string;
-  starred: boolean;
-}
+import { ProjectService, Project } from '../../services/project.service';
 
 @Component({
   selector: 'app-project-picker',
@@ -22,7 +16,11 @@ export interface Project {
                 <input matInput [(ngModel)]="searchText" (ngModelChange)="filterProjects()">
               </mat-form-field>
             </div>
-            <table class="project-table">
+            <div class="loading" *ngIf="loading">
+              <mat-spinner diameter="40"></mat-spinner>
+              <span>Loading projects...</span>
+            </div>
+            <table class="project-table" *ngIf="!loading">
               <thead>
                 <tr>
                   <th></th>
@@ -35,7 +33,7 @@ export interface Project {
               <tbody>
                 <tr *ngFor="let project of filteredRecent" [class.selected]="project.id === selectedProject?.id" (click)="selectProject(project)">
                   <td><mat-icon *ngIf="project.id === selectedProject?.id">check</mat-icon></td>
-                  <td>{{project.name}}</td>
+                  <td>{{project.displayName || project.name}}</td>
                   <td>{{project.type}}</td>
                   <td>{{project.id}}</td>
                   <td>
@@ -46,11 +44,20 @@ export interface Project {
                 </tr>
               </tbody>
             </table>
+            <div class="no-projects" *ngIf="!loading && filteredRecent.length === 0">
+              <mat-icon>folder_open</mat-icon>
+              <p>No projects found</p>
+              <p class="hint">Try adjusting your search or check your project permissions</p>
+            </div>
           </ng-template>
         </mat-tab>
         <mat-tab label="Starred">
           <ng-template matTabContent>
-            <table class="project-table">
+            <div class="loading" *ngIf="loading">
+              <mat-spinner diameter="40"></mat-spinner>
+              <span>Loading projects...</span>
+            </div>
+            <table class="project-table" *ngIf="!loading && starredProjects.length > 0">
               <thead>
                 <tr>
                   <th></th>
@@ -63,7 +70,7 @@ export interface Project {
               <tbody>
                 <tr *ngFor="let project of starredProjects" [class.selected]="project.id === selectedProject?.id" (click)="selectProject(project)">
                   <td><mat-icon *ngIf="project.id === selectedProject?.id">check</mat-icon></td>
-                  <td>{{project.name}}</td>
+                  <td>{{project.displayName || project.name}}</td>
                   <td>{{project.type}}</td>
                   <td>{{project.id}}</td>
                   <td>
@@ -74,11 +81,20 @@ export interface Project {
                 </tr>
               </tbody>
             </table>
+            <div class="no-projects" *ngIf="!loading && starredProjects.length === 0">
+              <mat-icon>star_border</mat-icon>
+              <p>No starred projects</p>
+              <p class="hint">Star projects to quickly access them here</p>
+            </div>
           </ng-template>
         </mat-tab>
         <mat-tab label="All">
           <ng-template matTabContent>
-            <table class="project-table">
+            <div class="loading" *ngIf="loading">
+              <mat-spinner diameter="40"></mat-spinner>
+              <span>Loading projects...</span>
+            </div>
+            <table class="project-table" *ngIf="!loading">
               <thead>
                 <tr>
                   <th></th>
@@ -91,7 +107,7 @@ export interface Project {
               <tbody>
                 <tr *ngFor="let project of allProjects" [class.selected]="project.id === selectedProject?.id" (click)="selectProject(project)">
                   <td><mat-icon *ngIf="project.id === selectedProject?.id">check</mat-icon></td>
-                  <td>{{project.name}}</td>
+                  <td>{{project.displayName || project.name}}</td>
                   <td>{{project.type}}</td>
                   <td>{{project.id}}</td>
                   <td>
@@ -102,6 +118,11 @@ export interface Project {
                 </tr>
               </tbody>
             </table>
+            <div class="no-projects" *ngIf="!loading && allProjects.length === 0">
+              <mat-icon>folder_open</mat-icon>
+              <p>No projects found</p>
+              <p class="hint">Check your Google Cloud account permissions</p>
+            </div>
           </ng-template>
         </mat-tab>
       </mat-tab-group>
@@ -119,37 +140,95 @@ export interface Project {
     .project-table { width: 100%; border-collapse: collapse; }
     .project-table th, .project-table td { padding: 8px 12px; }
     .project-table tr.selected { background: #e3f2fd; }
+    .project-table tr:hover { background: #f5f5f5; cursor: pointer; }
     .actions { display: flex; align-items: center; margin-top: 16px; }
     .spacer { flex: 1 1 auto; }
+    .loading {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 20px;
+      color: #666;
+    }
+    .loading span {
+      margin-top: 16px;
+    }
+    .no-projects {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 20px;
+      color: #666;
+      text-align: center;
+    }
+    .no-projects mat-icon {
+      font-size: 48px;
+      width: 48px;
+      height: 48px;
+      color: #ccc;
+      margin-bottom: 16px;
+    }
+    .no-projects p {
+      margin: 4px 0;
+    }
+    .no-projects .hint {
+      font-size: 14px;
+      color: #999;
+    }
   `]
 })
-export class ProjectPickerComponent {
+export class ProjectPickerComponent implements OnInit {
   selectedTab = 0;
   searchText = '';
   selectedProject: Project | null = null;
+  loading = true;
 
-  recentProjects: Project[] = [
-    { name: 'net-top-viz-demo-208511', id: 'net-top-viz-demo-208511', type: 'Project', starred: true },
-    { name: 'przemeksroka-joonix-service', id: 'przemeksroka-joonix-service', type: 'Project', starred: false },
-    { name: 'online-boutique', id: 'online-boutique-308414', type: 'Project', starred: false },
-    { name: 'przemek-sroka-private', id: 'aerial-reef-282520', type: 'Project', starred: false },
-    { name: 'Gemini API', id: 'gen-lang-client-0296497231', type: 'Project', starred: false },
-    { name: 'przemeksroka-joonix-log-test', id: 'przemeksroka-joonix-log-test', type: 'Project', starred: false }
-  ];
-  starredProjects: Project[] = this.recentProjects.filter(p => p.starred);
-  allProjects: Project[] = this.recentProjects;
-  filteredRecent: Project[] = this.recentProjects;
+  allProjects: Project[] = [];
+  filteredRecent: Project[] = [];
+  starredProjects: Project[] = [];
 
   constructor(
     public dialogRef: MatDialogRef<ProjectPickerComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: any
+    @Inject(MAT_DIALOG_DATA) public data: any,
+    private projectService: ProjectService
   ) {
-    this.selectedProject = data?.selectedProject || this.recentProjects[0];
+    this.selectedProject = data?.selectedProject || null;
+  }
+
+  ngOnInit() {
+    this.loadProjects();
+  }
+
+  loadProjects() {
+    this.loading = true;
+    this.projectService.loadProjects().subscribe({
+      next: (projects) => {
+        this.allProjects = projects;
+        this.filteredRecent = [...projects];
+        this.starredProjects = projects.filter(p => p.starred);
+        this.loading = false;
+        
+        // If no project was previously selected, use the auto-selected one
+        if (!this.selectedProject) {
+          this.selectedProject = this.projectService.getCurrentProject();
+        }
+        
+        console.log(`📋 Loaded ${projects.length} projects in picker`);
+      },
+      error: (error) => {
+        console.error('❌ Error loading projects in picker:', error);
+        this.loading = false;
+      }
+    });
   }
 
   filterProjects() {
     const text = this.searchText.toLowerCase();
-    this.filteredRecent = this.recentProjects.filter(p => p.name.toLowerCase().includes(text) || p.id.toLowerCase().includes(text));
+    this.filteredRecent = this.allProjects.filter(p => 
+      (p.name?.toLowerCase().includes(text)) || 
+      (p.displayName?.toLowerCase().includes(text)) ||
+      (p.id?.toLowerCase().includes(text))
+    );
   }
 
   selectProject(project: Project) {
@@ -157,13 +236,15 @@ export class ProjectPickerComponent {
   }
 
   toggleStar(project: Project) {
-    project.starred = !project.starred;
-    this.starredProjects = this.recentProjects.filter(p => p.starred);
+    this.projectService.toggleProjectStar(project);
+    
+    // Update local lists
+    this.starredProjects = this.allProjects.filter(p => p.starred);
   }
 
   newProject() {
-    // TODO: Implement new project creation
-    alert('New project creation not implemented.');
+    // Open Google Cloud Console for new project creation
+    window.open('https://console.cloud.google.com/projectcreate', '_blank');
   }
 
   onCancel() {

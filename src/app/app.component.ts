@@ -5,8 +5,8 @@ import { Observable } from 'rxjs';
 import { filter, map } from 'rxjs/operators';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSidenav } from '@angular/material/sidenav';
-import { ProjectPickerComponent, Project } from './components/project-picker/project-picker.component';
-import { ProjectService } from './services/project.service';
+import { ProjectPickerComponent } from './components/project-picker/project-picker.component';
+import { ProjectService, Project } from './services/project.service';
 
 interface NavCategory {
   name: string;
@@ -347,14 +347,34 @@ export class AppComponent implements OnInit {
   }
 
   openProjectPicker() {
-    const dialogRef = this.dialog.open(ProjectPickerComponent, {
-      data: { selectedProject: this.projectService.getCurrentProject() },
-      width: '600px'
-    });
-    dialogRef.afterClosed().subscribe((result: Project) => {
-      if (result) {
-        this.projectService.setCurrentProject(result);
-        // Optionally: trigger reload of data in the app
+    // Load projects before opening picker
+    this.projectService.loadProjects().subscribe({
+      next: (projects) => {
+        const dialogRef = this.dialog.open(ProjectPickerComponent, {
+          data: { selectedProject: this.projectService.getCurrentProject() },
+          width: '600px'
+        });
+        
+        dialogRef.afterClosed().subscribe((result: Project) => {
+          if (result) {
+            this.projectService.setCurrentProject(result);
+            // Optionally: trigger reload of data in the app
+          }
+        });
+      },
+      error: (error) => {
+        console.error('Error loading projects:', error);
+        // Still open picker with potentially mock data
+        const dialogRef = this.dialog.open(ProjectPickerComponent, {
+          data: { selectedProject: this.projectService.getCurrentProject() },
+          width: '600px'
+        });
+        
+        dialogRef.afterClosed().subscribe((result: Project) => {
+          if (result) {
+            this.projectService.setCurrentProject(result);
+          }
+        });
       }
     });
   }
