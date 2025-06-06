@@ -200,6 +200,69 @@ import { MatSnackBar } from '@angular/material/snack-bar';
                           Enable Flow Logs
                           <mat-icon matTooltip="Records network flows for monitoring and troubleshooting">info</mat-icon>
                         </mat-slide-toggle>
+
+                        <!-- Flow Logs Advanced Options - Show when Flow Logs are enabled -->
+                        <div class="flow-logs-advanced" *ngIf="subnet.get('flowLogs')?.value">
+                          <h6>Flow Logs Configuration</h6>
+                          
+                          <mat-form-field appearance="outline" class="flow-logs-field">
+                            <mat-label>Aggregation interval</mat-label>
+                            <mat-select formControlName="flowLogsAggregationInterval">
+                              <mat-option value="INTERVAL_5_SEC">5 seconds</mat-option>
+                              <mat-option value="INTERVAL_30_SEC">30 seconds</mat-option>
+                              <mat-option value="INTERVAL_1_MIN">1 minute</mat-option>
+                              <mat-option value="INTERVAL_5_MIN">5 minutes</mat-option>
+                              <mat-option value="INTERVAL_10_MIN">10 minutes</mat-option>
+                              <mat-option value="INTERVAL_15_MIN">15 minutes</mat-option>
+                            </mat-select>
+                            <mat-hint>Information for sampled packets is aggregated over this interval to generate a flow log record</mat-hint>
+                          </mat-form-field>
+
+                          <div class="flow-logs-advanced-toggle">
+                            <button mat-button type="button" 
+                                    (click)="toggleFlowLogsAdvanced(i)"
+                                    class="advanced-toggle-btn">
+                              <mat-icon>{{ subnet.get('showFlowLogsAdvanced')?.value ? 'expand_less' : 'expand_more' }}</mat-icon>
+                              Advanced settings
+                            </button>
+                          </div>
+
+                          <div class="flow-logs-advanced-section" *ngIf="subnet.get('showFlowLogsAdvanced')?.value">
+                            <mat-checkbox formControlName="flowLogsKeepOnlyMatchingLogs" class="flow-logs-checkbox">
+                              <div class="checkbox-content">
+                                <strong>Keep only logs that match a filter</strong>
+                                <div class="checkbox-description">For details, see Log filtering</div>
+                              </div>
+                            </mat-checkbox>
+
+                            <mat-form-field appearance="outline" class="flow-logs-field" 
+                                           *ngIf="subnet.get('flowLogsKeepOnlyMatchingLogs')?.value">
+                              <mat-label>Filter expression</mat-label>
+                              <input matInput formControlName="flowLogsFilterExpression" 
+                                     placeholder="Enter filter expression">
+                            </mat-form-field>
+
+                            <mat-checkbox formControlName="flowLogsMetadataAnnotations" class="flow-logs-checkbox">
+                              <div class="checkbox-content">
+                                <strong>Metadata annotations</strong>
+                                <div class="checkbox-description">Additional information that you can include in flow log records. For a list of available metadata annotations, see Record format</div>
+                              </div>
+                            </mat-checkbox>
+
+                            <div class="sampling-rate-section">
+                              <label class="sampling-rate-label">Secondary sampling rate *</label>
+                              <div class="sampling-rate-input">
+                                <mat-form-field appearance="outline" class="sampling-input">
+                                  <input matInput type="number" 
+                                         formControlName="flowLogsSamplingRate" 
+                                         min="0" max="100">
+                                </mat-form-field>
+                                <span class="percent-symbol">%</span>
+                                <mat-icon matTooltip="Percentage of packets to sample">info</mat-icon>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -355,6 +418,26 @@ import { MatSnackBar } from '@angular/material/snack-bar';
                   <mat-icon matTooltip="Records network flows for monitoring, troubleshooting, and security analysis">info</mat-icon>
                 </mat-slide-toggle>
                 <p class="toggle-description">Captures network flow data for analysis and monitoring</p>
+              </div>
+
+              <!-- Hybrid Subnets -->
+              <div class="form-section">
+                <h4>Hybrid Subnets</h4>
+                <mat-radio-group formControlName="hybridSubnets" class="hybrid-subnets-group">
+                  <mat-radio-button value="on">
+                    <div class="radio-content-simple">
+                      <strong>On</strong>
+                      <div class="description">Enable hybrid subnet functionality</div>
+                    </div>
+                  </mat-radio-button>
+                  <mat-radio-button value="off">
+                    <div class="radio-content-simple">
+                      <strong>Off</strong>
+                      <div class="description">Standard subnet configuration</div>
+                    </div>
+                  </mat-radio-button>
+                </mat-radio-group>
+                <p class="toggle-description">Hybrid subnets allow for specialized network configurations</p>
               </div>
             </mat-card-content>
           </mat-card>
@@ -636,6 +719,93 @@ import { MatSnackBar } from '@angular/material/snack-bar';
       gap: 12px;
     }
 
+    /* Flow Logs Advanced Styles */
+    .flow-logs-advanced {
+      background: #f8f9fa;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      padding: 16px;
+      margin-top: 12px;
+    }
+
+    .flow-logs-advanced h6 {
+      margin: 0 0 16px 0;
+      color: #1976d2;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .flow-logs-field {
+      width: 100%;
+      margin-bottom: 12px;
+    }
+
+    .flow-logs-advanced-toggle {
+      margin: 16px 0;
+    }
+
+    .advanced-toggle-btn {
+      color: #1976d2;
+      padding: 8px 16px;
+    }
+
+    .flow-logs-advanced-section {
+      background: white;
+      border: 1px solid #e0e0e0;
+      border-radius: 6px;
+      padding: 16px;
+      margin-top: 8px;
+    }
+
+    .flow-logs-checkbox {
+      width: 100%;
+      margin-bottom: 16px;
+    }
+
+    .checkbox-content strong {
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .checkbox-description {
+      color: #666;
+      font-size: 14px;
+      line-height: 1.4;
+    }
+
+    .sampling-rate-section {
+      margin-top: 16px;
+    }
+
+    .sampling-rate-label {
+      display: block;
+      margin-bottom: 8px;
+      color: #333;
+      font-weight: 500;
+    }
+
+    .sampling-rate-input {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .sampling-input {
+      width: 100px;
+    }
+
+    .percent-symbol {
+      color: #666;
+      font-weight: bold;
+    }
+
+    /* Hybrid Subnets Styles */
+    .hybrid-subnets-group {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
     .subnet-actions {
       display: flex;
       gap: 16px;
@@ -851,7 +1021,8 @@ export class CreateVpcNetworkComponent implements OnInit {
       allowIcmp: [true],
       routingMode: ['REGIONAL'],
       dnsPolicy: ['DEFAULT'],
-      enableFlowLogs: [false]
+      enableFlowLogs: [false],
+      hybridSubnets: ['off']
     });
   }
 
@@ -861,7 +1032,14 @@ export class CreateVpcNetworkComponent implements OnInit {
       region: ['', Validators.required],
       ipRange: ['', [Validators.required, Validators.pattern(/^([0-9]{1,3}\.){3}[0-9]{1,3}\/([0-9]|[1-2][0-9]|3[0-2])$/)]],
       privateGoogleAccess: [true],
-      flowLogs: [false]
+      flowLogs: [false],
+      // Flow Logs advanced options
+      flowLogsAggregationInterval: ['INTERVAL_5_SEC'],
+      flowLogsKeepOnlyMatchingLogs: [false],
+      flowLogsFilterExpression: [''],
+      flowLogsMetadataAnnotations: [true],
+      flowLogsSamplingRate: [50],
+      showFlowLogsAdvanced: [false]
     });
   }
 
@@ -877,6 +1055,11 @@ export class CreateVpcNetworkComponent implements OnInit {
     if (this.subnets.length > 1) {
       this.subnets.removeAt(index);
     }
+  }
+
+  toggleFlowLogsAdvanced(index: number) {
+    const subnet = this.subnets.controls[index] as FormGroup;
+    subnet.get('showFlowLogsAdvanced')?.setValue(!subnet.get('showFlowLogsAdvanced')?.value);
   }
 
   onSubmit() {

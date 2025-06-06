@@ -12,7 +12,7 @@ import { ProjectService, Project } from '../../services/project.service';
         <h1>VPC Networks</h1>
         <button mat-raised-button color="primary" (click)="openCreateDialog()">
           <mat-icon>add</mat-icon>
-          Add VPC Network
+          Create VPC Network
         </button>
       </div>
 
