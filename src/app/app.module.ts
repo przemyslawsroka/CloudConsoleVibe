@@ -68,6 +68,7 @@ import { LoadBalancingComponent } from './components/load-balancing/load-balanci
 import { CreateLoadBalancerComponent } from './components/load-balancing/create-load-balancer.component';
 import { LoadBalancerConfigureComponent } from './components/load-balancing/load-balancer-configure.component';
 import { DocumentationComponent } from './components/documentation/documentation.component';
+import { CreateVpcNetworkComponent } from './components/create-vpc-network/create-vpc-network.component';
 
 @NgModule({
   declarations: [
@@ -104,7 +105,8 @@ import { DocumentationComponent } from './components/documentation/documentation
     LoadBalancingComponent,
     CreateLoadBalancerComponent,
     LoadBalancerConfigureComponent,
-    DocumentationComponent
+    DocumentationComponent,
+    CreateVpcNetworkComponent
   ],
   imports: [
     BrowserModule,

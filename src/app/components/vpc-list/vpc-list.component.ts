@@ -12,7 +12,7 @@ import { ProjectService, Project } from '../../services/project.service';
         <h1>VPC Networks</h1>
         <button mat-raised-button color="primary" (click)="openCreateDialog()">
           <mat-icon>add</mat-icon>
-          Create VPC Network
+          Add VPC Network
         </button>
       </div>
 
@@ -156,7 +156,7 @@ export class VpcListComponent implements OnInit {
   }
 
   openCreateDialog() {
-    // TODO: Implement create VPC dialog
+    this.router.navigate(['/vpc/create']);
   }
 
   deleteVpc(vpc: VpcNetwork) {
