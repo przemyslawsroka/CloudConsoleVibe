@@ -41,6 +41,8 @@ import { RoutesComponent } from './components/routes/routes.component';
 import { CreateRouteDialogComponent } from './components/create-route-dialog/create-route-dialog.component';
 import { AuthService } from './services/auth.service';
 import { VpcService } from './services/vpc.service';
+import { TPPIService } from './services/tppi.service';
+import { PacketMirroringService } from './services/packet-mirroring.service';
 import { VpcFlowLogsComponent } from './components/vpc-flow-logs/vpc-flow-logs.component';
 import { CreateFlowLogDialogComponent } from './components/create-flow-log-dialog/create-flow-log-dialog.component';
 import { ProjectPickerComponent } from './components/project-picker/project-picker.component';
@@ -69,6 +71,14 @@ import { CreateLoadBalancerComponent } from './components/load-balancing/create-
 import { LoadBalancerConfigureComponent } from './components/load-balancing/load-balancer-configure.component';
 import { DocumentationComponent } from './components/documentation/documentation.component';
 import { CreateVpcNetworkComponent } from './components/create-vpc-network/create-vpc-network.component';
+import { TPPIManagementComponent } from './components/tppi-management/tppi-management.component';
+import { TPPISetupWizardComponent } from './components/tppi-setup-wizard/tppi-setup-wizard.component';
+import { PacketMirroringManagementComponent } from './components/packet-mirroring-management/packet-mirroring-management.component';
+import { PacketMirroringSetupWizardComponent } from './components/packet-mirroring-setup-wizard/packet-mirroring-setup-wizard.component';
+import { NetworkHealthMonitorComponent } from './components/network-health-monitor/network-health-monitor.component';
+import { NetworkHealthMonitorDetailsComponent } from './components/network-health-monitor-details/network-health-monitor-details.component';
+import { CreateHealthMonitorDialogComponent } from './components/network-health-monitor/create-health-monitor-dialog.component';
+import { NetworkHealthMonitorService } from './services/network-health-monitor.service';
 
 @NgModule({
   declarations: [
@@ -106,7 +116,14 @@ import { CreateVpcNetworkComponent } from './components/create-vpc-network/creat
     CreateLoadBalancerComponent,
     LoadBalancerConfigureComponent,
     DocumentationComponent,
-    CreateVpcNetworkComponent
+    CreateVpcNetworkComponent,
+    TPPIManagementComponent,
+    TPPISetupWizardComponent,
+    PacketMirroringManagementComponent,
+    PacketMirroringSetupWizardComponent,
+    NetworkHealthMonitorComponent,
+    NetworkHealthMonitorDetailsComponent,
+    CreateHealthMonitorDialogComponent
   ],
   imports: [
     BrowserModule,
@@ -142,7 +159,7 @@ import { CreateVpcNetworkComponent } from './components/create-vpc-network/creat
     TextFieldModule,
     MatSortModule
   ],
-  providers: [AuthService, VpcService],
+  providers: [AuthService, VpcService, TPPIService, PacketMirroringService, NetworkHealthMonitorService],
   bootstrap: [AppComponent]
 })
 export class AppModule { } 

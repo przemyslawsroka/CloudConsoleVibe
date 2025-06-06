@@ -293,6 +293,8 @@ export class AppComponent implements OnInit {
       expanded: false,
       items: [
         { name: 'Firewall', route: '/firewall', icon: 'security' },
+        { name: 'Third Party Packet Intercept', route: '/tppi', icon: 'swap_horiz' },
+        { name: 'Packet Mirroring', route: '/packet-mirroring', icon: 'visibility' },
         { name: 'Cloud Armor', route: '/cloud-armor-policies', icon: 'shield' },
         { name: 'TLS inspection policies', route: '/tls-inspection-policies', icon: 'security_scan' },
         { name: 'Address groups', route: '/address-groups', icon: 'group_work' }
@@ -304,8 +306,10 @@ export class AppComponent implements OnInit {
       expanded: false,
       items: [
         { name: 'Flow Analyzer', route: '/flow-analyzer', icon: 'analytics' },
-        { name: 'Connectivity Tests', route: '/connectivity-tests', icon: 'network_check' },
-        { name: 'Network topology', route: '/topology', icon: 'account_tree' }
+        { name: 'Network Intelligence', route: '/network-intelligence', icon: 'insights' },
+        { name: 'Network Topology', route: '/network-topology', icon: 'hub' },
+        { name: 'Network Health Monitor', route: '/network-health-monitor', icon: 'health_and_safety' },
+        { name: 'Connectivity Tests', route: '/connectivity-tests', icon: 'lan' }
       ]
     }
   ];
