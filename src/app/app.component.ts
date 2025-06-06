@@ -335,6 +335,40 @@ export class AppComponent implements OnInit {
         }
       }
     });
+
+    // Load projects immediately if authenticated
+    if (this.authService.isAuthenticated()) {
+      this.loadProjectsOnInit();
+    }
+
+    // Listen for authentication changes
+    this.authService.isAuthenticated$.subscribe(isAuthenticated => {
+      if (isAuthenticated) {
+        this.loadProjectsOnInit();
+      }
+    });
+  }
+
+  private loadProjectsOnInit() {
+    // Check if we already have a current project
+    const currentProject = this.projectService.getCurrentProject();
+    
+    if (!currentProject) {
+      console.log('🔄 No project selected, loading projects and auto-selecting first one...');
+      this.projectService.loadProjects().subscribe({
+        next: (projects) => {
+          if (projects.length > 0 && !this.projectService.getCurrentProject()) {
+            console.log('🎯 Auto-selecting first project:', projects[0].name);
+            this.projectService.setCurrentProject(projects[0]);
+          }
+        },
+        error: (error) => {
+          console.error('❌ Error loading projects on init:', error);
+        }
+      });
+    } else {
+      console.log('✅ Project already selected:', currentProject.name);
+    }
   }
 
   login() {

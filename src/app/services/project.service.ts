@@ -109,15 +109,18 @@ export class ProjectService {
   private autoSelectFirstProject(projects: Project[]) {
     const currentProject = this.getCurrentProject();
     
-    // Only auto-select if no project is currently selected and we have projects
+    // Auto-select if no project is currently selected and we have projects
     if (!currentProject && projects.length > 0) {
-      console.log('🎯 Auto-selecting first project on initial login...');
+      console.log('🎯 Auto-selecting first project on initial login:', projects[0].name);
       this.setCurrentProject(projects[0]);
-    } else if (currentProject && projects.length > 0) {
-      // Verify current project still exists in the list
+      return;
+    }
+    
+    // Verify current project still exists in the list
+    if (currentProject && projects.length > 0) {
       const projectExists = projects.find(p => p.id === currentProject.id);
       if (!projectExists) {
-        console.log('⚠️  Previously selected project no longer exists, selecting first available...');
+        console.log('⚠️  Previously selected project no longer exists, selecting first available:', projects[0].name);
         this.setCurrentProject(projects[0]);
       }
     }
@@ -170,8 +173,14 @@ export class ProjectService {
       { name: 'przemeksroka-joonix-log-test', id: 'przemeksroka-joonix-log-test', type: 'Project', starred: false }
     ];
     
+    console.log('🔄 Using mock projects');
     this.projectsSubject.next(mockProjects);
-    this.autoSelectFirstProject(mockProjects);
+    
+    // Always auto-select first project if none selected
+    if (!this.getCurrentProject() && mockProjects.length > 0) {
+      console.log('🎯 Auto-selecting first mock project:', mockProjects[0].name);
+      this.setCurrentProject(mockProjects[0]);
+    }
     
     return of(mockProjects);
   }
