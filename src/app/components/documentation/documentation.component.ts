@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 
 interface DocumentationSection {
   id: string;
@@ -10,846 +10,1083 @@ interface DocumentationSection {
   selector: 'app-documentation',
   template: `
     <div class="documentation-container">
-      <div class="doc-header">
-        <h1>
-          <mat-icon>description</mat-icon>
-          CloudConsoleVibe Documentation
-        </h1>
-        <p>Comprehensive guide for Google Cloud networking management</p>
+      <div class="documentation-header">
+        <h1>CloudConsoleVibe Documentation</h1>
+        <p>Comprehensive guide for Google Cloud Platform networking management</p>
       </div>
 
-      <div class="doc-content">
-        <div class="doc-nav">
-          <mat-nav-list>
-            <h3 matSubheader>Navigation</h3>
-            <a mat-list-item 
-               *ngFor="let section of sections" 
-               (click)="scrollToSection(section.id)"
-               [class.active]="activeSection === section.id">
-              <mat-icon matListIcon>{{ section.icon }}</mat-icon>
-              <span matLine>{{ section.title }}</span>
+      <nav class="doc-nav">
+        <ul>
+          <li *ngFor="let section of sections" [class.active]="activeSection === section.id">
+            <a (click)="scrollToSection(section.id)">
+              <mat-icon>{{ section.icon }}</mat-icon>
+              {{ section.title }}
             </a>
-          </mat-nav-list>
-        </div>
+          </li>
+        </ul>
+      </nav>
 
-        <div class="doc-main" #docMain (scroll)="onScroll($event)">
-          <section id="overview" class="doc-section">
-            <h2>
-              <mat-icon>info</mat-icon>
-              Overview
-            </h2>
-            <div class="section-content">
-              <p>CloudConsoleVibe is a modern web application that provides an intuitive interface for managing Google Cloud Platform networking resources. Built with Angular and Material Design, it offers comprehensive tools for VPC management, connectivity testing, load balancing, and network security.</p>
-              
-              <div class="feature-grid">
-                <mat-card class="feature-card">
-                  <mat-card-header>
-                    <mat-icon mat-card-avatar>cloud</mat-icon>
-                    <mat-card-title>VPC Management</mat-card-title>
-                  </mat-card-header>
-                  <mat-card-content>
-                    Manage Virtual Private Cloud networks, subnets, and routing
-                  </mat-card-content>
-                </mat-card>
-
-                <mat-card class="feature-card">
-                  <mat-icon mat-card-avatar>network_check</mat-icon>
-                  <mat-card-title>Connectivity Testing</mat-card-title>
-                  <mat-card-content>
-                    Test and troubleshoot network connectivity between resources
-                  </mat-card-content>
-                </mat-card>
-
-                <mat-card class="feature-card">
-                  <mat-icon mat-card-avatar>security</mat-icon>
-                  <mat-card-title>Security Management</mat-card-title>
-                  <mat-card-content>
-                    Configure firewall rules, Cloud Armor policies, and security settings
-                  </mat-card-content>
-                </mat-card>
-
-                <mat-card class="feature-card">
-                  <mat-icon mat-card-avatar>balance</mat-icon>
-                  <mat-card-title>Load Balancing</mat-card-title>
-                  <mat-card-content>
-                    Set up and manage Google Cloud Load Balancers
-                  </mat-card-content>
-                </mat-card>
-              </div>
-            </div>
-          </section>
-
-          <section id="user-guide" class="doc-section">
-            <h2>
-              <mat-icon>person</mat-icon>
-              User Guide
-            </h2>
-            <div class="section-content">
-              <h3>Getting Started</h3>
-              <ol class="guide-steps">
-                <li>
-                  <strong>Authentication</strong>
-                  <p>Click "Sign In" in the top-right corner to authenticate with Google Cloud. You'll need appropriate IAM permissions for the resources you want to manage.</p>
-                </li>
-                <li>
-                  <strong>Project Selection</strong>
-                  <p>After authentication, select your Google Cloud project using the project picker in the toolbar.</p>
-                </li>
-                <li>
-                  <strong>Navigation</strong>
-                  <p>Use the left sidebar to navigate between different networking services and features.</p>
-                </li>
-              </ol>
-
-              <h3>Key Features</h3>
-              
-              <h4>VPC Networks</h4>
-              <ul>
-                <li>View all VPC networks in your project</li>
-                <li>Examine network details, subnets, and firewall rules</li>
-                <li>Monitor network topology and connections</li>
-              </ul>
-
-              <h4>Connectivity Tests</h4>
-              <ul>
-                <li>Create new connectivity tests between network endpoints</li>
-                <li>View test results with detailed trace information</li>
-                <li>Analyze packet flow and identify connectivity issues</li>
-                <li>Support for various protocols (TCP, UDP, ICMP, ESP)</li>
-              </ul>
-
-              <h4>Load Balancing</h4>
-              <ul>
-                <li>Configure different types of load balancers</li>
-                <li>Manage backend services and health checks</li>
-                <li>Monitor load balancer performance</li>
-              </ul>
-
-              <h4>Security Management</h4>
-              <ul>
-                <li>Configure VPC firewall rules</li>
-                <li>Manage Cloud Armor security policies</li>
-                <li>Set up TLS inspection policies</li>
-                <li>Create and manage address groups</li>
-              </ul>
-            </div>
-          </section>
-
-          <section id="architecture" class="doc-section">
-            <h2>
-              <mat-icon>architecture</mat-icon>
-              Architecture
-            </h2>
-            <div class="section-content">
-              <h3>Technology Stack</h3>
-              <div class="tech-stack">
-                <mat-chip-set>
-                  <mat-chip>Angular 15+</mat-chip>
-                  <mat-chip>TypeScript</mat-chip>
-                  <mat-chip>Angular Material</mat-chip>
-                  <mat-chip>RxJS</mat-chip>
-                  <mat-chip>Google Cloud APIs</mat-chip>
-                </mat-chip-set>
-              </div>
-
-              <h3>Application Structure</h3>
-              <div class="architecture-diagram">
+      <div class="doc-content">
+        <section id="overview" class="doc-section">
+          <h2>
+            <mat-icon>info</mat-icon>
+            Overview
+          </h2>
+          <div class="section-content">
+            <p>
+              CloudConsoleVibe is a <strong>demo application</strong> showcasing how to quickly build an equivalent of the real Google Cloud Console for networking management. 
+              This application demonstrates modern web development practices using Angular and Material Design to create an intuitive interface for managing Google Cloud Platform networking resources.
+            </p>
+            
+            <div class="modules-grid">
+              <div class="module-card" *ngFor="let module of applicationModules">
                 <mat-card>
+                  <mat-card-header>
+                    <mat-icon mat-card-avatar>{{ module.icon }}</mat-icon>
+                    <mat-card-title>{{ module.title }}</mat-card-title>
+                  </mat-card-header>
                   <mat-card-content>
-                    <div class="layer">
-                      <h4>Presentation Layer</h4>
-                      <p>Angular Components + Material Design UI</p>
-                    </div>
-                    <div class="arrow">↓</div>
-                    <div class="layer">
-                      <h4>Service Layer</h4>
-                      <p>Business Logic + State Management</p>
-                    </div>
-                    <div class="arrow">↓</div>
-                    <div class="layer">
-                      <h4>API Layer</h4>
-                      <p>HTTP Client + Google Cloud API Integration</p>
-                    </div>
-                    <div class="arrow">↓</div>
-                    <div class="layer">
-                      <h4>Google Cloud Platform</h4>
-                      <p>Compute, Networking, Security APIs</p>
+                    <p>{{ module.description }}</p>
+                    <div class="module-features">
+                      <mat-chip *ngFor="let feature of module.features">{{ feature }}</mat-chip>
                     </div>
                   </mat-card-content>
                 </mat-card>
               </div>
-
-              <h3>Key Components</h3>
-              <ul>
-                <li><strong>AuthService:</strong> Handles Google OAuth 2.0 authentication</li>
-                <li><strong>ProjectService:</strong> Manages project selection and context</li>
-                <li><strong>VpcService:</strong> Interfaces with Compute Engine API for VPC resources</li>
-                <li><strong>ConnectivityTestsService:</strong> Manages Network Management API interactions</li>
-                <li><strong>LoadBalancingService:</strong> Handles Load Balancer configuration</li>
-                <li><strong>FirewallService:</strong> Manages firewall rules and security policies</li>
-              </ul>
-
-              <h3>Data Flow</h3>
-              <ol>
-                <li>User authentication via Google OAuth 2.0</li>
-                <li>Project selection and permission validation</li>
-                <li>Component initialization and API calls</li>
-                <li>Data transformation and state management</li>
-                <li>UI rendering with Material Design components</li>
-              </ol>
             </div>
-          </section>
 
-          <section id="google-apis" class="doc-section">
-            <h2>
-              <mat-icon>api</mat-icon>
-              Google Cloud APIs
-            </h2>
-            <div class="section-content">
-              <p>CloudConsoleVibe integrates with multiple Google Cloud APIs to provide comprehensive networking management capabilities.</p>
-
-              <div class="api-cards">
-                <mat-card class="api-card">
-                  <mat-card-header>
-                    <mat-icon mat-card-avatar color="primary">network_check</mat-icon>
-                    <mat-card-title>Network Management API</mat-card-title>
-                    <mat-card-subtitle>networkmanagement.googleapis.com</mat-card-subtitle>
-                  </mat-card-header>
-                  <mat-card-content>
-                    <p><strong>Purpose:</strong> Connectivity testing and network reachability analysis</p>
-                    <p><strong>Key Features:</strong></p>
-                    <ul>
-                      <li>Create and manage connectivity tests</li>
-                      <li>Analyze network paths and trace packets</li>
-                      <li>Detect configuration issues</li>
-                      <li>Live data plane testing</li>
-                      <li>VPC Flow Logs configuration</li>
-                    </ul>
-                    <p><strong>Endpoints Used:</strong></p>
-                    <div class="endpoint-list">
-                      <code>GET /v1/projects/{{ '{project}' }}/locations/global/connectivityTests</code>
-                      <code>GET /v1/projects/{{ '{project}' }}/locations/global/connectivityTests/{{ '{testId}' }}</code>
-                      <code>POST /v1/projects/{{ '{project}' }}/locations/global/connectivityTests</code>
-                      <code>DELETE /v1/projects/{{ '{project}' }}/locations/global/connectivityTests/{{ '{testId}' }}</code>
-                      <code>POST /v1/projects/{{ '{project}' }}/locations/global/connectivityTests/{{ '{testId}' }}:rerun</code>
-                      <code>GET /v1/projects/{{ '{project}' }}/locations/{{ '{location}' }}/vpcFlowLogsConfigs</code>
-                      <code>POST /v1/projects/{{ '{project}' }}/locations/{{ '{location}' }}/vpcFlowLogsConfigs</code>
-                      <code>DELETE /v1/{{ '{configName}' }}</code>
-                    </div>
-                    <p><strong>Scopes Required:</strong></p>
-                    <mat-chip-set>
-                      <mat-chip>https://www.googleapis.com/auth/cloud-platform</mat-chip>
-                    </mat-chip-set>
-                  </mat-card-content>
-                </mat-card>
-
-                <mat-card class="api-card">
-                  <mat-card-header>
-                    <mat-icon mat-card-avatar color="primary">computer</mat-icon>
-                    <mat-card-title>Compute Engine API</mat-card-title>
-                    <mat-card-subtitle>compute.googleapis.com</mat-card-subtitle>
-                  </mat-card-header>
-                  <mat-card-content>
-                    <p><strong>Purpose:</strong> Virtual machine and network resource management, including Cloud Armor security policies</p>
-                    <p><strong>Key Features:</strong></p>
-                    <ul>
-                      <li>VPC network management</li>
-                      <li>Subnet and route configuration</li>
-                      <li>Firewall rule management</li>
-                      <li>Instance and network interface details</li>
-                      <li>Load balancer configuration</li>
-                      <li>IP address reservation</li>
-                      <li>Cloud Armor security policies</li>
-                    </ul>
-                    <p><strong>Endpoints Used:</strong></p>
-                    <div class="endpoint-list">
-                      <code>GET /compute/v1/projects/{{ '{project}' }}/global/networks</code>
-                      <code>GET /compute/v1/projects/{{ '{project}' }}/regions/{{ '{region}' }}/subnetworks</code>
-                      <code>GET /compute/v1/projects/{{ '{project}' }}/global/routes</code>
-                      <code>GET /compute/v1/projects/{{ '{project}' }}/global/firewalls</code>
-                      <code>POST /compute/v1/projects/{{ '{project}' }}/global/firewalls</code>
-                      <code>DELETE /compute/v1/projects/{{ '{project}' }}/global/firewalls/{{ '{firewall}' }}</code>
-                      <code>GET /compute/v1/projects/{{ '{project}' }}/global/forwardingRules</code>
-                      <code>GET /compute/v1/projects/{{ '{project}' }}/regions/{{ '{region}' }}/forwardingRules</code>
-                      <code>GET /compute/v1/projects/{{ '{project}' }}/global/backendServices</code>
-                      <code>GET /compute/v1/projects/{{ '{project}' }}/regions/{{ '{region}' }}/backendServices</code>
-                      <code>GET /compute/v1/projects/{{ '{project}' }}/global/urlMaps</code>
-                      <code>GET /compute/v1/projects/{{ '{project}' }}/regions/{{ '{region}' }}/targetPools</code>
-                      <code>GET /compute/v1/projects/{{ '{project}' }}/global/addresses</code>
-                      <code>GET /compute/v1/projects/{{ '{project}' }}/regions/{{ '{region}' }}/addresses</code>
-                      <code>POST /compute/v1/projects/{{ '{project}' }}/regions/{{ '{region}' }}/addresses</code>
-                      <code>GET /compute/v1/projects/{{ '{project}' }}/global/securityPolicies</code>
-                      <code>POST /compute/v1/projects/{{ '{project}' }}/global/securityPolicies</code>
-                      <code>DELETE /compute/v1/projects/{{ '{project}' }}/global/securityPolicies/{{ '{policy}' }}</code>
-                    </div>
-                    <p><strong>Scopes Required:</strong></p>
-                    <mat-chip-set>
-                      <mat-chip>https://www.googleapis.com/auth/cloud-platform</mat-chip>
-                      <mat-chip>https://www.googleapis.com/auth/compute</mat-chip>
-                    </mat-chip-set>
-                  </mat-card-content>
-                </mat-card>
-
-                <mat-card class="api-card">
-                  <mat-card-header>
-                    <mat-icon mat-card-avatar color="primary">account_circle</mat-icon>
-                    <mat-card-title>Identity and Access Management API</mat-card-title>
-                    <mat-card-subtitle>iam.googleapis.com</mat-card-subtitle>
-                  </mat-card-header>
-                  <mat-card-content>
-                    <p><strong>Purpose:</strong> Authentication and authorization</p>
-                    <p><strong>Key Features:</strong></p>
-                    <ul>
-                      <li>OAuth 2.0 authentication</li>
-                      <li>Permission validation</li>
-                      <li>Service account management</li>
-                      <li>Access token management</li>
-                    </ul>
-                    <p><strong>Endpoints Used:</strong></p>
-                    <div class="endpoint-list">
-                      <code>Used for OAuth 2.0 token validation and refresh</code>
-                    </div>
-                    <p><strong>Scopes Required:</strong></p>
-                    <mat-chip-set>
-                      <mat-chip>https://www.googleapis.com/auth/cloud-platform</mat-chip>
-                    </mat-chip-set>
-                  </mat-card-content>
-                </mat-card>
-
-                <mat-card class="api-card">
-                  <mat-card-header>
-                    <mat-icon mat-card-avatar color="primary">folder</mat-icon>
-                    <mat-card-title>Cloud Resource Manager API</mat-card-title>
-                    <mat-card-subtitle>cloudresourcemanager.googleapis.com</mat-card-subtitle>
-                  </mat-card-header>
-                  <mat-card-content>
-                    <p><strong>Purpose:</strong> Project and resource organization</p>
-                    <p><strong>Key Features:</strong></p>
-                    <ul>
-                      <li>Project listing and selection</li>
-                      <li>Resource hierarchy management</li>
-                      <li>Project metadata and billing info</li>
-                      <li>Organization policies</li>
-                    </ul>
-                    <p><strong>Endpoints Used:</strong></p>
-                    <div class="endpoint-list">
-                      <code>GET /v1/projects/{{ '{projectId}' }}</code>
-                    </div>
-                    <p><strong>Scopes Required:</strong></p>
-                    <mat-chip-set>
-                      <mat-chip>https://www.googleapis.com/auth/cloud-platform</mat-chip>
-                    </mat-chip-set>
-                  </mat-card-content>
-                </mat-card>
-
-                <mat-card class="api-card">
-                  <mat-card-header>
-                    <mat-icon mat-card-avatar color="primary">dns</mat-icon>
-                    <mat-card-title>Cloud DNS API</mat-card-title>
-                    <mat-card-subtitle>dns.googleapis.com</mat-card-subtitle>
-                  </mat-card-header>
-                  <mat-card-content>
-                    <p><strong>Purpose:</strong> DNS zone and record management</p>
-                    <p><strong>Key Features:</strong></p>
-                    <ul>
-                      <li>DNS zone configuration</li>
-                      <li>Record set management</li>
-                      <li>DNSSEC support</li>
-                      <li>Private DNS zones</li>
-                    </ul>
-                    <p><strong>Endpoints Used:</strong></p>
-                    <div class="endpoint-list">
-                      <code>GET /dns/v1/projects/{{ '{project}' }}/managedZones</code>
-                      <code>GET /dns/v1/projects/{{ '{project}' }}/managedZones/{{ '{zone}' }}</code>
-                      <code>POST /dns/v1/projects/{{ '{project}' }}/managedZones</code>
-                      <code>DELETE /dns/v1/projects/{{ '{project}' }}/managedZones/{{ '{zone}' }}</code>
-                      <code>GET /dns/v1/projects/{{ '{project}' }}/managedZones/{{ '{zone}' }}/rrsets</code>
-                    </div>
-                    <p><strong>Scopes Required:</strong></p>
-                    <mat-chip-set>
-                      <mat-chip>https://www.googleapis.com/auth/cloud-platform</mat-chip>
-                    </mat-chip-set>
-                  </mat-card-content>
-                </mat-card>
-
-                <mat-card class="api-card">
-                  <mat-card-header>
-                    <mat-icon mat-card-avatar color="primary">security</mat-icon>
-                    <mat-card-title>Network Security API</mat-card-title>
-                    <mat-card-subtitle>networksecurity.googleapis.com</mat-card-subtitle>
-                  </mat-card-header>
-                  <mat-card-content>
-                    <p><strong>Purpose:</strong> Advanced network security features</p>
-                    <p><strong>Key Features:</strong></p>
-                    <ul>
-                      <li>TLS inspection policy management</li>
-                      <li>Address group configuration</li>
-                      <li>Network security rule enforcement</li>
-                      <li>Certificate management</li>
-                    </ul>
-                    <p><strong>Endpoints Used:</strong></p>
-                    <div class="endpoint-list">
-                      <code>GET /v1/projects/{{ '{project}' }}/locations/global/tlsInspectionPolicies</code>
-                      <code>POST /v1/projects/{{ '{project}' }}/locations/global/tlsInspectionPolicies</code>
-                      <code>DELETE /v1/projects/{{ '{project}' }}/locations/global/tlsInspectionPolicies/{{ '{policy}' }}</code>
-                      <code>GET /v1/projects/{{ '{project}' }}/locations/{{ '{location}' }}/addressGroups</code>
-                      <code>POST /v1/projects/{{ '{project}' }}/locations/{{ '{location}' }}/addressGroups</code>
-                      <code>DELETE /v1/projects/{{ '{project}' }}/locations/{{ '{location}' }}/addressGroups/{{ '{group}' }}</code>
-                    </div>
-                    <p><strong>Scopes Required:</strong></p>
-                    <mat-chip-set>
-                      <mat-chip>https://www.googleapis.com/auth/cloud-platform</mat-chip>
-                    </mat-chip-set>
-                  </mat-card-content>
-                </mat-card>
-
-                <mat-card class="api-card">
-                  <mat-card-header>
-                    <mat-icon mat-card-avatar color="primary">analytics</mat-icon>
-                    <mat-card-title>Cloud Logging API</mat-card-title>
-                    <mat-card-subtitle>logging.googleapis.com</mat-card-subtitle>
-                  </mat-card-header>
-                  <mat-card-content>
-                    <p><strong>Purpose:</strong> VPC Flow Logs analysis and network monitoring</p>
-                    <p><strong>Key Features:</strong></p>
-                    <ul>
-                      <li>VPC Flow Logs querying</li>
-                      <li>Network traffic analysis</li>
-                      <li>Log-based metrics</li>
-                      <li>Real-time log streaming</li>
-                    </ul>
-                    <p><strong>Endpoints Used:</strong></p>
-                    <div class="endpoint-list">
-                      <code>POST /v2/entries:list</code>
-                      <code>POST /v2/projects/{{ '{project}' }}/logs:list</code>
-                      <code>Log queries for VPC Flow Logs analysis</code>
-                    </div>
-                    <p><strong>Scopes Required:</strong></p>
-                    <mat-chip-set>
-                      <mat-chip>https://www.googleapis.com/auth/cloud-platform</mat-chip>
-                      <mat-chip>https://www.googleapis.com/auth/logging.read</mat-chip>
-                    </mat-chip-set>
-                  </mat-card-content>
-                </mat-card>
-
-                <mat-card class="api-card">
-                  <mat-card-header>
-                    <mat-icon mat-card-avatar color="primary">trending_up</mat-icon>
-                    <mat-card-title>Cloud Monitoring API</mat-card-title>
-                    <mat-card-subtitle>monitoring.googleapis.com</mat-card-subtitle>
-                  </mat-card-header>
-                  <mat-card-content>
-                    <p><strong>Purpose:</strong> Network performance monitoring and metrics</p>
-                    <p><strong>Key Features:</strong></p>
-                    <ul>
-                      <li>Network performance metrics</li>
-                      <li>Custom dashboards</li>
-                      <li>Alerting and notifications</li>
-                      <li>Time series data analysis</li>
-                    </ul>
-                    <p><strong>Endpoints Used:</strong></p>
-                    <div class="endpoint-list">
-                      <code>POST /v3/projects/{{ '{project}' }}/timeSeries:query</code>
-                      <code>GET /v3/projects/{{ '{project}' }}/metricDescriptors</code>
-                      <code>GET /v3/projects/{{ '{project}' }}/timeSeries</code>
-                    </div>
-                    <p><strong>Scopes Required:</strong></p>
-                    <mat-chip-set>
-                      <mat-chip>https://www.googleapis.com/auth/cloud-platform</mat-chip>
-                      <mat-chip>https://www.googleapis.com/auth/monitoring.read</mat-chip>
-                    </mat-chip-set>
-                  </mat-card-content>
-                </mat-card>
+            <div class="demo-notice">
+              <mat-icon>info</mat-icon>
+              <div>
+                <h4>Demo Application Notice</h4>
+                <p>This application is designed as a demonstration of rapid cloud console development. It showcases real Google Cloud API integration and modern UI/UX patterns that can be quickly implemented to create production-ready cloud management tools.</p>
               </div>
-
-              <h3>API Usage Patterns</h3>
-              <h4>Authentication Flow</h4>
-              <pre><code>1. User initiates login
-2. Redirect to Google OAuth 2.0 endpoint
-3. User grants permissions
-4. Receive authorization code
-5. Exchange code for access token
-6. Use token for API requests</code></pre>
-
-              <h4>Error Handling</h4>
-              <ul>
-                <li><strong>401 Unauthorized:</strong> Token expired, trigger re-authentication</li>
-                <li><strong>403 Forbidden:</strong> Insufficient permissions, show appropriate message</li>
-                <li><strong>404 Not Found:</strong> Resource doesn't exist, handle gracefully</li>
-                <li><strong>429 Rate Limited:</strong> Implement exponential backoff</li>
-                <li><strong>500+ Server Error:</strong> Fallback to cached data or mock responses</li>
-              </ul>
-
-              <h4>Rate Limiting</h4>
-              <p>The application implements the following strategies to handle API rate limits:</p>
-              <ul>
-                <li>Exponential backoff for retries</li>
-                <li>Request queuing and batching</li>
-                <li>Caching of frequently accessed data</li>
-                <li>Graceful fallback to mock data when needed</li>
-              </ul>
             </div>
-          </section>
+          </div>
+        </section>
 
-          <section id="configuration" class="doc-section">
-            <h2>
-              <mat-icon>settings</mat-icon>
-              Configuration
-            </h2>
-            <div class="section-content">
-              <h3>Environment Setup</h3>
-              <h4>Prerequisites</h4>
-              <ul>
-                <li>Node.js 16+ and npm</li>
-                <li>Angular CLI 15+</li>
-                <li>Google Cloud Project with billing enabled</li>
-                <li>Appropriate IAM permissions</li>
-              </ul>
+        <section id="user-guide" class="doc-section">
+          <h2>
+            <mat-icon>person</mat-icon>
+            User Guide
+          </h2>
+          <div class="section-content">
+            <h3>Getting Started</h3>
+            <ol>
+              <li><strong>Authentication:</strong> Sign in with your Google account that has access to Google Cloud Platform projects</li>
+              <li><strong>Project Selection:</strong> Choose your GCP project from the dropdown in the top navigation</li>
+              <li><strong>Navigation:</strong> Use the left sidebar to navigate between different modules</li>
+              <li><strong>Documentation:</strong> Access comprehensive documentation via the top-right documentation button</li>
+            </ol>
 
-              <h4>Required APIs</h4>
-              <p>Enable the following APIs in your Google Cloud project:</p>
-              <pre><code>gcloud services enable compute.googleapis.com
+            <h3>Key Features</h3>
+            <h4>VPC Management</h4>
+            <ul>
+              <li>View and manage Virtual Private Cloud networks</li>
+              <li>Configure subnets and routing</li>
+              <li>Monitor network topology with interactive visualizations</li>
+              <li>Analyze traffic flows between subnets</li>
+            </ul>
+
+            <h4>Connectivity Testing</h4>
+            <ul>
+              <li>Create and run network connectivity tests</li>
+              <li>Troubleshoot network connectivity issues</li>
+              <li>View detailed test results and recommendations</li>
+            </ul>
+
+            <h4>Security Management</h4>
+            <ul>
+              <li>Manage firewall rules and policies</li>
+              <li>Configure Cloud Armor security policies</li>
+              <li>Monitor security events and alerts</li>
+            </ul>
+
+            <h4>Load Balancing</h4>
+            <ul>
+              <li>Set up and configure Google Cloud Load Balancers</li>
+              <li>Monitor load balancer performance</li>
+              <li>Manage backend services and health checks</li>
+            </ul>
+          </div>
+        </section>
+
+        <section id="architecture" class="doc-section">
+          <h2>
+            <mat-icon>architecture</mat-icon>
+            Architecture
+          </h2>
+          <div class="section-content">
+            <h3>Technology Stack</h3>
+            <ul>
+              <li><strong>Frontend Framework:</strong> Angular 15+ with TypeScript</li>
+              <li><strong>UI Library:</strong> Angular Material Design</li>
+              <li><strong>State Management:</strong> RxJS Observables and Angular Services</li>
+              <li><strong>Authentication:</strong> Google OAuth 2.0</li>
+              <li><strong>API Integration:</strong> Direct HTTP calls to Google Cloud APIs</li>
+              <li><strong>Deployment:</strong> Google Cloud Run (containerized)</li>
+            </ul>
+
+            <h3>Application Structure</h3>
+            <p>CloudConsoleVibe follows a <strong>pure frontend architecture</strong> with no backend server. The application connects directly to Google Cloud APIs from the browser using OAuth 2.0 authentication.</p>
+            
+            <div class="architecture-diagram">
+              <div class="layer">
+                <h4>Presentation Layer</h4>
+                <p>Angular Components + Angular Material UI</p>
+                <div class="layer-details">
+                  <strong>Real Components:</strong>
+                  <ul>
+                    <li><code>VpcComponent</code> - VPC networks and topology visualization</li>
+                    <li><code>ConnectivityComponent</code> - Network connectivity testing</li>
+                    <li><code>SecurityComponent</code> - Firewall rules and security policies</li>
+                    <li><code>LoadBalancingComponent</code> - Load balancer management</li>
+                    <li><code>FlowAnalyzerComponent</code> - VPC Flow Logs analysis</li>
+                  </ul>
+                </div>
+              </div>
+              
+              <div class="layer">
+                <h4>Service Layer</h4>
+                <p>Angular Services for Business Logic + State Management</p>
+                <div class="layer-details">
+                  <strong>Core Angular Services:</strong>
+                  <ul>
+                    <li><code>AuthService</code> - OAuth 2.0 authentication management</li>
+                    <li><code>ProjectService</code> - GCP project selection and management</li>
+                    <li><code>VpcService</code> - VPC networks and subnets data</li>
+                    <li><code>ConnectivityService</code> - Network connectivity testing</li>
+                    <li><code>SecurityService</code> - Firewall rules and policies</li>
+                    <li><code>LoadBalancerService</code> - Load balancer configuration</li>
+                    <li><code>MonitoringService</code> - Network monitoring and metrics</li>
+                  </ul>
+                </div>
+              </div>
+              
+              <div class="layer">
+                <h4>API Integration Layer</h4>
+                <p>Direct HTTP Client Integration (No Backend Proxy)</p>
+                <div class="layer-details">
+                  <strong>Implementation Details:</strong>
+                  <ul>
+                    <li><strong>No Backend Server:</strong> Direct browser-to-GCP API communication</li>
+                    <li><strong>Angular HttpClient:</strong> Used for all API requests</li>
+                    <li><strong>CORS Handling:</strong> Relies on Google Cloud APIs CORS policies</li>
+                    <li><strong>Authentication:</strong> OAuth 2.0 Bearer tokens in request headers</li>
+                    <li><strong>Error Handling:</strong> Comprehensive error handling with fallback to mock data</li>
+                  </ul>
+                </div>
+              </div>
+              
+              <div class="layer">
+                <h4>Google Cloud Platform</h4>
+                <p>Official Google Cloud REST APIs</p>
+                <div class="layer-details">
+                  <strong>API Endpoints:</strong> compute.googleapis.com, networkmanagement.googleapis.com, monitoring.googleapis.com, iam.googleapis.com, etc.
+                </div>
+              </div>
+            </div>
+
+            <h3>Data Flow</h3>
+            <ol>
+              <li><strong>User Authentication:</strong> OAuth 2.0 flow with Google</li>
+              <li><strong>Project Selection:</strong> Fetch user's GCP projects via Cloud Resource Manager API</li>
+              <li><strong>Component Initialization:</strong> Angular components request data via services</li>
+              <li><strong>Service Layer:</strong> Angular services make HTTP requests to Google Cloud APIs</li>
+              <li><strong>API Response:</strong> Process and cache API responses</li>
+              <li><strong>UI Update:</strong> Update Angular components with received data</li>
+            </ol>
+          </div>
+        </section>
+
+        <section id="google-apis" class="doc-section">
+          <h2>
+            <mat-icon>api</mat-icon>
+            Google Cloud APIs Integration
+          </h2>
+          <div class="section-content">
+            <p>CloudConsoleVibe integrates with multiple Google Cloud APIs to provide comprehensive networking management capabilities. Each API is used for specific functionality within the application.</p>
+
+            <div class="api-cards-full">
+              <mat-card class="api-card-full" *ngFor="let api of googleApis">
+                <mat-card-header>
+                  <mat-icon mat-card-avatar [style.color]="api.color">{{ api.icon }}</mat-icon>
+                  <mat-card-title>{{ api.name }}</mat-card-title>
+                  <mat-card-subtitle>{{ api.baseUrl }}</mat-card-subtitle>
+                </mat-card-header>
+                <mat-card-content>
+                  <div class="api-content-grid">
+                    <div class="api-description">
+                      <p><strong>Purpose:</strong> {{ api.purpose }}</p>
+                      <p><strong>Used For:</strong> {{ api.usedFor }}</p>
+                      
+                      <h4>Key Features in Application:</h4>
+                      <ul>
+                        <li *ngFor="let feature of api.features">{{ feature }}</li>
+                      </ul>
+                    </div>
+                    
+                    <div class="api-endpoints">
+                      <h4>API Endpoints Used:</h4>
+                      <div class="endpoints-list">
+                        <div class="endpoint" *ngFor="let endpoint of api.endpoints">
+                          <div class="endpoint-header">
+                            <span class="http-method" [class]="endpoint.method.toLowerCase()">{{ endpoint.method }}</span>
+                            <code class="endpoint-path">{{ endpoint.path }}</code>
+                          </div>
+                          <p class="endpoint-description">{{ endpoint.description }}</p>
+                          <div class="endpoint-usage" *ngIf="endpoint.usage">
+                            <strong>Usage in App:</strong> {{ endpoint.usage }}
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div class="scopes-required" *ngIf="api.scopes">
+                        <h4>OAuth Scopes Required:</h4>
+                        <div class="scopes-list">
+                          <mat-chip *ngFor="let scope of api.scopes">{{ scope }}</mat-chip>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </mat-card-content>
+              </mat-card>
+            </div>
+          </div>
+        </section>
+
+        <section id="authentication" class="doc-section">
+          <h2>
+            <mat-icon>security</mat-icon>
+            Authentication
+          </h2>
+          <div class="section-content">
+            <h3>OAuth 2.0 Flow</h3>
+            <p>CloudConsoleVibe uses Google OAuth 2.0 for secure authentication and API access. The authentication process follows these steps:</p>
+            <ol>
+              <li><strong>User Login:</strong> User clicks "Sign in with Google" button</li>
+              <li><strong>OAuth Redirect:</strong> Application redirects to Google OAuth 2.0 authorization server</li>
+              <li><strong>User Consent:</strong> User grants permissions to access their Google Cloud resources</li>
+              <li><strong>Authorization Code:</strong> Google returns authorization code to application</li>
+              <li><strong>Token Exchange:</strong> Application exchanges code for access token and refresh token</li>
+              <li><strong>API Access:</strong> Access token is used for all subsequent Google Cloud API requests</li>
+            </ol>
+
+            <h3>Required OAuth Scopes</h3>
+            <p>The application requests the following OAuth scopes to access Google Cloud APIs:</p>
+            <ul>
+              <li><code>https://www.googleapis.com/auth/cloud-platform</code> - Full access to Google Cloud Platform resources</li>
+              <li><code>https://www.googleapis.com/auth/compute</code> - Compute Engine API access</li>
+              <li><code>https://www.googleapis.com/auth/monitoring</code> - Cloud Monitoring API access</li>
+              <li><code>https://www.googleapis.com/auth/logging.read</code> - Cloud Logging API read access</li>
+            </ul>
+
+            <h3>OAuth Configuration</h3>
+            <p>To configure OAuth 2.0 for your deployment:</p>
+            <ol>
+              <li>Go to Google Cloud Console > APIs & Services > Credentials</li>
+              <li>Create OAuth 2.0 Client ID for web application</li>
+              <li>Add authorized JavaScript origins (e.g., https://your-domain.com)</li>
+              <li>Add authorized redirect URIs (e.g., https://your-domain.com/auth/callback)</li>
+              <li>Configure OAuth consent screen with appropriate scopes</li>
+              <li>Update application configuration with client ID</li>
+            </ol>
+          </div>
+        </section>
+
+        <section id="deployment" class="doc-section">
+          <h2>
+            <mat-icon>cloud_upload</mat-icon>
+            Deployment
+          </h2>
+          <div class="section-content">
+            <h3>Deployment Architecture</h3>
+            <p>CloudConsoleVibe is deployed as a containerized application on Google Cloud Run, providing scalable and cost-effective hosting.</p>
+
+            <h3>Deployment Process</h3>
+            <ol>
+              <li><strong>Build:</strong> <code>ng build --configuration production</code> creates optimized build</li>
+              <li><strong>Containerize:</strong> Docker builds multi-stage container with Nginx serving static files</li>
+              <li><strong>Push:</strong> Container image pushed to Google Container Registry</li>
+              <li><strong>Deploy:</strong> Google Cloud Run deploys the container with automatic scaling</li>
+            </ol>
+
+            <h3>Infrastructure Components</h3>
+            <ul>
+              <li><strong>Google Cloud Run:</strong> Serverless container hosting</li>
+              <li><strong>Google Container Registry:</strong> Container image storage</li>
+              <li><strong>Nginx:</strong> Web server for serving Angular application</li>
+              <li><strong>Cloud Build (Optional):</strong> CI/CD pipeline for automated deployments</li>
+            </ul>
+
+            <h3>Environment Configuration</h3>
+            <p>Application configuration is managed through environment variables and runtime configuration:</p>
+            <ul>
+              <li><strong>OAuth Client ID:</strong> Configured via environment variables</li>
+              <li><strong>API Endpoints:</strong> Uses official Google Cloud API endpoints</li>
+              <li><strong>CORS Configuration:</strong> Relies on Google Cloud APIs' CORS policies</li>
+            </ul>
+
+            <h3>Required Google Cloud APIs</h3>
+            <p>Enable the following APIs in your Google Cloud project:</p>
+            <pre><code>gcloud services enable compute.googleapis.com
 gcloud services enable networkmanagement.googleapis.com
 gcloud services enable cloudresourcemanager.googleapis.com
 gcloud services enable iam.googleapis.com
-gcloud services enable dns.googleapis.com</code></pre>
+gcloud services enable dns.googleapis.com
+gcloud services enable networksecurity.googleapis.com
+gcloud services enable logging.googleapis.com
+gcloud services enable monitoring.googleapis.com</code></pre>
+          </div>
+        </section>
 
-              <h3>IAM Permissions</h3>
-              <p>Users need the following IAM roles or equivalent permissions:</p>
-              <ul>
-                <li><strong>Compute Network Viewer:</strong> View VPC networks and subnets</li>
-                <li><strong>Compute Security Admin:</strong> Manage firewall rules</li>
-                <li><strong>Network Management Admin:</strong> Create and run connectivity tests</li>
-                <li><strong>Load Balancer Admin:</strong> Configure load balancers</li>
-                <li><strong>DNS Administrator:</strong> Manage DNS zones and records</li>
-              </ul>
+        <section id="configuration" class="doc-section">
+          <h2>
+            <mat-icon>settings</mat-icon>
+            Configuration
+          </h2>
+          <div class="section-content">
+            <h3>Environment Setup</h3>
+            <h4>Prerequisites</h4>
+            <ul>
+              <li>Node.js 16+ and npm</li>
+              <li>Angular CLI 15+</li>
+              <li>Google Cloud Project with billing enabled</li>
+              <li>Docker (for containerized deployment)</li>
+            </ul>
 
-              <h3>OAuth Configuration</h3>
-              <p>Configure OAuth 2.0 credentials in Google Cloud Console:</p>
-              <ol>
-                <li>Go to APIs & Services > Credentials</li>
-                <li>Create OAuth 2.0 Client ID</li>
-                <li>Add authorized origins and redirect URIs</li>
-                <li>Configure consent screen</li>
-              </ol>
-            </div>
-          </section>
+            <h4>Local Development</h4>
+            <ol>
+              <li>Clone the repository: <code>git clone https://github.com/przemyslawsroka/CloudConsoleVibe.git</code></li>
+              <li>Install dependencies: <code>npm install</code></li>
+              <li>Configure OAuth client ID in environment files</li>
+              <li>Start development server: <code>ng serve</code></li>
+            </ol>
 
-          <section id="troubleshooting" class="doc-section">
-            <h2>
-              <mat-icon>build</mat-icon>
-              Troubleshooting
-            </h2>
-            <div class="section-content">
-              <h3>Common Issues</h3>
-              
-              <div class="troubleshoot-item">
-                <h4>Authentication Issues</h4>
-                <p><strong>Problem:</strong> Unable to sign in or authentication fails</p>
-                <p><strong>Solutions:</strong></p>
-                <ul>
-                  <li>Check OAuth 2.0 configuration in Google Cloud Console</li>
-                  <li>Verify authorized domains and redirect URIs</li>
-                  <li>Clear browser cookies and cache</li>
-                  <li>Ensure user has appropriate IAM permissions</li>
-                </ul>
-              </div>
+            <h3>IAM Permissions</h3>
+            <p>Users need the following IAM roles or equivalent permissions:</p>
+            <ul>
+              <li><strong>Compute Network Viewer:</strong> View VPC networks and subnets</li>
+              <li><strong>Compute Security Admin:</strong> Manage firewall rules and policies</li>
+              <li><strong>Network Management Admin:</strong> Create and run connectivity tests</li>
+              <li><strong>Load Balancer Admin:</strong> Configure load balancers and backend services</li>
+              <li><strong>DNS Administrator:</strong> Manage DNS zones and records</li>
+              <li><strong>Monitoring Viewer:</strong> View monitoring metrics and data</li>
+              <li><strong>Logging Viewer:</strong> Read VPC Flow Logs and other logging data</li>
+            </ul>
 
-              <div class="troubleshoot-item">
-                <h4>API Permission Errors</h4>
-                <p><strong>Problem:</strong> 403 Forbidden or insufficient permissions</p>
-                <p><strong>Solutions:</strong></p>
-                <ul>
-                  <li>Verify required APIs are enabled</li>
-                  <li>Check IAM roles and permissions</li>
-                  <li>Ensure service account has correct scopes</li>
-                  <li>Validate project billing is enabled</li>
-                </ul>
-              </div>
-
-              <div class="troubleshoot-item">
-                <h4>Connectivity Test Creation Fails</h4>
-                <p><strong>Problem:</strong> 400 Bad Request when creating tests</p>
-                <p><strong>Solutions:</strong></p>
-                <ul>
-                  <li>Verify source and destination endpoints exist</li>
-                  <li>Check network connectivity between regions</li>
-                  <li>Ensure Network Management API is enabled</li>
-                  <li>Validate test parameters and protocols</li>
-                </ul>
-              </div>
-
-              <h3>Debug Information</h3>
-              <p>Enable browser developer tools to see detailed API requests and responses. The application logs important events to the console for debugging purposes.</p>
-            </div>
-          </section>
-        </div>
+            <h3>OAuth 2.0 Configuration</h3>
+            <p>Set up OAuth 2.0 credentials in Google Cloud Console:</p>
+            <ol>
+              <li>Navigate to APIs & Services > Credentials</li>
+              <li>Create OAuth 2.0 Client ID for web application</li>
+              <li>Configure authorized JavaScript origins and redirect URIs</li>
+              <li>Set up OAuth consent screen with required scopes</li>
+              <li>Download client configuration and update application</li>
+            </ol>
+          </div>
+        </section>
       </div>
     </div>
   `,
   styles: [`
     .documentation-container {
+      width: 100vw;
+      max-width: none;
       margin: 0;
       padding: 0;
-      width: 100vw;
+      background: #fafafa;
       min-height: 100vh;
     }
-
-    .doc-header {
-      background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
+    
+    .documentation-header {
+      background: linear-gradient(135deg, #1976d2, #1565c0);
       color: white;
-      padding: 40px 24px;
+      padding: 60px 40px;
       text-align: center;
     }
-
-    .doc-header h1 {
+    
+    .documentation-header h1 {
+      font-size: 3rem;
       margin: 0 0 16px 0;
-      font-size: 32px;
       font-weight: 300;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 16px;
     }
-
-    .doc-header p {
-      margin: 0;
-      font-size: 16px;
+    
+    .documentation-header p {
+      font-size: 1.2rem;
       opacity: 0.9;
+      margin: 0;
     }
-
-    .doc-content {
-      display: flex;
-      min-height: calc(100vh - 200px);
-    }
-
+    
     .doc-nav {
-      width: 280px;
-      background: #f5f5f5;
-      border-right: 1px solid #e0e0e0;
+      background: white;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
       position: sticky;
       top: 0;
-      height: fit-content;
-      flex-shrink: 0;
+      z-index: 100;
     }
-
-    .doc-nav mat-list-item {
-      cursor: pointer;
-      transition: background-color 0.2s;
+    
+    .doc-nav ul {
+      display: flex;
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      justify-content: center;
+      max-width: 1200px;
+      margin: 0 auto;
     }
-
-    .doc-nav mat-list-item:hover {
-      background-color: #e3f2fd;
+    
+    .doc-nav li {
+      margin: 0;
     }
-
-    .doc-nav mat-list-item.active {
-      background-color: #bbdefb;
-      border-right: 3px solid #1976d2;
-    }
-
-    .doc-main {
-      flex: 1;
-      padding: 24px 32px;
-      overflow-y: auto;
-      max-height: calc(100vh - 200px);
-      max-width: calc(100vw - 280px);
-    }
-
-    .doc-section {
-      margin-bottom: 48px;
-    }
-
-    .doc-section h2 {
+    
+    .doc-nav a {
       display: flex;
       align-items: center;
-      gap: 12px;
+      padding: 16px 24px;
+      text-decoration: none;
+      color: #666;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    
+    .doc-nav a:hover {
+      background: #f5f5f5;
       color: #1976d2;
-      font-size: 28px;
-      font-weight: 400;
-      margin-bottom: 24px;
-      padding-bottom: 12px;
-      border-bottom: 2px solid #e0e0e0;
     }
-
-    .doc-section h3 {
-      color: #333;
+    
+    .doc-nav li.active a {
+      background: #1976d2;
+      color: white;
+    }
+    
+    .doc-nav mat-icon {
+      margin-right: 8px;
       font-size: 20px;
-      margin: 24px 0 16px 0;
     }
-
-    .doc-section h4 {
-      color: #555;
-      font-size: 16px;
-      margin: 16px 0 8px 0;
+    
+    .doc-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 40px;
     }
-
+    
+    .doc-section {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      margin-bottom: 40px;
+      overflow: hidden;
+    }
+    
+    .doc-section h2 {
+      background: #f8f9fa;
+      margin: 0;
+      padding: 24px 32px;
+      border-bottom: 1px solid #e0e0e0;
+      display: flex;
+      align-items: center;
+      font-size: 1.5rem;
+      color: #1976d2;
+    }
+    
+    .doc-section h2 mat-icon {
+      margin-right: 12px;
+      font-size: 28px;
+    }
+    
     .section-content {
-      line-height: 1.6;
-      color: #424242;
+      padding: 32px;
     }
-
-    .feature-grid {
+    
+    .modules-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 20px;
-      margin: 24px 0;
-    }
-
-    .feature-card {
-      height: 100%;
-    }
-
-    .guide-steps {
-      counter-reset: step-counter;
-    }
-
-    .guide-steps li {
-      counter-increment: step-counter;
-      margin-bottom: 24px;
-    }
-
-    .guide-steps li::marker {
-      content: counter(step-counter) ". ";
-      font-weight: bold;
-      color: #1976d2;
-    }
-
-    .tech-stack {
-      margin: 16px 0;
-    }
-
-    .architecture-diagram {
-      margin: 24px 0;
-    }
-
-    .layer {
-      text-align: center;
-      padding: 16px;
-      background: #f5f5f5;
-      border-radius: 8px;
-      margin: 8px 0;
-    }
-
-    .layer h4 {
-      margin: 0 0 8px 0;
-      color: #1976d2;
-    }
-
-    .arrow {
-      text-align: center;
-      font-size: 24px;
-      color: #666;
-      margin: 8px 0;
-    }
-
-    .api-cards {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
       gap: 24px;
       margin: 32px 0;
     }
-
-    .api-card {
+    
+    .module-card mat-card {
       height: 100%;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
-
-    .api-card mat-chip-set {
-      margin-top: 12px;
+    
+    .module-card mat-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
     }
-
-    .troubleshoot-item {
-      background: #f8f9fa;
+    
+    .module-features {
+      margin-top: 16px;
+    }
+    
+    .module-features mat-chip {
+      margin: 4px;
+      background: #e3f2fd;
+      color: #1976d2;
+    }
+    
+    .demo-notice {
+      background: #e8f5e8;
+      border: 1px solid #4caf50;
+      border-radius: 8px;
       padding: 20px;
+      margin: 32px 0;
+      display: flex;
+      align-items: flex-start;
+    }
+    
+    .demo-notice mat-icon {
+      color: #4caf50;
+      margin-right: 12px;
+      margin-top: 2px;
+    }
+    
+    .demo-notice h4 {
+      margin: 0 0 8px 0;
+      color: #2e7d32;
+    }
+    
+    .demo-notice p {
+      margin: 0;
+      color: #2e7d32;
+    }
+    
+    .architecture-diagram {
+      margin: 32px 0;
+    }
+    
+    .layer {
+      background: #f8f9fa;
+      border: 2px solid #e0e0e0;
       border-radius: 8px;
       margin: 16px 0;
-      border-left: 4px solid #ff9800;
+      padding: 24px;
+      position: relative;
     }
-
-    .troubleshoot-item h4 {
-      color: #ff9800;
-      margin-top: 0;
+    
+    .layer:not(:last-child)::after {
+      content: '↓';
+      position: absolute;
+      bottom: -24px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #1976d2;
+      color: white;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      font-weight: bold;
     }
-
-    pre {
-      background: #f5f5f5;
+    
+    .layer h4 {
+      color: #1976d2;
+      margin: 0 0 8px 0;
+      font-size: 1.2rem;
+    }
+    
+    .layer > p {
+      margin: 0 0 16px 0;
+      color: #666;
+      font-style: italic;
+    }
+    
+    .layer-details {
+      background: white;
       padding: 16px;
       border-radius: 4px;
       border-left: 4px solid #1976d2;
-      overflow-x: auto;
     }
-
+    
+    .layer-details strong {
+      color: #1976d2;
+    }
+    
+    .layer-details ul {
+      margin: 8px 0 0 0;
+    }
+    
+    .layer-details code {
+      background: #f5f5f5;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-family: 'JetBrains Mono', 'Courier New', monospace;
+      font-size: 0.9em;
+      color: #d32f2f;
+    }
+    
+    .api-cards-full {
+      display: flex;
+      flex-direction: column;
+      gap: 32px;
+      margin: 32px 0;
+    }
+    
+    .api-card-full {
+      width: 100%;
+    }
+    
+    .api-content-grid {
+      display: grid;
+      grid-template-columns: 1fr 2fr;
+      gap: 32px;
+      margin-top: 16px;
+    }
+    
+    .api-description h4,
+    .api-endpoints h4 {
+      color: #1976d2;
+      margin: 16px 0 12px 0;
+    }
+    
+    .endpoints-list {
+      margin: 16px 0;
+    }
+    
+    .endpoint {
+      background: #f8f9fa;
+      border: 1px solid #e0e0e0;
+      border-radius: 6px;
+      padding: 16px;
+      margin: 12px 0;
+    }
+    
+    .endpoint-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    
+    .http-method {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: bold;
+      text-transform: uppercase;
+      margin-right: 12px;
+      min-width: 50px;
+      text-align: center;
+    }
+    
+    .http-method.get { background: #4caf50; color: white; }
+    .http-method.post { background: #2196f3; color: white; }
+    .http-method.put { background: #ff9800; color: white; }
+    .http-method.delete { background: #f44336; color: white; }
+    
+    .endpoint-path {
+      background: #263238;
+      color: #4fc3f7;
+      padding: 6px 12px;
+      border-radius: 4px;
+      font-family: 'JetBrains Mono', 'Courier New', monospace;
+      font-size: 0.9em;
+      word-break: break-all;
+      flex: 1;
+    }
+    
+    .endpoint-description {
+      margin: 8px 0;
+      color: #666;
+    }
+    
+    .endpoint-usage {
+      background: #e3f2fd;
+      padding: 8px 12px;
+      border-radius: 4px;
+      margin-top: 8px;
+      font-size: 0.9em;
+    }
+    
+    .scopes-required {
+      margin-top: 24px;
+    }
+    
+    .scopes-list {
+      margin: 12px 0;
+    }
+    
+    .scopes-list mat-chip {
+      margin: 4px;
+      background: #fff3e0;
+      color: #e65100;
+      font-family: 'JetBrains Mono', 'Courier New', monospace;
+      font-size: 12px;
+    }
+    
+    pre {
+      background: #263238;
+      color: #4fc3f7;
+      padding: 16px;
+      border-radius: 6px;
+      overflow-x: auto;
+      font-family: 'JetBrains Mono', 'Courier New', monospace;
+    }
+    
     code {
       background: #f5f5f5;
       padding: 2px 6px;
       border-radius: 3px;
-      font-family: 'Courier New', monospace;
-    }
-
-    ul, ol {
-      padding-left: 24px;
-    }
-
-    li {
-      margin-bottom: 8px;
-    }
-
-    .endpoint-list {
-      margin-top: 12px;
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-      gap: 8px;
+      font-family: 'JetBrains Mono', 'Courier New', monospace;
+      font-size: 0.9em;
+      color: #d32f2f;
     }
     
-    .endpoint-list code {
-      display: block;
-      padding: 8px 12px;
-      background: #f8f9fa;
-      border-radius: 6px;
-      font-size: 13px;
-      border-left: 3px solid #1976d2;
-      font-family: 'JetBrains Mono', 'Courier New', monospace;
-      word-break: break-all;
-      white-space: pre-wrap;
-      line-height: 1.4;
-    }
-
-    /* Responsive adjustments */
-    @media (max-width: 1200px) {
-      .doc-content {
+    @media (max-width: 768px) {
+      .doc-nav ul {
         flex-direction: column;
       }
       
-      .doc-nav {
-        width: 100%;
-        position: relative;
+      .doc-nav a {
+        justify-content: center;
+        padding: 12px;
       }
       
-      .doc-main {
-        max-width: 100%;
-        padding: 24px;
+      .doc-content {
+        padding: 20px;
       }
       
-      .api-cards {
+      .modules-grid {
         grid-template-columns: 1fr;
       }
       
-      .endpoint-list {
+      .api-content-grid {
         grid-template-columns: 1fr;
+        gap: 24px;
+      }
+      
+      .documentation-header {
+        padding: 40px 20px;
+      }
+      
+      .documentation-header h1 {
+        font-size: 2rem;
       }
     }
   `]
 })
-export class DocumentationComponent {
+export class DocumentationComponent implements OnInit {
   activeSection = 'overview';
   
-  sections: DocumentationSection[] = [
+  sections = [
     { id: 'overview', title: 'Overview', icon: 'info' },
     { id: 'user-guide', title: 'User Guide', icon: 'person' },
     { id: 'architecture', title: 'Architecture', icon: 'architecture' },
-    { id: 'google-apis', title: 'Google APIs', icon: 'api' },
-    { id: 'configuration', title: 'Configuration', icon: 'settings' },
-    { id: 'troubleshooting', title: 'Troubleshooting', icon: 'build' }
+    { id: 'google-apis', title: 'Google Cloud APIs', icon: 'api' },
+    { id: 'authentication', title: 'Authentication', icon: 'security' },
+    { id: 'deployment', title: 'Deployment', icon: 'cloud_upload' },
+    { id: 'configuration', title: 'Configuration', icon: 'settings' }
   ];
+
+  applicationModules = [
+    {
+      title: 'VPC Management',
+      icon: 'cloud',
+      description: 'Manage Virtual Private Cloud networks, subnets, and routing with interactive topology visualization.',
+      features: ['Network Topology', 'Traffic Analysis', 'Subnet Management', 'Route Configuration']
+    },
+    {
+      title: 'Connectivity Testing',
+      icon: 'network_check',
+      description: 'Test and troubleshoot network connectivity between resources using Network Management API.',
+      features: ['Connectivity Tests', 'Path Analysis', 'Reachability Testing', 'Network Diagnostics']
+    },
+    {
+      title: 'Security Management',
+      icon: 'security',
+      description: 'Configure firewall rules, Cloud Armor policies, and network security settings.',
+      features: ['Firewall Rules', 'Security Policies', 'Cloud Armor', 'Network Security']
+    },
+    {
+      title: 'Load Balancing',
+      icon: 'balance',
+      description: 'Set up and manage Google Cloud Load Balancers with health checks and backend services.',
+      features: ['Load Balancer Config', 'Health Checks', 'Backend Services', 'Traffic Distribution']
+    },
+    {
+      title: 'Flow Analysis',
+      icon: 'analytics',
+      description: 'Analyze VPC Flow Logs for network traffic patterns, performance, and security insights.',
+      features: ['Flow Logs Analysis', 'Traffic Metrics', 'Latency Analysis', 'Real-time Queries']
+    }
+  ];
+
+  googleApis = [
+    {
+      name: 'Network Management API',
+      baseUrl: 'networkmanagement.googleapis.com',
+      icon: 'network_check',
+      color: '#1976d2',
+      purpose: 'Connectivity testing and network reachability analysis',
+      usedFor: 'Creating connectivity tests, analyzing network paths, VPC Flow Logs configuration',
+      features: [
+        'Create and manage connectivity tests between network endpoints',
+        'Analyze network paths and trace packet flows',
+        'Detect configuration issues and network bottlenecks',
+        'Live data plane testing for real network validation',
+        'VPC Flow Logs configuration and management'
+      ],
+      endpoints: [
+        {
+          method: 'GET',
+          path: '/v1/projects/{project}/locations/global/connectivityTests',
+          description: 'List all connectivity tests in the project',
+          usage: 'Load existing connectivity tests in the Connectivity Testing module'
+        },
+        {
+          method: 'POST',
+          path: '/v1/projects/{project}/locations/global/connectivityTests',
+          description: 'Create a new connectivity test',
+          usage: 'Create connectivity tests from the UI wizard'
+        },
+        {
+          method: 'POST',
+          path: '/v1/projects/{project}/locations/global/connectivityTests/{testId}:rerun',
+          description: 'Rerun an existing connectivity test',
+          usage: 'Rerun tests to check current network state'
+        },
+        {
+          method: 'DELETE',
+          path: '/v1/projects/{project}/locations/global/connectivityTests/{testId}',
+          description: 'Delete a connectivity test',
+          usage: 'Clean up old or unnecessary connectivity tests'
+        }
+      ],
+      scopes: ['https://www.googleapis.com/auth/cloud-platform']
+    },
+    {
+      name: 'Compute Engine API',
+      baseUrl: 'compute.googleapis.com',
+      icon: 'computer',
+      color: '#4285f4',
+      purpose: 'Virtual machine and network resource management, including Cloud Armor security policies',
+      usedFor: 'VPC networks, firewall rules, load balancers, IP addresses, Cloud Armor policies',
+      features: [
+        'VPC network and subnet management',
+        'Firewall rules creation and management',
+        'Load balancer configuration and monitoring',
+        'IP address reservation and management',
+        'Cloud Armor security policies (part of Compute Engine)',
+        'Instance and network interface details'
+      ],
+      endpoints: [
+        {
+          method: 'GET',
+          path: '/compute/v1/projects/{project}/global/networks',
+          description: 'List VPC networks in the project',
+          usage: 'Display VPC networks in topology view and network management'
+        },
+        {
+          method: 'GET',
+          path: '/compute/v1/projects/{project}/regions/{region}/subnetworks',
+          description: 'List subnets in a specific region',
+          usage: 'Show subnet details in topology visualization'
+        },
+        {
+          method: 'GET',
+          path: '/compute/v1/projects/{project}/global/firewalls',
+          description: 'List firewall rules in the project',
+          usage: 'Display and manage firewall rules in Security module'
+        },
+        {
+          method: 'POST',
+          path: '/compute/v1/projects/{project}/global/firewalls',
+          description: 'Create a new firewall rule',
+          usage: 'Create firewall rules through the security management interface'
+        },
+        {
+          method: 'DELETE',
+          path: '/compute/v1/projects/{project}/global/firewalls/{firewall}',
+          description: 'Delete a firewall rule',
+          usage: 'Remove firewall rules from the security interface'
+        },
+        {
+          method: 'GET',
+          path: '/compute/v1/projects/{project}/global/securityPolicies',
+          description: 'List Cloud Armor security policies',
+          usage: 'Display Cloud Armor policies in Security management module'
+        }
+      ],
+      scopes: ['https://www.googleapis.com/auth/cloud-platform', 'https://www.googleapis.com/auth/compute']
+    },
+    {
+      name: 'Identity and Access Management API',
+      baseUrl: 'iam.googleapis.com',
+      icon: 'account_circle',
+      color: '#34a853',
+      purpose: 'Authentication and authorization for Google Cloud resources',
+      usedFor: 'OAuth 2.0 authentication, permission validation, access token management',
+      features: [
+        'OAuth 2.0 token validation and refresh',
+        'Permission validation for API access',
+        'Service account management',
+        'Access token lifecycle management'
+      ],
+      endpoints: [
+        {
+          method: 'POST',
+          path: '/oauth2/v2/tokeninfo',
+          description: 'Validate OAuth 2.0 access tokens',
+          usage: 'Verify user authentication tokens for API access'
+        }
+      ],
+      scopes: ['https://www.googleapis.com/auth/cloud-platform']
+    },
+    {
+      name: 'Cloud Resource Manager API',
+      baseUrl: 'cloudresourcemanager.googleapis.com',
+      icon: 'folder',
+      color: '#fbbc04',
+      purpose: 'Project and resource organization management',
+      usedFor: 'Project listing, selection, and resource hierarchy management',
+      features: [
+        'List accessible projects for the authenticated user',
+        'Project metadata and billing information',
+        'Resource hierarchy management',
+        'Organization policies and constraints'
+      ],
+      endpoints: [
+        {
+          method: 'GET',
+          path: '/v1/projects',
+          description: 'List all projects accessible to the user',
+          usage: 'Populate project picker dropdown in the application header'
+        },
+        {
+          method: 'GET',
+          path: '/v1/projects/{projectId}',
+          description: 'Get specific project details',
+          usage: 'Fetch project information for selected project context'
+        }
+      ],
+      scopes: ['https://www.googleapis.com/auth/cloud-platform']
+    },
+    {
+      name: 'Cloud DNS API',
+      baseUrl: 'dns.googleapis.com',
+      icon: 'dns',
+      color: '#9c27b0',
+      purpose: 'DNS zone and record management for Google Cloud',
+      usedFor: 'DNS zones, record sets, DNSSEC configuration, private DNS zones',
+      features: [
+        'DNS zone configuration and management',
+        'Record set creation and modification',
+        'DNSSEC support and validation',
+        'Private DNS zones for VPC networks'
+      ],
+      endpoints: [
+        {
+          method: 'GET',
+          path: '/dns/v1/projects/{project}/managedZones',
+          description: 'List all managed DNS zones in the project',
+          usage: 'Display DNS zones in network management interface'
+        },
+        {
+          method: 'GET',
+          path: '/dns/v1/projects/{project}/managedZones/{zone}/rrsets',
+          description: 'List resource record sets in a DNS zone',
+          usage: 'Show DNS records for zone management'
+        }
+      ],
+      scopes: ['https://www.googleapis.com/auth/cloud-platform']
+    },
+    {
+      name: 'Network Security API',
+      baseUrl: 'networksecurity.googleapis.com',
+      icon: 'security',
+      color: '#f44336',
+      purpose: 'Advanced network security features and policies',
+      usedFor: 'TLS inspection policies, address groups, network security rule enforcement',
+      features: [
+        'TLS inspection policy management',
+        'Address group configuration for firewall rules',
+        'Network security rule enforcement',
+        'Certificate management for TLS inspection'
+      ],
+      endpoints: [
+        {
+          method: 'GET',
+          path: '/v1/projects/{project}/locations/global/tlsInspectionPolicies',
+          description: 'List TLS inspection policies',
+          usage: 'Display TLS inspection policies in security module'
+        },
+        {
+          method: 'GET',
+          path: '/v1/projects/{project}/locations/{location}/addressGroups',
+          description: 'List address groups in a location',
+          usage: 'Show address groups for firewall rule configuration'
+        }
+      ],
+      scopes: ['https://www.googleapis.com/auth/cloud-platform']
+    },
+    {
+      name: 'Cloud Logging API',
+      baseUrl: 'logging.googleapis.com',
+      icon: 'analytics',
+      color: '#00bcd4',
+      purpose: 'VPC Flow Logs analysis and network monitoring',
+      usedFor: 'VPC Flow Logs querying, network traffic analysis, log-based metrics',
+      features: [
+        'VPC Flow Logs querying with advanced filters',
+        'Network traffic analysis and visualization',
+        'Log-based metrics for network monitoring',
+        'Real-time log streaming and analysis'
+      ],
+      endpoints: [
+        {
+          method: 'POST',
+          path: '/v2/entries:list',
+          description: 'Query log entries with filters',
+          usage: 'Fetch VPC Flow Logs for traffic analysis in Flow Analyzer'
+        },
+        {
+          method: 'POST',
+          path: '/v2/projects/{project}/logs:list',
+          description: 'List available logs in the project',
+          usage: 'Discover available VPC Flow Logs for analysis'
+        }
+      ],
+      scopes: ['https://www.googleapis.com/auth/cloud-platform', 'https://www.googleapis.com/auth/logging.read']
+    },
+    {
+      name: 'Cloud Monitoring API',
+      baseUrl: 'monitoring.googleapis.com',
+      icon: 'trending_up',
+      color: '#ff9800',
+      purpose: 'Network performance monitoring and metrics collection',
+      usedFor: 'Network traffic metrics, performance monitoring, time series data analysis',
+      features: [
+        'Network performance metrics collection',
+        'Custom dashboards and alerting',
+        'Time series data analysis for traffic patterns',
+        'PromQL queries for advanced metric analysis'
+      ],
+      endpoints: [
+        {
+          method: 'POST',
+          path: '/v3/projects/{project}/timeSeries:query',
+          description: 'Query time series data using PromQL',
+          usage: 'Fetch network traffic metrics for topology visualization'
+        },
+        {
+          method: 'GET',
+          path: '/v3/projects/{project}/metricDescriptors',
+          description: 'List available metric descriptors',
+          usage: 'Discover available network metrics for monitoring'
+        }
+      ],
+      scopes: ['https://www.googleapis.com/auth/cloud-platform', 'https://www.googleapis.com/auth/monitoring.read']
+    }
+  ];
+
+  ngOnInit() {
+    // Component initialization
+  }
 
   scrollToSection(sectionId: string) {
     this.activeSection = sectionId;
