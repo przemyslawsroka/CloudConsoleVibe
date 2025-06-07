@@ -310,6 +310,7 @@ export class AppComponent implements OnInit {
       expanded: true,
       items: [
         { name: 'Load balancing', route: '/load-balancing', icon: 'balance' },
+        { name: 'Cloud CDN', route: '/cloud-cdn', icon: 'cached' },
         { name: 'Cloud DNS', route: '/dns-management', icon: 'dns' }
       ]
     },

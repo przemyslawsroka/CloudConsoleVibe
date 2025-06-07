@@ -32,6 +32,7 @@ import { TextFieldModule } from '@angular/cdk/text-field';
 import { MatSortModule } from '@angular/material/sort';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatDividerModule } from '@angular/material/divider';
+import { MatPaginatorModule } from '@angular/material/paginator';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -88,6 +89,7 @@ import { CreateWebPathDialogComponent } from './components/cloud-network-insight
 import { CreateMonitoringPolicyDialogComponent } from './components/cloud-network-insights/create-monitoring-policy-dialog.component';
 import { AppNetaService } from './services/appneta.service';
 import { CNRComponent } from './components/cnr/cnr.component';
+import { CloudCdnComponent } from './components/cloud-cdn/cloud-cdn.component';
 
 @NgModule({
   declarations: [
@@ -138,7 +140,8 @@ import { CNRComponent } from './components/cnr/cnr.component';
     CreateNetworkPathDialogComponent,
     CreateWebPathDialogComponent,
     CreateMonitoringPolicyDialogComponent,
-    CNRComponent
+    CNRComponent,
+    CloudCdnComponent
   ],
   imports: [
     BrowserModule,
@@ -174,7 +177,8 @@ import { CNRComponent } from './components/cnr/cnr.component';
     TextFieldModule,
     MatSortModule,
     MatProgressBarModule,
-    MatDividerModule
+    MatDividerModule,
+    MatPaginatorModule
   ],
   providers: [AuthService, VpcService, TPPIService, PacketMirroringService, NetworkHealthMonitorService, AppNetaService],
   bootstrap: [AppComponent]
