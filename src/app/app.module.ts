@@ -90,6 +90,7 @@ import { CreateMonitoringPolicyDialogComponent } from './components/cloud-networ
 import { AppNetaService } from './services/appneta.service';
 import { CNRComponent } from './components/cnr/cnr.component';
 import { CloudCdnComponent } from './components/cloud-cdn/cloud-cdn.component';
+import { CloudCdnDetailsComponent } from './components/cloud-cdn-details/cloud-cdn-details.component';
 
 @NgModule({
   declarations: [
@@ -141,7 +142,8 @@ import { CloudCdnComponent } from './components/cloud-cdn/cloud-cdn.component';
     CreateWebPathDialogComponent,
     CreateMonitoringPolicyDialogComponent,
     CNRComponent,
-    CloudCdnComponent
+    CloudCdnComponent,
+    CloudCdnDetailsComponent
   ],
   imports: [
     BrowserModule,

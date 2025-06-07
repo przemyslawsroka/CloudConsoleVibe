@@ -30,6 +30,7 @@ import { NetworkHealthMonitorDetailsComponent } from './components/network-healt
 import { CloudNetworkInsightsComponent } from './components/cloud-network-insights/cloud-network-insights.component';
 import { CNRComponent } from './components/cnr/cnr.component';
 import { CloudCdnComponent } from './components/cloud-cdn/cloud-cdn.component';
+import { CloudCdnDetailsComponent } from './components/cloud-cdn-details/cloud-cdn-details.component';
 
 const routes: Routes = [
   { path: '', redirectTo: '/vpc', pathMatch: 'full' },
@@ -74,6 +75,7 @@ const routes: Routes = [
   { path: 'load-balancing/create', component: CreateLoadBalancerComponent, canActivate: [AuthGuard] },
   { path: 'load-balancing/configure', component: LoadBalancerConfigureComponent, canActivate: [AuthGuard] },
   { path: 'cloud-cdn', component: CloudCdnComponent, canActivate: [AuthGuard] },
+  { path: 'cloud-cdn/:name', component: CloudCdnDetailsComponent, canActivate: [AuthGuard] },
   { path: 'cloud-network-insights', component: CloudNetworkInsightsComponent, canActivate: [AuthGuard] },
   { path: 'cnr', component: CNRComponent, canActivate: [AuthGuard] },
   {

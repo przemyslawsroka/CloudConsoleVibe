@@ -1,17 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { SelectionModel } from '@angular/cdk/collections';
-
-export interface CdnOrigin {
-  id: string;
-  name: string;
-  cacheMode: string;
-  associatedLoadBalancers: string[];
-  cacheHitRatio: string;
-  description?: string;
-  bucketName?: string;
-  status: 'ACTIVE' | 'INACTIVE' | 'PENDING';
-}
+import { Router } from '@angular/router';
+import { CloudCdnService, CdnOrigin } from '../../services/cloud-cdn.service';
 
 @Component({
   selector: 'app-cloud-cdn',
@@ -52,7 +43,13 @@ export interface CdnOrigin {
         </div>
       </div>
 
-      <div class="table-container">
+      <!-- Loading State -->
+      <div *ngIf="loading" class="loading-container">
+        <mat-spinner></mat-spinner>
+        <p>Loading CDN origins...</p>
+      </div>
+
+      <div class="table-container" *ngIf="!loading">
         <table mat-table [dataSource]="filteredOrigins" class="origins-table" multiTemplateDataRows>
           
           <!-- Checkbox Column -->
@@ -149,7 +146,7 @@ export interface CdnOrigin {
           </tr>
         </table>
 
-        <div class="no-data" *ngIf="filteredOrigins.length === 0">
+        <div class="no-data" *ngIf="filteredOrigins.length === 0 && !loading">
           <mat-icon class="no-data-icon">cloud_off</mat-icon>
           <h3>No CDN origins found</h3>
           <p>Get started by adding your first CDN origin.</p>
@@ -160,7 +157,7 @@ export interface CdnOrigin {
         </div>
       </div>
 
-      <div class="table-footer" *ngIf="filteredOrigins.length > 0">
+      <div class="table-footer" *ngIf="filteredOrigins.length > 0 && !loading">
         <div class="selection-info">
           {{ selection.selected.length }} of {{ filteredOrigins.length }} selected
         </div>
@@ -289,6 +286,23 @@ export interface CdnOrigin {
     .filter-info {
       color: #5f6368;
       font-size: 14px;
+    }
+
+    .loading-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 48px 24px;
+      text-align: center;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .loading-container p {
+      margin-top: 16px;
+      color: #5f6368;
     }
 
     .table-container {
@@ -549,57 +563,19 @@ export interface CdnOrigin {
 export class CloudCdnComponent implements OnInit {
   displayedColumns: string[] = ['select', 'originName', 'cacheMode', 'loadBalancers', 'cacheHitRatio', 'actions'];
   
-  origins: CdnOrigin[] = [
-    {
-      id: '1',
-      name: 'browse-backends',
-      cacheMode: 'Use origin headers',
-      associatedLoadBalancers: ['shopping-site-lb'],
-      cacheHitRatio: 'No data',
-      status: 'ACTIVE'
-    },
-    {
-      id: '2',
-      name: 'cart-backends',
-      cacheMode: 'Use origin headers',
-      associatedLoadBalancers: ['shopping-site-lb'],
-      cacheHitRatio: 'No data',
-      status: 'ACTIVE'
-    },
-    {
-      id: '3',
-      name: 'checkout-backends',
-      cacheMode: 'Use origin headers',
-      associatedLoadBalancers: ['shopping-site-lb'],
-      cacheHitRatio: 'No data',
-      status: 'ACTIVE'
-    },
-    {
-      id: '4',
-      name: 'feeds-backends',
-      cacheMode: 'Use origin headers',
-      associatedLoadBalancers: ['shopping-site-lb'],
-      cacheHitRatio: 'No data',
-      status: 'ACTIVE'
-    },
-    {
-      id: '5',
-      name: 'test-https',
-      cacheMode: 'Use origin headers',
-      associatedLoadBalancers: ['shopping-site-lb'],
-      cacheHitRatio: 'No data',
-      status: 'ACTIVE'
-    }
-  ];
-
+  origins: CdnOrigin[] = [];
   filteredOrigins: CdnOrigin[] = [];
   selection = new SelectionModel<CdnOrigin>(true, []);
   filterValue = '';
   showAddOriginDialog = false;
   originForm: FormGroup;
+  loading = true;
 
-  constructor(private fb: FormBuilder) {
-    this.filteredOrigins = [...this.origins];
+  constructor(
+    private fb: FormBuilder,
+    private router: Router,
+    private cdnService: CloudCdnService
+  ) {
     this.originForm = this.fb.group({
       name: ['', [Validators.required, Validators.pattern(/^[a-z0-9-]+$/)]],
       description: [''],
@@ -609,7 +585,22 @@ export class CloudCdnComponent implements OnInit {
   }
 
   ngOnInit() {
-    // Component initialization
+    this.loadOrigins();
+  }
+
+  loadOrigins() {
+    this.loading = true;
+    this.cdnService.getCdnOrigins().subscribe({
+      next: (origins) => {
+        this.origins = origins;
+        this.filteredOrigins = [...origins];
+        this.loading = false;
+      },
+      error: (error) => {
+        console.error('Error loading CDN origins:', error);
+        this.loading = false;
+      }
+    });
   }
 
   applyFilter() {
@@ -660,7 +651,7 @@ export class CloudCdnComponent implements OnInit {
   }
 
   refresh() {
-    console.log('Refreshing CDN origins...');
+    this.loadOrigins();
   }
 
   removeSelected() {
@@ -671,11 +662,11 @@ export class CloudCdnComponent implements OnInit {
   }
 
   viewOriginDetails(origin: CdnOrigin) {
-    console.log('Viewing origin details:', origin);
+    this.router.navigate(['/cloud-cdn', origin.name]);
   }
 
   viewLoadBalancer(loadBalancer: string) {
-    console.log('Viewing load balancer:', loadBalancer);
+    this.router.navigate(['/load-balancing', loadBalancer]);
   }
 
   editOrigin(origin: CdnOrigin) {
