@@ -62,6 +62,11 @@ export class IpAddressService {
   }
 
   getIpAddresses(projectId: string): Observable<IpAddress[]> {
+    // Return enhanced mock data in demo mode
+    if (this.authService.isDemoMode()) {
+      return this.getDemoMockData();
+    }
+
     if (!projectId || projectId === 'mock-project') {
       // Return mock data if no project ID
       return this.getMockData();
@@ -80,7 +85,7 @@ export class IpAddressService {
       catchError(error => {
         console.error('Error fetching IP addresses from API:', error);
         // Fallback to mock data on error
-        return this.getMockData();
+        return this.getDemoMockData();
       })
     );
   }
@@ -305,7 +310,195 @@ export class IpAddressService {
     return of(mockData);
   }
 
+  private getDemoMockData(): Observable<IpAddress[]> {
+    const demoData: IpAddress[] = [
+      // External Static IPs
+      {
+        id: '1',
+        name: 'prod-load-balancer-ip',
+        address: '34.132.159.109',
+        accessType: 'External',
+        region: 'us-central1',
+        type: 'Static',
+        version: 'IPv4',
+        inUseBy: 'Load balancer prod-lb-frontend'
+      },
+      {
+        id: '2',
+        name: 'prod-web-service-ip',
+        address: '34.71.131.42',
+        accessType: 'External',
+        region: 'us-central1',
+        type: 'Static',
+        version: 'IPv4',
+        inUseBy: 'Forwarding rule web-service-frontend'
+      },
+      {
+        id: '3',
+        name: 'staging-app-ip',
+        address: '35.241.59.73',
+        accessType: 'External',
+        region: 'us-central1',
+        type: 'Static',
+        version: 'IPv4',
+        inUseBy: 'VM instance staging-app-server'
+      },
+      {
+        id: '4',
+        name: 'dev-test-ip',
+        address: '35.208.158.96',
+        accessType: 'External',
+        region: 'us-west1',
+        type: 'Static',
+        version: 'IPv4',
+        inUseBy: undefined
+      },
+      // Production VPC Internal IPs
+      {
+        id: '5',
+        address: '10.0.1.10',
+        accessType: 'Internal',
+        region: 'us-central1',
+        type: 'Ephemeral',
+        version: 'IPv4',
+        inUseBy: 'VM instance prod-web-server-01 (Zone us-central1-a)',
+        subnetwork: 'prod-us-central1',
+        vpcNetwork: 'production-vpc'
+      },
+      {
+        id: '6',
+        address: '10.0.1.11',
+        accessType: 'Internal',
+        region: 'us-central1',
+        type: 'Ephemeral',
+        version: 'IPv4',
+        inUseBy: 'VM instance prod-web-server-02 (Zone us-central1-b)',
+        subnetwork: 'prod-us-central1',
+        vpcNetwork: 'production-vpc'
+      },
+      {
+        id: '7',
+        address: '10.0.2.20',
+        accessType: 'Internal',
+        region: 'us-east1',
+        type: 'Ephemeral',
+        version: 'IPv4',
+        inUseBy: 'VM instance prod-db-server-01 (Zone us-east1-a)',
+        subnetwork: 'prod-us-east1',
+        vpcNetwork: 'production-vpc'
+      },
+      {
+        id: '8',
+        name: 'prod-db-static-ip',
+        address: '10.0.2.100',
+        accessType: 'Internal',
+        region: 'us-east1',
+        type: 'Static',
+        version: 'IPv4',
+        inUseBy: 'Cloud SQL instance prod-database',
+        subnetwork: 'prod-us-east1',
+        vpcNetwork: 'production-vpc'
+      },
+      // Development VPC Internal IPs
+      {
+        id: '9',
+        address: '10.1.0.10',
+        accessType: 'Internal',
+        region: 'us-west1',
+        type: 'Ephemeral',
+        version: 'IPv4',
+        inUseBy: 'VM instance dev-web-server (Zone us-west1-a)',
+        subnetwork: 'dev-us-west1',
+        vpcNetwork: 'development-vpc'
+      },
+      {
+        id: '10',
+        address: '10.1.0.20',
+        accessType: 'Internal',
+        region: 'us-west1',
+        type: 'Ephemeral',
+        version: 'IPv4',
+        inUseBy: 'VM instance dev-api-server (Zone us-west1-b)',
+        subnetwork: 'dev-us-west1',
+        vpcNetwork: 'development-vpc'
+      },
+      // Staging VPC Internal IPs
+      {
+        id: '11',
+        address: '10.2.0.15',
+        accessType: 'Internal',
+        region: 'us-central1',
+        type: 'Ephemeral',
+        version: 'IPv4',
+        inUseBy: 'VM instance staging-app-server (Zone us-central1-c)',
+        subnetwork: 'staging-us-central1',
+        vpcNetwork: 'staging-vpc'
+      },
+      {
+        id: '12',
+        name: 'staging-lb-internal-ip',
+        address: '10.2.0.50',
+        accessType: 'Internal',
+        region: 'us-central1',
+        type: 'Static',
+        version: 'IPv4',
+        inUseBy: 'Internal load balancer staging-internal-lb',
+        subnetwork: 'staging-us-central1',
+        vpcNetwork: 'staging-vpc'
+      },
+      // IPv6 addresses
+      {
+        id: '13',
+        name: 'prod-ipv6-external',
+        address: '2001:db8:85a3::8a2e:370:7334',
+        accessType: 'External',
+        region: 'us-central1',
+        type: 'Static',
+        version: 'IPv6',
+        inUseBy: 'VM instance prod-ipv6-server'
+      },
+      // Unused/Available IPs
+      {
+        id: '14',
+        name: 'reserved-backup-ip',
+        address: '34.123.45.67',
+        accessType: 'External',
+        region: 'us-central1',
+        type: 'Static',
+        version: 'IPv4',
+        inUseBy: undefined
+      },
+      {
+        id: '15',
+        name: 'future-expansion-ip',
+        address: '35.199.88.123',
+        accessType: 'External',
+        region: 'us-east1',
+        type: 'Static',
+        version: 'IPv4',
+        inUseBy: undefined
+      }
+    ];
+
+    console.log('🎭 Serving enhanced demo IP addresses');
+    return of(demoData);
+  }
+
   reserveExternalStaticIp(projectId: string, data: any): Observable<IpAddress> {
+    if (this.authService.isDemoMode()) {
+      console.log('🎭 Demo mode: Simulating external static IP reservation');
+      const newIp: IpAddress = {
+        id: Date.now().toString(),
+        name: data.name,
+        address: `34.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}`,
+        accessType: 'External',
+        region: data.region,
+        type: 'Static',
+        version: 'IPv4'
+      };
+      return of(newIp);
+    }
+
     if (!projectId || projectId === 'mock-project') {
       // Mock implementation
       const newIp: IpAddress = {
@@ -336,6 +529,22 @@ export class IpAddressService {
   }
 
   reserveInternalStaticIp(projectId: string, data: any): Observable<IpAddress> {
+    if (this.authService.isDemoMode()) {
+      console.log('🎭 Demo mode: Simulating internal static IP reservation');
+      const newIp: IpAddress = {
+        id: Date.now().toString(),
+        name: data.name,
+        address: `10.${Math.floor(Math.random() * 3)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}`,
+        accessType: 'Internal',
+        region: data.region,
+        type: 'Static',
+        version: 'IPv4',
+        subnetwork: data.subnetwork,
+        vpcNetwork: data.vpcNetwork
+      };
+      return of(newIp);
+    }
+
     if (!projectId || projectId === 'mock-project') {
       // Mock implementation
       const newIp: IpAddress = {
@@ -368,6 +577,11 @@ export class IpAddressService {
   }
 
   releaseStaticIp(projectId: string, ipAddress: IpAddress): Observable<any> {
+    if (this.authService.isDemoMode()) {
+      console.log('🎭 Demo mode: Simulating static IP release');
+      return of({ success: true });
+    }
+
     if (!projectId || projectId === 'mock-project') {
       return of({ success: true });
     }

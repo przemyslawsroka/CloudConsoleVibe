@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, forkJoin, map, of, switchMap } from 'rxjs';
+import { Observable, forkJoin, map, of, switchMap, catchError } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { AuthService } from './auth.service';
 
@@ -71,13 +71,27 @@ export class VpcService {
   }
 
   getVpcNetworks(projectId: string): Observable<VpcNetwork[]> {
+    // Return mock data in demo mode
+    if (this.authService.isDemoMode()) {
+      return this.getMockVpcNetworks();
+    }
+
     const url = `${this.baseUrl}/projects/${projectId}/global/networks`;
     return this.http.get<{ items: VpcNetwork[] }>(url, { headers: this.getHeaders() }).pipe(
-      map(response => response.items || [])
+      map(response => response.items || []),
+      catchError(error => {
+        console.warn('Failed to load VPC networks, using mock data:', error);
+        return this.getMockVpcNetworks();
+      })
     );
   }
 
   getVpcNetwork(projectId: string, networkName: string): Observable<VpcNetwork> {
+    // Return mock data in demo mode
+    if (this.authService.isDemoMode()) {
+      return this.getMockVpcNetwork(networkName);
+    }
+
     const url = `${this.baseUrl}/projects/${projectId}/global/networks/${networkName}`;
     return this.http.get<VpcNetwork>(url, { headers: this.getHeaders() }).pipe(
       switchMap(vpc => {
@@ -94,15 +108,202 @@ export class VpcService {
           );
         }
         return of(vpc);
+      }),
+      catchError(error => {
+        console.warn('Failed to load VPC network, using mock data:', error);
+        return this.getMockVpcNetwork(networkName);
       })
     );
   }
 
   getRoutes(projectId: string): Observable<Route[]> {
+    // Return mock data in demo mode
+    if (this.authService.isDemoMode()) {
+      return this.getMockRoutes();
+    }
+
     const url = `${this.baseUrl}/projects/${projectId}/global/routes`;
     return this.http.get<{ items: Route[] }>(url, { headers: this.getHeaders() }).pipe(
-      map(response => response.items || [])
+      map(response => response.items || []),
+      catchError(error => {
+        console.warn('Failed to load routes, using mock data:', error);
+        return this.getMockRoutes();
+      })
     );
+  }
+
+  getFlowLogs(projectId: string, location: string = 'global'): Observable<any[]> {
+    // Return mock data in demo mode
+    if (this.authService.isDemoMode()) {
+      return this.getMockFlowLogs();
+    }
+
+    const url = `https://networkmanagement.googleapis.com/v1/projects/${projectId}/locations/${location}/vpcFlowLogsConfigs`;
+    return this.http.get<{ vpcFlowLogsConfigs: any[] }>(url, { headers: this.getHeaders() }).pipe(
+      map(response => response.vpcFlowLogsConfigs || []),
+      catchError(error => {
+        console.warn('Failed to load flow logs, using mock data:', error);
+        return this.getMockFlowLogs();
+      })
+    );
+  }
+
+  private getMockVpcNetworks(): Observable<VpcNetwork[]> {
+    const mockNetworks: VpcNetwork[] = [
+      {
+        id: '1234567890123456789',
+        name: 'production-vpc',
+        description: 'Production environment VPC network',
+        selfLink: 'https://www.googleapis.com/compute/v1/projects/demo-project/global/networks/production-vpc',
+        autoCreateSubnetworks: false,
+        creationTimestamp: '2024-01-15T10:30:00.000-08:00',
+        subnetworks: [
+          'https://www.googleapis.com/compute/v1/projects/demo-project/regions/us-central1/subnetworks/prod-us-central1',
+          'https://www.googleapis.com/compute/v1/projects/demo-project/regions/us-east1/subnetworks/prod-us-east1'
+        ],
+        routingConfig: {
+          routingMode: 'REGIONAL'
+        },
+        subnetDetails: [
+          {
+            name: 'prod-us-central1',
+            region: 'us-central1',
+            ipCidrRange: '10.0.1.0/24',
+            gatewayAddress: '10.0.1.1',
+            selfLink: 'https://www.googleapis.com/compute/v1/projects/demo-project/regions/us-central1/subnetworks/prod-us-central1'
+          },
+          {
+            name: 'prod-us-east1',
+            region: 'us-east1',
+            ipCidrRange: '10.0.2.0/24',
+            gatewayAddress: '10.0.2.1',
+            selfLink: 'https://www.googleapis.com/compute/v1/projects/demo-project/regions/us-east1/subnetworks/prod-us-east1'
+          }
+        ]
+      },
+      {
+        id: '2345678901234567890',
+        name: 'development-vpc',
+        description: 'Development and testing environment',
+        selfLink: 'https://www.googleapis.com/compute/v1/projects/demo-project/global/networks/development-vpc',
+        autoCreateSubnetworks: false,
+        creationTimestamp: '2024-02-01T14:20:00.000-08:00',
+        subnetworks: [
+          'https://www.googleapis.com/compute/v1/projects/demo-project/regions/us-west1/subnetworks/dev-us-west1'
+        ],
+        routingConfig: {
+          routingMode: 'REGIONAL'
+        },
+        subnetDetails: [
+          {
+            name: 'dev-us-west1',
+            region: 'us-west1',
+            ipCidrRange: '10.1.0.0/16',
+            gatewayAddress: '10.1.0.1',
+            selfLink: 'https://www.googleapis.com/compute/v1/projects/demo-project/regions/us-west1/subnetworks/dev-us-west1'
+          }
+        ]
+      },
+      {
+        id: '3456789012345678901',
+        name: 'staging-vpc',
+        description: 'Staging environment for pre-production testing',
+        selfLink: 'https://www.googleapis.com/compute/v1/projects/demo-project/global/networks/staging-vpc',
+        autoCreateSubnetworks: false,
+        creationTimestamp: '2024-02-15T09:45:00.000-08:00',
+        subnetworks: [
+          'https://www.googleapis.com/compute/v1/projects/demo-project/regions/us-central1/subnetworks/staging-us-central1'
+        ],
+        routingConfig: {
+          routingMode: 'REGIONAL'
+        },
+        subnetDetails: [
+          {
+            name: 'staging-us-central1',
+            region: 'us-central1',
+            ipCidrRange: '10.2.0.0/20',
+            gatewayAddress: '10.2.0.1',
+            selfLink: 'https://www.googleapis.com/compute/v1/projects/demo-project/regions/us-central1/subnetworks/staging-us-central1'
+          }
+        ]
+      }
+    ];
+
+    console.log('🎭 Serving mock VPC networks for demo');
+    return of(mockNetworks);
+  }
+
+  private getMockVpcNetwork(networkName: string): Observable<VpcNetwork> {
+    return this.getMockVpcNetworks().pipe(
+      map(networks => networks.find(n => n.name === networkName) || networks[0])
+    );
+  }
+
+  private getMockRoutes(): Observable<Route[]> {
+    const mockRoutes: Route[] = [
+      {
+        id: '1111111111111111111',
+        name: 'default-route-internet',
+        description: 'Default route to internet gateway',
+        network: 'production-vpc',
+        destRange: '0.0.0.0/0',
+        priority: 1000,
+        nextHopGateway: 'default-internet-gateway',
+        selfLink: 'https://www.googleapis.com/compute/v1/projects/demo-project/global/routes/default-route-internet',
+        tags: ['production', 'internet']
+      },
+      {
+        id: '2222222222222222222',
+        name: 'internal-route-prod',
+        description: 'Internal routing for production subnets',
+        network: 'production-vpc',
+        destRange: '10.0.0.0/16',
+        priority: 100,
+        nextHopNetwork: 'production-vpc',
+        selfLink: 'https://www.googleapis.com/compute/v1/projects/demo-project/global/routes/internal-route-prod',
+        tags: ['production', 'internal']
+      },
+      {
+        id: '3333333333333333333',
+        name: 'dev-internet-route',
+        description: 'Development environment internet access',
+        network: 'development-vpc',
+        destRange: '0.0.0.0/0',
+        priority: 1000,
+        nextHopGateway: 'default-internet-gateway',
+        selfLink: 'https://www.googleapis.com/compute/v1/projects/demo-project/global/routes/dev-internet-route',
+        tags: ['development']
+      }
+    ];
+
+    console.log('🎭 Serving mock routes for demo');
+    return of(mockRoutes);
+  }
+
+  private getMockFlowLogs(): Observable<any[]> {
+    const mockFlowLogs = [
+      {
+        name: 'projects/demo-project/locations/global/vpcFlowLogsConfigs/production-flow-logs',
+        network: 'production-vpc',
+        enabled: true,
+        aggregationInterval: 'INTERVAL_5_SEC',
+        flowSampling: 0.5,
+        metadata: ['INCLUDE_ALL_METADATA'],
+        description: 'Production VPC flow logs for security monitoring'
+      },
+      {
+        name: 'projects/demo-project/locations/global/vpcFlowLogsConfigs/dev-flow-logs',
+        network: 'development-vpc',
+        enabled: false,
+        aggregationInterval: 'INTERVAL_30_SEC',
+        flowSampling: 0.1,
+        metadata: ['INCLUDE_ALL_METADATA'],
+        description: 'Development flow logs (disabled to save costs)'
+      }
+    ];
+
+    console.log('🎭 Serving mock flow logs for demo');
+    return of(mockFlowLogs);
   }
 
   private getSubnetDetails(subnetUrl: string): Observable<SubnetDetails> {
@@ -110,16 +311,52 @@ export class VpcService {
   }
 
   createVpcNetwork(projectId: string, network: Partial<VpcNetwork>): Observable<VpcNetwork> {
+    if (this.authService.isDemoMode()) {
+      console.log('🎭 Demo mode: Simulating VPC network creation');
+      const mockCreatedNetwork: VpcNetwork = {
+        id: Date.now().toString(),
+        name: network.name || 'demo-network',
+        description: network.description || 'Demo network created in demo mode',
+        selfLink: `https://www.googleapis.com/compute/v1/projects/demo-project/global/networks/${network.name}`,
+        autoCreateSubnetworks: network.autoCreateSubnetworks || false,
+        creationTimestamp: new Date().toISOString(),
+        subnetworks: [],
+        routingConfig: { routingMode: 'REGIONAL' }
+      };
+      return of(mockCreatedNetwork);
+    }
+
     const url = `${this.baseUrl}/projects/${projectId}/global/networks`;
     return this.http.post<VpcNetwork>(url, network, { headers: this.getHeaders() });
   }
 
   deleteVpcNetwork(projectId: string, networkName: string): Observable<any> {
+    if (this.authService.isDemoMode()) {
+      console.log('🎭 Demo mode: Simulating VPC network deletion');
+      return of({ status: 'success' });
+    }
+
     const url = `${this.baseUrl}/projects/${projectId}/global/networks/${networkName}`;
     return this.http.delete(url, { headers: this.getHeaders() });
   }
 
   createRoute(projectId: string, route: Partial<Route>): Observable<Route> {
+    if (this.authService.isDemoMode()) {
+      console.log('🎭 Demo mode: Simulating route creation');
+      const mockCreatedRoute: Route = {
+        id: Date.now().toString(),
+        name: route.name || 'demo-route',
+        description: route.description || 'Demo route created in demo mode',
+        network: route.network || 'demo-network',
+        destRange: route.destRange || '0.0.0.0/0',
+        priority: route.priority || 1000,
+        nextHopGateway: route.nextHopGateway || 'default-internet-gateway',
+        selfLink: `https://www.googleapis.com/compute/v1/projects/demo-project/global/routes/${route.name}`,
+        tags: route.tags || []
+      };
+      return of(mockCreatedRoute);
+    }
+
     const url = `${this.baseUrl}/projects/${projectId}/global/routes`;
     
     // Format the route payload according to GCP Compute API requirements
@@ -150,25 +387,37 @@ export class VpcService {
     return this.http.post<Route>(url, routePayload, { headers: this.getHeaders() });
   }
 
-  getFlowLogs(projectId: string, location: string = 'global'): Observable<any[]> {
-    const url = `https://networkmanagement.googleapis.com/v1/projects/${projectId}/locations/${location}/vpcFlowLogsConfigs`;
-    return this.http.get<{ vpcFlowLogsConfigs: any[] }>(url, { headers: this.getHeaders() }).pipe(
-      map(response => response.vpcFlowLogsConfigs || [])
-    );
-  }
-
   createFlowLog(projectId: string, payload: any, location: string = 'global'): Observable<any> {
+    if (this.authService.isDemoMode()) {
+      console.log('🎭 Demo mode: Simulating flow log creation');
+      return of({
+        name: `projects/demo-project/locations/${location}/vpcFlowLogsConfigs/${payload.name || 'demo-flow-log'}`,
+        ...payload,
+        enabled: true
+      });
+    }
+
     const url = `https://networkmanagement.googleapis.com/v1/projects/${projectId}/locations/${location}/vpcFlowLogsConfigs`;
     return this.http.post<any>(url, payload, { headers: this.getHeaders() });
   }
 
   updateFlowLogs(projectId: string, configName: string, updates: any, location: string = 'global'): Observable<any> {
+    if (this.authService.isDemoMode()) {
+      console.log('🎭 Demo mode: Simulating flow log update');
+      return of({ ...updates, name: configName });
+    }
+
     // configName should be the full resource name, e.g. projects/{project}/locations/{location}/vpcFlowLogsConfigs/{config}
     const url = `https://networkmanagement.googleapis.com/v1/${configName}`;
     return this.http.patch<any>(url, updates, { headers: this.getHeaders() });
   }
 
   deleteFlowLogs(projectId: string, configName: string, location: string = 'global'): Observable<void> {
+    if (this.authService.isDemoMode()) {
+      console.log('🎭 Demo mode: Simulating flow log deletion');
+      return of(undefined);
+    }
+
     // configName should be the full resource name, e.g. projects/{project}/locations/{location}/vpcFlowLogsConfigs/{config}
     const url = `https://networkmanagement.googleapis.com/v1/${configName}`;
     return this.http.delete<void>(url, { headers: this.getHeaders() });

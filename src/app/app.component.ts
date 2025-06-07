@@ -30,6 +30,13 @@ interface NavItem {
           <mat-icon>menu</mat-icon>
         </button>
         <span>Google Cloud Console</span>
+        
+        <!-- Demo Mode Indicator -->
+        <div *ngIf="isDemoMode$ | async" class="demo-indicator">
+          <mat-icon>visibility</mat-icon>
+          <span>Demo Mode</span>
+        </div>
+        
         <button mat-stroked-button color="accent" class="project-picker-btn" (click)="openProjectPicker()" *ngIf="!isDocumentationRoute">
           <mat-icon>folder_open</mat-icon>
           {{ (currentProject$ | async)?.name || 'Select project' }}
@@ -47,7 +54,7 @@ interface NavItem {
         </button>
         <button mat-button *ngIf="isAuthenticated$ | async" (click)="logout()">
           <mat-icon>logout</mat-icon>
-          Sign Out
+          {{ (isDemoMode$ | async) ? 'Exit Demo' : 'Sign Out' }}
         </button>
       </mat-toolbar>
 
@@ -111,6 +118,25 @@ interface NavItem {
     
     .project-picker-btn { 
       margin-left: 16px; 
+    }
+    
+    .demo-indicator {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255, 152, 0, 0.2);
+      color: #ff9800;
+      padding: 4px 12px;
+      border-radius: 16px;
+      font-size: 14px;
+      font-weight: 500;
+      margin-left: 16px;
+    }
+    
+    .demo-indicator mat-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
     }
     
     .doc-button {
@@ -256,6 +282,7 @@ interface NavItem {
 export class AppComponent implements OnInit {
   @ViewChild('sidenav') sidenav!: MatSidenav;
   isAuthenticated$: Observable<boolean>;
+  isDemoMode$: Observable<boolean>;
   currentProject$: Observable<Project | null>;
   isDocumentationRoute = false;
 
@@ -322,6 +349,7 @@ export class AppComponent implements OnInit {
     private projectService: ProjectService
   ) {
     this.isAuthenticated$ = this.authService.isAuthenticated$;
+    this.isDemoMode$ = this.authService.isDemoMode$;
     this.currentProject$ = this.projectService.currentProject$;
   }
 
@@ -341,14 +369,14 @@ export class AppComponent implements OnInit {
       }
     });
 
-    // Load projects immediately if authenticated
-    if (this.authService.isAuthenticated()) {
+    // Load projects immediately if authenticated (but not in demo mode)
+    if (this.authService.isAuthenticated() && !this.authService.isDemoMode()) {
       this.loadProjectsOnInit();
     }
 
     // Listen for authentication changes
     this.authService.isAuthenticated$.subscribe(isAuthenticated => {
-      if (isAuthenticated) {
+      if (isAuthenticated && !this.authService.isDemoMode()) {
         this.loadProjectsOnInit();
       }
     });
@@ -386,7 +414,22 @@ export class AppComponent implements OnInit {
   }
 
   openProjectPicker() {
-    // Load projects before opening picker
+    // Don't load real projects in demo mode
+    if (this.authService.isDemoMode()) {
+      const dialogRef = this.dialog.open(ProjectPickerComponent, {
+        data: { selectedProject: this.projectService.getCurrentProject() },
+        width: '600px'
+      });
+      
+      dialogRef.afterClosed().subscribe((result: Project) => {
+        if (result) {
+          this.projectService.setCurrentProject(result);
+        }
+      });
+      return;
+    }
+
+    // Load projects before opening picker (for real authentication)
     this.projectService.loadProjects().subscribe({
       next: (projects) => {
         const dialogRef = this.dialog.open(ProjectPickerComponent, {

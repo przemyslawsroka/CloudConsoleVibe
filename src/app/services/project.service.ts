@@ -48,7 +48,17 @@ export class ProjectService {
   constructor(
     private http: HttpClient,
     private authService: AuthService
-  ) {}
+  ) {
+    // Initialize demo projects if in demo mode
+    if (this.authService.isDemoMode()) {
+      this.initializeDemoProjects();
+    }
+  }
+
+  private initializeDemoProjects() {
+    console.log('🎭 Initializing demo projects...');
+    this.getMockProjects().subscribe();
+  }
 
   setCurrentProject(project: Project) {
     this.currentProjectSubject.next(project);
@@ -61,6 +71,12 @@ export class ProjectService {
   }
 
   loadProjects(): Observable<Project[]> {
+    // Always use mock projects in demo mode
+    if (this.authService.isDemoMode()) {
+      console.log('🎭 Demo mode: Using mock projects');
+      return this.getMockProjects();
+    }
+
     console.log('🔄 Loading projects from Google Cloud Resource Manager API...');
     
     // Check authentication first
@@ -165,20 +181,64 @@ export class ProjectService {
 
   private getMockProjects(): Observable<Project[]> {
     const mockProjects: Project[] = [
-      { name: 'net-top-viz-demo-208511', id: 'net-top-viz-demo-208511', type: 'Project', starred: true },
-      { name: 'przemeksroka-joonix-service', id: 'przemeksroka-joonix-service', type: 'Project', starred: false },
-      { name: 'online-boutique', id: 'online-boutique-308414', type: 'Project', starred: false },
-      { name: 'przemek-sroka-private', id: 'aerial-reef-282520', type: 'Project', starred: false },
-      { name: 'Gemini API', id: 'gen-lang-client-0296497231', type: 'Project', starred: false },
-      { name: 'przemeksroka-joonix-log-test', id: 'przemeksroka-joonix-log-test', type: 'Project', starred: false }
+      { 
+        name: 'Cloud Console Vibe Demo', 
+        id: 'cloud-console-vibe-demo', 
+        type: 'Project', 
+        starred: true,
+        displayName: 'Cloud Console Vibe Demo',
+        projectNumber: '123456789012',
+        lifecycleState: 'ACTIVE'
+      },
+      { 
+        name: 'Network Topology Demo', 
+        id: 'net-top-viz-demo-208511', 
+        type: 'Project', 
+        starred: false,
+        displayName: 'Network Topology Demo',
+        projectNumber: '234567890123',
+        lifecycleState: 'ACTIVE'
+      },
+      { 
+        name: 'Production Environment', 
+        id: 'production-env-demo', 
+        type: 'Project', 
+        starred: true,
+        displayName: 'Production Environment',
+        projectNumber: '345678901234',
+        lifecycleState: 'ACTIVE'
+      },
+      { 
+        name: 'Development Playground', 
+        id: 'dev-playground-demo', 
+        type: 'Project', 
+        starred: false,
+        displayName: 'Development Playground',
+        projectNumber: '456789012345',
+        lifecycleState: 'ACTIVE'
+      },
+      { 
+        name: 'Staging Environment', 
+        id: 'staging-env-demo', 
+        type: 'Project', 
+        starred: false,
+        displayName: 'Staging Environment',
+        projectNumber: '567890123456',
+        lifecycleState: 'ACTIVE'
+      }
     ];
     
-    console.log('🔄 Using mock projects');
+    if (this.authService.isDemoMode()) {
+      console.log('🎭 Using demo projects for demonstration');
+    } else {
+      console.log('🔄 Using mock projects');
+    }
+    
     this.projectsSubject.next(mockProjects);
     
     // Always auto-select first project if none selected
     if (!this.getCurrentProject() && mockProjects.length > 0) {
-      console.log('🎯 Auto-selecting first mock project:', mockProjects[0].name);
+      console.log('🎯 Auto-selecting first project:', mockProjects[0].name);
       this.setCurrentProject(mockProjects[0]);
     }
     

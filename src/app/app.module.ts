@@ -31,6 +31,7 @@ import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { TextFieldModule } from '@angular/cdk/text-field';
 import { MatSortModule } from '@angular/material/sort';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatDividerModule } from '@angular/material/divider';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -170,7 +171,8 @@ import { CNRComponent } from './components/cnr/cnr.component';
     MatButtonToggleModule,
     TextFieldModule,
     MatSortModule,
-    MatProgressBarModule
+    MatProgressBarModule,
+    MatDividerModule
   ],
   providers: [AuthService, VpcService, TPPIService, PacketMirroringService, NetworkHealthMonitorService, AppNetaService],
   bootstrap: [AppComponent]

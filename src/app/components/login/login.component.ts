@@ -11,11 +11,38 @@ import { AuthService } from '../../services/auth.service';
           <mat-card-title>Google Cloud Console</mat-card-title>
         </mat-card-header>
         <mat-card-content>
-          <p>Please sign in to access the Google Cloud Console</p>
-          <button mat-raised-button color="primary" (click)="login()">
-            <mat-icon>login</mat-icon>
-            Sign in with Google
-          </button>
+          <p class="welcome-text">Welcome to Google Cloud Console Vibe</p>
+          
+          <!-- Authentication Options -->
+          <div class="auth-options">
+            <!-- Google Sign In -->
+            <div class="auth-option">
+              <button mat-raised-button color="primary" (click)="login()" class="auth-button">
+                <mat-icon>login</mat-icon>
+                Sign in with Google
+              </button>
+              <p class="auth-description">
+                Access your real Google Cloud projects and live data
+              </p>
+            </div>
+
+            <div class="divider-container">
+              <mat-divider></mat-divider>
+              <span class="divider-text">OR</span>
+              <mat-divider></mat-divider>
+            </div>
+
+            <!-- Demo Mode -->
+            <div class="auth-option">
+              <button mat-raised-button color="accent" (click)="loginDemo()" class="auth-button demo-button">
+                <mat-icon>visibility</mat-icon>
+                Try Demo Mode
+              </button>
+              <p class="auth-description">
+                Explore the interface with mock data (no authentication required)
+              </p>
+            </div>
+          </div>
         </mat-card-content>
         
         <mat-card-content class="info-section">
@@ -23,7 +50,7 @@ import { AuthService } from '../../services/auth.service';
           <div class="info-message">
             <mat-icon class="info-icon">info</mat-icon>
             <div class="info-text">
-              <h4>Important Requirements:</h4>
+              <h4>Google Authentication Requirements:</h4>
               <ul>
                 <li>
                   <strong>Use a private Gmail account</strong> - Access to corporate data for third-party products is restricted for security purposes. 
@@ -53,24 +80,90 @@ import { AuthService } from '../../services/auth.service';
       padding: 20px;
     }
     .login-card {
-      max-width: 500px;
+      max-width: 550px;
       width: 100%;
       text-align: center;
-      padding: 20px;
+      padding: 32px;
+      border-radius: 16px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
     }
-    mat-card-content {
+    
+    .welcome-text {
+      font-size: 18px;
+      color: #5f6368;
+      margin-bottom: 32px;
+    }
+    
+    .auth-options {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      margin-bottom: 32px;
+    }
+    
+    .auth-option {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 20px;
+      gap: 12px;
     }
-    button {
-      width: 200px;
+    
+    .auth-button {
+      width: 280px;
+      height: 48px;
+      font-size: 16px;
+      font-weight: 500;
+      border-radius: 24px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      transition: all 0.3s ease;
     }
+    
+    .auth-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+    }
+    
+    .demo-button {
+      background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+      color: white;
+      border: none;
+    }
+    
+    .demo-button:hover {
+      background: linear-gradient(135deg, #ee5a24, #ff6b6b);
+    }
+    
+    .auth-description {
+      font-size: 14px;
+      color: #5f6368;
+      margin: 0;
+      text-align: center;
+      max-width: 300px;
+      line-height: 1.4;
+    }
+    
+    .divider-container {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin: 8px 0;
+    }
+    
+    .divider-text {
+      font-size: 12px;
+      color: #9aa0a6;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+    
+    mat-divider {
+      flex: 1;
+    }
+    
     .info-section {
       text-align: left;
-      margin-top: 20px;
-      padding-top: 20px;
+      margin-top: 24px;
+      padding-top: 24px;
     }
     .info-message {
       display: flex;
@@ -125,9 +218,17 @@ import { AuthService } from '../../services/auth.service';
       width: 18px;
       height: 18px;
     }
-    mat-divider {
-      width: 100%;
-      margin-bottom: 8px;
+    
+    @media (max-width: 600px) {
+      .login-card {
+        padding: 24px;
+        margin: 16px;
+      }
+      
+      .auth-button {
+        width: 100%;
+        max-width: 280px;
+      }
     }
   `]
 })
@@ -146,5 +247,10 @@ export class LoginComponent implements OnInit {
 
   login() {
     this.authService.login();
+  }
+
+  loginDemo() {
+    this.authService.loginDemo();
+    this.router.navigate(['/vpc']);
   }
 } 

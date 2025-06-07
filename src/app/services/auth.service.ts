@@ -8,15 +8,22 @@ import { environment } from '../../environments/environment';
 })
 export class AuthService {
   private isAuthenticatedSubject = new BehaviorSubject<boolean>(false);
+  private isDemoModeSubject = new BehaviorSubject<boolean>(false);
+  
   isAuthenticated$ = this.isAuthenticatedSubject.asObservable();
+  isDemoMode$ = this.isDemoModeSubject.asObservable();
+  
   private accessToken: string | null = null;
 
   constructor(private http: HttpClient) {
     // Check if user is already authenticated
     const token = localStorage.getItem('access_token');
-    if (token) {
+    const demoMode = localStorage.getItem('demo_mode') === 'true';
+    
+    if (token || demoMode) {
       this.accessToken = token;
       this.isAuthenticatedSubject.next(true);
+      this.isDemoModeSubject.next(demoMode);
     }
   }
 
@@ -35,10 +42,23 @@ export class AuthService {
     window.location.href = authUrl;
   }
 
+  loginDemo() {
+    // Set demo mode and authenticate with mock data
+    this.accessToken = 'demo-mode-token';
+    localStorage.setItem('demo_mode', 'true');
+    localStorage.removeItem('access_token'); // Remove any real token
+    this.isAuthenticatedSubject.next(true);
+    this.isDemoModeSubject.next(true);
+    
+    console.log('🎭 Demo mode activated with mock data');
+  }
+
   handleAuthCallback(token: string) {
     this.accessToken = token;
     localStorage.setItem('access_token', token);
+    localStorage.removeItem('demo_mode'); // Remove demo mode when using real auth
     this.isAuthenticatedSubject.next(true);
+    this.isDemoModeSubject.next(false);
     
     console.log('🔑 Authentication successful, projects will be loaded by app component');
   }
@@ -46,9 +66,11 @@ export class AuthService {
   logout() {
     this.accessToken = null;
     localStorage.removeItem('access_token');
+    localStorage.removeItem('demo_mode');
     localStorage.removeItem('currentProject');
     localStorage.removeItem('starredProjects');
     this.isAuthenticatedSubject.next(false);
+    this.isDemoModeSubject.next(false);
   }
 
   getAccessToken(): string | null {
@@ -57,5 +79,9 @@ export class AuthService {
 
   isAuthenticated(): boolean {
     return this.isAuthenticatedSubject.value;
+  }
+
+  isDemoMode(): boolean {
+    return this.isDemoModeSubject.value;
   }
 } 
