@@ -59,6 +59,10 @@ import { AuthService } from '../../services/auth.service';
                 <li>
                   <strong>GCP Project Access Required</strong> - Your account needs to have access to at least one Google Cloud Platform project.
                 </li>
+                <li>
+                  <strong>OAuth Test Users Only</strong> - This app is in development mode. Your Gmail address must be added to "Test Users" 
+                  by contacting <strong>przemeksroka&#64;google.com</strong> before you can sign in.
+                </li>
               </ul>
               <p class="contact-info">
                 <mat-icon class="contact-icon">email</mat-icon>
