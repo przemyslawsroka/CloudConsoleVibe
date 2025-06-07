@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 
 interface DocumentationSection {
   id: string;
@@ -11,8 +12,15 @@ interface DocumentationSection {
   template: `
     <div class="documentation-container">
       <div class="documentation-header">
-        <h1>CloudConsoleVibe Documentation</h1>
-        <p>Comprehensive guide for Google Cloud Platform networking management</p>
+        <div class="header-content">
+          <button mat-icon-button (click)="goBack()" class="back-button" matTooltip="Back to Console">
+            <mat-icon>arrow_back</mat-icon>
+          </button>
+          <div class="header-text">
+            <h1>CloudConsoleVibe Documentation</h1>
+            <p>Comprehensive guide for Google Cloud Platform networking management</p>
+          </div>
+        </div>
       </div>
 
       <nav class="doc-nav">
@@ -403,6 +411,37 @@ gcloud services enable monitoring.googleapis.com</code></pre>
       background: linear-gradient(135deg, #1976d2, #1565c0);
       color: white;
       padding: 60px 40px;
+      text-align: center;
+    }
+    
+    .header-content {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      max-width: 1200px;
+      margin: 0 auto;
+      position: relative;
+    }
+    
+    .back-button {
+      position: absolute;
+      left: 0;
+      color: white;
+      background: rgba(255, 255, 255, 0.1);
+      transition: background-color 0.3s ease;
+    }
+    
+    .back-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+    
+    .back-button mat-icon {
+      font-size: 24px;
+      width: 24px;
+      height: 24px;
+    }
+    
+    .header-text {
       text-align: center;
     }
     
@@ -1084,6 +1123,8 @@ export class DocumentationComponent implements OnInit {
     }
   ];
 
+  constructor(private router: Router) { }
+
   ngOnInit() {
     // Component initialization
   }
@@ -1109,5 +1150,9 @@ export class DocumentationComponent implements OnInit {
     });
     
     this.activeSection = currentSection;
+  }
+
+  goBack() {
+    this.router.navigate(['/']);
   }
 } 
