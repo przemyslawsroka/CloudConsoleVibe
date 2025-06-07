@@ -71,6 +71,7 @@ import { CreateTlsInspectionPolicyDialogComponent } from './components/tls-inspe
 import { LoadBalancingComponent } from './components/load-balancing/load-balancing.component';
 import { CreateLoadBalancerComponent } from './components/load-balancing/create-load-balancer.component';
 import { LoadBalancerConfigureComponent } from './components/load-balancing/load-balancer-configure.component';
+import { LoadBalancerCreationProgressComponent } from './components/load-balancing/load-balancer-creation-progress.component';
 import { DocumentationComponent } from './components/documentation/documentation.component';
 import { CreateVpcNetworkComponent } from './components/create-vpc-network/create-vpc-network.component';
 import { TPPIManagementComponent } from './components/tppi-management/tppi-management.component';
@@ -123,6 +124,7 @@ import { CNRComponent } from './components/cnr/cnr.component';
     LoadBalancingComponent,
     CreateLoadBalancerComponent,
     LoadBalancerConfigureComponent,
+    LoadBalancerCreationProgressComponent,
     DocumentationComponent,
     CreateVpcNetworkComponent,
     TPPIManagementComponent,

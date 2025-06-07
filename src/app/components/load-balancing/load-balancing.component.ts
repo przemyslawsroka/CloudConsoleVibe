@@ -210,9 +210,10 @@ import { ProjectService } from '../../services/project.service';
   `,
   styles: [`
     .load-balancing-container {
-      padding: 20px;
+      padding: 20px 24px;
       background-color: #fafafa;
-      min-height: 100vh;
+      min-height: calc(100vh - 120px);
+      overflow-y: auto;
     }
 
     .header {

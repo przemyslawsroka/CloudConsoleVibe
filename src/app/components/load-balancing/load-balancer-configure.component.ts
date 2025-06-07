@@ -1,8 +1,12 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, FormArray } from '@angular/forms';
 import { Router } from '@angular/router';
 import { LoadBalancerService } from '../../services/load-balancer.service';
+import { LoadBalancerCreationService, LoadBalancerCreationConfig } from '../../services/load-balancer-creation.service';
 import { MatDialog } from '@angular/material/dialog';
+import { LoadBalancerCreationProgressComponent, LoadBalancerCreationData, CreationStep } from './load-balancer-creation-progress.component';
+import { takeUntil } from 'rxjs/operators';
+import { Subject } from 'rxjs';
 
 export interface FrontendConfig {
   name: string;
@@ -56,6 +60,22 @@ export interface RoutingRule {
   hostPattern: string;
   pathPattern: string;
   backendService: string;
+}
+
+export interface AdvancedRoutingRule {
+  id: string;
+  matchRule: string;
+  routeAction: string;
+  service: string;
+  priority: string;
+  hostPattern?: string;
+  pathMatcher?: string;
+}
+
+export interface HostRule {
+  id: string;
+  hosts: string[];
+  pathMatcher: string;
 }
 
 @Component({
@@ -533,6 +553,132 @@ export interface RoutingRule {
                   ADD HOST AND PATH RULE
                 </button>
               </div>
+
+              <div *ngIf="routingMode === 'advanced'" class="advanced-routing">
+                <h4>Advanced host and route rules</h4>
+                
+                <!-- Default Host and Route Rule -->
+                <div class="default-rule-container">
+                  <div class="default-rule-header" (click)="toggleDefaultRule()">
+                    <span class="default-rule-title">Edit default host and route rule</span>
+                    <mat-icon class="expand-icon">
+                      {{ expandedDefaultRule ? 'expand_less' : 'expand_more' }}
+                    </mat-icon>
+                  </div>
+                  
+                  <div class="default-rule-content" *ngIf="expandedDefaultRule">
+                    <!-- View Tabs -->
+                    <div class="view-tabs">
+                      <button mat-button [class.active]="currentView === 'form'" (click)="setView('form')">
+                        FORM VIEW
+                      </button>
+                      <button mat-button [class.active]="currentView === 'yaml'" (click)="setView('yaml')">
+                        YAML VIEW
+                      </button>
+                    </div>
+
+                    <div *ngIf="currentView === 'form'" class="form-view">
+                      <!-- Host Rules -->
+                      <div class="host-rules-section">
+                        <h5>Host rules</h5>
+                        <div class="host-rules-content">
+                          <span class="undefined-rules">Any undefined host rules</span>
+                        </div>
+                      </div>
+
+                      <!-- Route Rules -->
+                      <div class="route-rules-section">
+                        <h5>Route rules</h5>
+                        
+                        <div class="route-rules-header">
+                          <button mat-raised-button color="primary" class="create-rule-button" (click)="createRouteRule()">
+                            <mat-icon>add</mat-icon>
+                            CREATE ROUTE RULE
+                          </button>
+                          
+                          <div class="table-controls">
+                            <button mat-icon-button class="filter-button" matTooltip="Filter table">
+                              <mat-icon>filter_list</mat-icon>
+                            </button>
+                            <span class="filter-text">Filter table</span>
+                            <button mat-icon-button class="help-button" matTooltip="Help">
+                              <mat-icon>help</mat-icon>
+                            </button>
+                            <button mat-icon-button class="columns-button" matTooltip="Select columns">
+                              <mat-icon>view_column</mat-icon>
+                            </button>
+                          </div>
+                        </div>
+
+                        <!-- Route Rules Table -->
+                        <div class="route-rules-table">
+                          <table mat-table [dataSource]="advancedRoutingRules" class="advanced-rules-table">
+                            <!-- Match Rule Column -->
+                            <ng-container matColumnDef="matchRule">
+                              <th mat-header-cell *matHeaderCellDef>Match rule</th>
+                              <td mat-cell *matCellDef="let rule">{{ rule.matchRule }}</td>
+                            </ng-container>
+
+                            <!-- Route Action Column -->
+                            <ng-container matColumnDef="routeAction">
+                              <th mat-header-cell *matHeaderCellDef>Route action</th>
+                              <td mat-cell *matCellDef="let rule">{{ rule.routeAction }}</td>
+                            </ng-container>
+
+                            <!-- Service Column -->
+                            <ng-container matColumnDef="service">
+                              <th mat-header-cell *matHeaderCellDef>Service</th>
+                              <td mat-cell *matCellDef="let rule">{{ rule.service }}</td>
+                            </ng-container>
+
+                            <!-- Priority Column -->
+                            <ng-container matColumnDef="priority">
+                              <th mat-header-cell *matHeaderCellDef>
+                                Priority
+                                <mat-icon class="info-icon" matTooltip="Priority information">help</mat-icon>
+                              </th>
+                              <td mat-cell *matCellDef="let rule">{{ rule.priority }}</td>
+                            </ng-container>
+
+                            <!-- Actions Column -->
+                            <ng-container matColumnDef="actions">
+                              <th mat-header-cell *matHeaderCellDef></th>
+                              <td mat-cell *matCellDef="let rule; let i = index">
+                                <button mat-icon-button (click)="editRouteRule(i)" matTooltip="Edit rule">
+                                  <mat-icon>edit</mat-icon>
+                                </button>
+                              </td>
+                            </ng-container>
+
+                            <tr mat-header-row *matHeaderRowDef="advancedRuleColumns"></tr>
+                            <tr mat-row *matRowDef="let row; columns: advancedRuleColumns;"></tr>
+                          </table>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div *ngIf="currentView === 'yaml'" class="yaml-view">
+                      <div class="yaml-editor">
+                        <textarea 
+                          class="yaml-textarea" 
+                          [(ngModel)]="yamlContent"
+                          placeholder="Enter YAML configuration...">
+                        </textarea>
+                      </div>
+                    </div>
+
+                    <div class="default-rule-actions">
+                      <button mat-button (click)="cancelDefaultRule()">CANCEL</button>
+                      <button mat-raised-button color="primary" (click)="saveDefaultRule()">DONE</button>
+                    </div>
+                  </div>
+                </div>
+
+                <button mat-button color="primary" class="add-host-rule-button" (click)="addHostAndRouteRule()">
+                  <mat-icon>add</mat-icon>
+                  ADD HOST AND ROUTE RULE
+                </button>
+              </div>
             </div>
           </mat-card-content>
         </mat-card>
@@ -548,8 +694,10 @@ export interface RoutingRule {
   styles: [`
     .configure-page {
       background: #f8f9fa;
-      min-height: 100vh;
+      min-height: calc(100vh - 64px);
       padding: 0;
+      position: relative;
+      overflow-x: hidden;
     }
 
     .page-header {
@@ -559,6 +707,9 @@ export interface RoutingRule {
       display: flex;
       justify-content: space-between;
       align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 10;
     }
 
     .breadcrumb {
@@ -607,7 +758,8 @@ export interface RoutingRule {
     .config-form {
       max-width: 1200px;
       margin: 0 auto;
-      padding: 24px;
+      padding: 20px 24px;
+      min-height: calc(100vh - 120px);
     }
 
     .config-section {
@@ -1180,9 +1332,311 @@ export interface RoutingRule {
       border-color: #1976d2;
       box-shadow: 0 0 0 1px #1976d2;
     }
+
+    /* Advanced Routing Styles */
+    .advanced-routing {
+      margin-top: 24px;
+    }
+
+    .advanced-routing h4 {
+      color: #1976d2;
+      font-size: 16px;
+      font-weight: 500;
+      margin-bottom: 16px;
+    }
+
+    .default-rule-container {
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      margin-bottom: 24px;
+      overflow: hidden;
+    }
+
+    .default-rule-header {
+      padding: 16px;
+      background: #f8f9fa;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #e0e0e0;
+    }
+
+    .default-rule-header:hover {
+      background: #f1f3f4;
+    }
+
+    .default-rule-title {
+      font-weight: 500;
+      color: #202124;
+      font-size: 16px;
+    }
+
+    .default-rule-content {
+      background: white;
+    }
+
+    .view-tabs {
+      display: flex;
+      border-bottom: 1px solid #e0e0e0;
+    }
+
+    .view-tabs button {
+      padding: 12px 24px;
+      border: none;
+      background: transparent;
+      color: #5f6368;
+      font-weight: 500;
+      font-size: 12px;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s ease;
+    }
+
+    .view-tabs button:hover {
+      color: #1976d2;
+      background: rgba(25, 118, 210, 0.04);
+    }
+
+    .view-tabs button.active {
+      color: #1976d2;
+      border-bottom-color: #1976d2;
+      background: white;
+    }
+
+    .form-view {
+      padding: 24px;
+    }
+
+    .host-rules-section {
+      margin-bottom: 32px;
+    }
+
+    .host-rules-section h5 {
+      color: #202124;
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: 12px;
+    }
+
+    .host-rules-content {
+      background: #f8f9fa;
+      border: 1px solid #e0e0e0;
+      border-radius: 6px;
+      padding: 16px;
+      color: #5f6368;
+    }
+
+    .undefined-rules {
+      color: #5f6368;
+      font-size: 14px;
+    }
+
+    .route-rules-section h5 {
+      color: #202124;
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: 16px;
+    }
+
+    .route-rules-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .create-rule-button {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .table-controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .filter-button,
+    .help-button,
+    .columns-button {
+      color: #5f6368;
+    }
+
+    .filter-text {
+      color: #5f6368;
+      font-size: 14px;
+      margin-right: 8px;
+    }
+
+    .route-rules-table {
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .advanced-rules-table {
+      width: 100%;
+    }
+
+    .advanced-rules-table .mat-header-cell {
+      background: #f8f9fa;
+      color: #5f6368;
+      font-weight: 500;
+      font-size: 12px;
+      padding: 12px 16px;
+      border-bottom: 1px solid #e0e0e0;
+    }
+
+    .advanced-rules-table .mat-cell {
+      padding: 12px 16px;
+      color: #202124;
+      font-size: 14px;
+      border-bottom: 1px solid #f1f3f4;
+    }
+
+    .advanced-rules-table .mat-header-row {
+      background: #f8f9fa;
+    }
+
+    .advanced-rules-table .mat-row:hover {
+      background: #f8f9fa;
+    }
+
+    .advanced-rules-table .mat-row:last-child .mat-cell {
+      border-bottom: none;
+    }
+
+    .yaml-view {
+      padding: 24px;
+    }
+
+    .yaml-editor {
+      border: 1px solid #e0e0e0;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    .yaml-textarea {
+      width: 100%;
+      min-height: 300px;
+      padding: 16px;
+      border: none;
+      resize: vertical;
+      font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+      font-size: 14px;
+      line-height: 1.5;
+      background: #f8f9fa;
+      color: #202124;
+    }
+
+    .yaml-textarea:focus {
+      outline: none;
+      background: white;
+    }
+
+    .default-rule-actions {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+      padding: 16px 24px;
+      border-top: 1px solid #e0e0e0;
+      background: #f8f9fa;
+    }
+
+    .add-host-rule-button {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #1976d2;
+      border: 1px dashed #1976d2;
+      background: transparent;
+      margin-top: 16px;
+    }
+
+    .add-host-rule-button:hover {
+      background: rgba(25, 118, 210, 0.04);
+    }
+
+    /* Table Responsive */
+    @media (max-width: 768px) {
+      .route-rules-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 16px;
+      }
+
+      .table-controls {
+        justify-content: space-between;
+      }
+
+      .advanced-rules-table .mat-header-cell,
+      .advanced-rules-table .mat-cell {
+        padding: 8px 12px;
+        font-size: 12px;
+      }
+
+      .view-tabs {
+        flex-wrap: wrap;
+      }
+
+      .view-tabs button {
+        flex: 1;
+        min-width: 120px;
+      }
+
+      .yaml-textarea {
+        min-height: 200px;
+        font-size: 12px;
+      }
+    }
+
+    /* Material Table Overrides */
+    .mat-table {
+      background: white;
+    }
+
+    .mat-header-cell {
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .mat-cell .mat-icon-button {
+      width: 32px;
+      height: 32px;
+      line-height: 32px;
+    }
+
+    .mat-cell .mat-icon-button .mat-icon {
+      font-size: 16px;
+      width: 16px;
+      height: 16px;
+    }
+
+    /* Advanced Rule States */
+    .rule-editing {
+      background: #e3f2fd !important;
+    }
+
+    .rule-error {
+      background: #ffebee !important;
+    }
+
+    .rule-warning {
+      background: #fff3e0 !important;
+    }
+
+    /* Tooltip Overrides */
+    .mat-tooltip {
+      font-size: 12px;
+      max-width: 200px;
+    }
   `]
 })
-export class LoadBalancerConfigureComponent implements OnInit {
+export class LoadBalancerConfigureComponent implements OnInit, OnDestroy {
   configForm: FormGroup;
   frontendForm: FormGroup;
   backendServiceForms: FormGroup[] = [];
@@ -1204,10 +1658,25 @@ export class LoadBalancerConfigureComponent implements OnInit {
     backendService: ''
   };
 
+  // Advanced routing properties
+  expandedDefaultRule = false;
+  currentView: 'form' | 'yaml' = 'form';
+  advancedRoutingRules: AdvancedRoutingRule[] = [];
+  advancedRuleColumns: string[] = ['matchRule', 'routeAction', 'service', 'priority', 'actions'];
+  hostRules: HostRule[] = [];
+  yamlContent = `# YAML configuration for routing rules
+# Define your routing rules here
+defaultService: lb-2023-backend-1
+hostRules: []
+pathMatchers: []`;
+
+  private destroy$ = new Subject<void>();
+
   constructor(
     private fb: FormBuilder,
     private router: Router,
     private loadBalancerService: LoadBalancerService,
+    private loadBalancerCreationService: LoadBalancerCreationService,
     private dialog: MatDialog
   ) {
     this.configForm = this.fb.group({
@@ -1226,10 +1695,16 @@ export class LoadBalancerConfigureComponent implements OnInit {
 
     // Initialize with one backend service
     this.addBackendService();
+    this.initializeAdvancedRouting();
   }
 
   ngOnInit() {
     // Component initialization
+  }
+
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   navigateBack() {
@@ -1399,20 +1874,157 @@ export class LoadBalancerConfigureComponent implements OnInit {
 
   createLoadBalancer() {
     if (this.configForm.valid && this.backendServices.length > 0) {
-      const loadBalancerConfig = {
+      // Prepare the configuration
+      const creationConfig: LoadBalancerCreationConfig = {
         name: this.configForm.value.name,
         description: this.configForm.value.description,
-        frontend: this.frontendConfig,
+        type: 'APPLICATION', // Get from stored config or form
+        facing: 'EXTERNAL',   // Get from stored config or form
+        deployment: 'GLOBAL', // Get from stored config or form
+        generation: 'GLOBAL_EXTERNAL', // Get from stored config or form
+        frontendConfig: this.frontendConfig,
         backendServices: this.backendServices,
-        routingRules: [this.defaultRoutingRule]
+        routingRules: this.routingMode === 'simple' ? [this.defaultRoutingRule] : this.advancedRoutingRules
       };
 
-      console.log('Creating load balancer with config:', loadBalancerConfig);
-      
-      // For demo purposes, navigate back to load balancing list
-      this.router.navigate(['/load-balancing']);
+      // Get stored configuration from localStorage if available
+      const storedConfig = localStorage.getItem('loadBalancerConfig');
+      if (storedConfig) {
+        const config = JSON.parse(storedConfig);
+        creationConfig.type = config.type;
+        creationConfig.facing = config.facing;
+        creationConfig.deployment = config.deployment;
+        creationConfig.generation = config.generation;
+      }
+
+      // Initialize progress dialog data
+      const dialogData: LoadBalancerCreationData = {
+        name: creationConfig.name,
+        steps: [] // Will be populated by the service
+      };
+
+      // Open the progress dialog
+      const dialogRef = this.dialog.open(LoadBalancerCreationProgressComponent, {
+        data: dialogData,
+        width: '600px',
+        disableClose: true
+      });
+
+      // Start the creation process
+      this.loadBalancerCreationService.createLoadBalancer(creationConfig)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: (steps: CreationStep[]) => {
+            // Update dialog data with latest steps
+            dialogData.steps = steps;
+          },
+          error: (error) => {
+            console.error('Load balancer creation failed:', error);
+            // The dialog will handle the error display
+          },
+          complete: () => {
+            console.log('Load balancer creation process completed');
+          }
+        });
+
+      // Subscribe to steps updates to update dialog in real-time
+      this.loadBalancerCreationService.steps$
+        .pipe(takeUntil(this.destroy$))
+        .subscribe(steps => {
+          dialogData.steps = steps;
+        });
+
+      // Handle dialog result
+      dialogRef.afterClosed().subscribe(result => {
+        if (result?.action === 'view') {
+          // Navigate to load balancer details
+          this.router.navigate(['/load-balancing']);
+        } else if (result?.action === 'cancelled') {
+          console.log('Load balancer creation was cancelled');
+          this.loadBalancerCreationService.cancelCreation();
+          this.router.navigate(['/load-balancing']);
+        } else if (result?.action === 'retry') {
+          // Restart the creation process
+          this.createLoadBalancer();
+        } else {
+          // Dialog closed normally, navigate back to list
+          this.router.navigate(['/load-balancing']);
+        }
+      });
     } else {
       console.warn('Form is invalid or no backend services configured');
+      
+      // Show validation errors
+      this.configForm.markAllAsTouched();
+      if (this.backendServices.length === 0) {
+        // You could show a snackbar or alert here
+        alert('Please configure at least one backend service before creating the load balancer.');
+      }
     }
+  }
+
+  // Advanced Routing Methods
+  initializeAdvancedRouting() {
+    // Initialize with a default routing rule
+    this.advancedRoutingRules = [
+      {
+        id: 'default-rule',
+        matchRule: 'Any unmatched',
+        routeAction: 'Route traffic to a single backend',
+        service: 'lb-2023-backend-1',
+        priority: 'Default'
+      }
+    ];
+  }
+
+  toggleDefaultRule() {
+    this.expandedDefaultRule = !this.expandedDefaultRule;
+  }
+
+  setView(view: 'form' | 'yaml') {
+    this.currentView = view;
+  }
+
+  createRouteRule() {
+    const newRule: AdvancedRoutingRule = {
+      id: `rule-${Date.now()}`,
+      matchRule: 'Custom rule',
+      routeAction: 'Route traffic to a single backend',
+      service: this.backendServices.length > 0 ? this.backendServices[0].name : 'No backend service',
+      priority: 'High'
+    };
+    
+    this.advancedRoutingRules.push(newRule);
+    console.log('Created new route rule:', newRule);
+  }
+
+  editRouteRule(index: number) {
+    const rule = this.advancedRoutingRules[index];
+    console.log('Editing route rule:', rule);
+    // In a real implementation, this would open a dialog or expand an edit form
+  }
+
+  saveDefaultRule() {
+    console.log('Saving default rule configuration');
+    console.log('Current view:', this.currentView);
+    console.log('YAML content:', this.yamlContent);
+    console.log('Advanced routing rules:', this.advancedRoutingRules);
+    this.expandedDefaultRule = false;
+  }
+
+  cancelDefaultRule() {
+    this.expandedDefaultRule = false;
+    // Reset any unsaved changes
+  }
+
+  addHostAndRouteRule() {
+    const newHostRule: HostRule = {
+      id: `host-rule-${Date.now()}`,
+      hosts: ['*'],
+      pathMatcher: 'default-matcher'
+    };
+    
+    this.hostRules.push(newHostRule);
+    console.log('Added new host and route rule:', newHostRule);
   }
 } 

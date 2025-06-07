@@ -151,15 +151,21 @@ interface NavItem {
     .sidenav-container { 
       flex: 1; 
       margin-top: 64px; 
+      height: calc(100vh - 64px);
+      overflow: auto;
     }
     
     .sidenav { 
       width: 300px; 
       background-color: #fafafa;
+      height: 100%;
     }
     
     .content { 
-      padding: 20px; 
+      padding: 0;
+      height: 100%;
+      overflow-y: auto;
+      overflow-x: hidden;
     }
 
     .content.full-width {
