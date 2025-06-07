@@ -269,6 +269,16 @@ interface DocumentationSection {
             Authentication
           </h2>
           <div class="section-content">
+            <div class="demo-notice">
+              <mat-icon>info</mat-icon>
+              <div>
+                <h4>Development Mode Access</h4>
+                <p>This application is currently running in <strong>development mode</strong> with OAuth consent screen restrictions. 
+                To access the application with your Google account, please send your <strong>Gmail address</strong> to 
+                <a href="mailto:przemeksroka&#64;google.com">przemeksroka&#64;google.com</a> to be added to the OAuth test users list.</p>
+              </div>
+            </div>
+
             <h3>OAuth 2.0 Flow</h3>
             <p>CloudConsoleVibe uses Google OAuth 2.0 for secure authentication and API access. The authentication process follows these steps:</p>
             <ol>
@@ -288,6 +298,25 @@ interface DocumentationSection {
               <li><code>https://www.googleapis.com/auth/monitoring</code> - Cloud Monitoring API access</li>
               <li><code>https://www.googleapis.com/auth/logging.read</code> - Cloud Logging API read access</li>
             </ul>
+
+            <h3>Development Mode Restrictions</h3>
+            <p>As referenced in the <a href="https://developers.google.com/workspace/guides/configure-oauth-consent" target="_blank">Google Workspace OAuth consent configuration guide</a>, 
+            applications in development mode have specific limitations:</p>
+            <ul>
+              <li><strong>Test Users Only:</strong> Only users explicitly added to the OAuth test users list can access the application</li>
+              <li><strong>Limited Access:</strong> Maximum of 100 test users during development phase</li>
+              <li><strong>No Public Access:</strong> General public cannot use the application until it's published</li>
+              <li><strong>Manual Approval:</strong> Each user must be manually added by the application administrator</li>
+            </ul>
+
+            <h3>Getting Access</h3>
+            <p>To request access to this development application:</p>
+            <ol>
+              <li><strong>Contact Administrator:</strong> Send your Gmail address to <a href="mailto:przemeksroka&#64;google.com">przemeksroka&#64;google.com</a></li>
+              <li><strong>Wait for Confirmation:</strong> You'll receive confirmation once added to the test users list</li>
+              <li><strong>Sign In:</strong> Use the "Sign in with Google" button with your approved Gmail account</li>
+              <li><strong>Grant Permissions:</strong> Accept the OAuth consent screen to access your Google Cloud resources</li>
+            </ol>
 
             <h3>OAuth Configuration</h3>
             <p>To configure OAuth 2.0 for your deployment:</p>
@@ -484,7 +513,7 @@ gcloud services enable monitoring.googleapis.com</code></pre>
       align-items: center;
       padding: 16px 24px;
       text-decoration: none;
-      color: #666;
+      color: #1976d2;
       transition: all 0.3s ease;
       cursor: pointer;
       white-space: nowrap;
@@ -774,6 +803,34 @@ gcloud services enable monitoring.googleapis.com</code></pre>
       font-family: 'JetBrains Mono', 'Courier New', monospace;
       font-size: 0.9em;
       color: #d32f2f;
+    }
+    
+    a {
+      color: #1976d2;
+      text-decoration: none;
+    }
+    
+    a:hover {
+      text-decoration: underline;
+    }
+    
+    a[href^="mailto:"] {
+      background: #e3f2fd;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 500;
+      border: 1px solid #bbdefb;
+    }
+    
+    a[href^="mailto:"]:hover {
+      background: #bbdefb;
+      text-decoration: none;
+    }
+    
+    a[target="_blank"]::after {
+      content: ' ↗';
+      font-size: 0.8em;
+      opacity: 0.7;
     }
     
     @media (max-width: 768px) {
