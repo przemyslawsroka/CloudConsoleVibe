@@ -1854,11 +1854,11 @@ export interface HostRule {
 
     /* Form Field Customization */
     .feature-form-field .mat-form-field-appearance-outline .mat-form-field-outline-thick {
-      color: #1976d2;
+      color: var(--primary-color);
     }
 
     .feature-form-field .mat-focused .mat-form-field-label {
-      color: #1976d2;
+      color: var(--primary-color);
     }
 
     /* Backends Section */
@@ -1867,21 +1867,22 @@ export interface HostRule {
     }
 
     .backends-section h4 {
-      color: #1976d2;
+      color: var(--primary-color);
       font-size: 16px;
       font-weight: 500;
       margin-bottom: 16px;
     }
 
     .backend-entry {
-      border: 1px solid #e0e0e0;
+      border: 1px solid var(--border-color);
       border-radius: 6px;
       margin-bottom: 12px;
+      background: var(--surface-color);
     }
 
     .backend-entry-header {
       padding: 12px 16px;
-      background: #f8f9fa;
+      background: var(--hover-color);
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -1890,18 +1891,18 @@ export interface HostRule {
 
     .backend-entry-name {
       font-weight: 500;
-      color: #202124;
+      color: var(--text-color);
     }
 
     .backend-entry-details {
-      color: #5f6368;
+      color: var(--text-secondary-color);
       font-size: 14px;
       margin-left: 16px;
     }
 
     .backend-entry-expanded {
       padding: 16px;
-      border-top: 1px solid #e0e0e0;
+      border-top: 1px solid var(--border-color);
     }
 
     .balancing-mode-section {
@@ -1909,7 +1910,7 @@ export interface HostRule {
     }
 
     .balancing-mode-section h5 {
-      color: #202124;
+      color: var(--text-color);
       font-size: 14px;
       font-weight: 500;
       margin-bottom: 12px;
@@ -1949,19 +1950,19 @@ export interface HostRule {
     }
 
     .health-check-header h4 {
-      color: #1976d2;
+      color: var(--primary-color);
       font-size: 16px;
       font-weight: 500;
       margin: 0;
     }
 
     .health-check-header:hover .edit-icon {
-      color: #1565c0;
+      color: var(--primary-color);
     }
 
     .health-check-info {
-      background: #f8f9fa;
-      border: 1px solid #e0e0e0;
+      background: var(--hover-color);
+      border: 1px solid var(--border-color);
       border-radius: 6px;
       padding: 16px;
     }
@@ -1977,12 +1978,12 @@ export interface HostRule {
     }
 
     .health-check-row .label {
-      color: #5f6368;
+      color: var(--text-secondary-color);
       font-size: 14px;
     }
 
     .health-check-row .value {
-      color: #202124;
+      color: var(--text-color);
       font-size: 14px;
       font-weight: 500;
     }
@@ -1993,7 +1994,7 @@ export interface HostRule {
       justify-content: flex-end;
       margin-top: 24px;
       padding-top: 16px;
-      border-top: 1px solid #e0e0e0;
+      border-top: 1px solid var(--border-color);
     }
 
     /* Health Check Modal */
@@ -2217,7 +2218,7 @@ export interface HostRule {
     }
 
     .simple-routing h4 {
-      color: #1976d2;
+      color: var(--primary-color);
       font-size: 16px;
       font-weight: 500;
       margin-bottom: 16px;
@@ -2229,9 +2230,9 @@ export interface HostRule {
       align-items: flex-start;
       margin-bottom: 16px;
       padding: 16px;
-      background: #f8f9fa;
+      background: var(--surface-color);
       border-radius: 8px;
-      border: 1px solid #e8eaed;
+      border: 1px solid var(--border-color);
     }
 
     .routing-rule-row .form-field-inline {
@@ -2241,11 +2242,11 @@ export interface HostRule {
 
     .delete-rule-button {
       margin-top: 8px;
-      color: #ea4335;
+      color: var(--warn-color);
     }
 
     .delete-rule-button:hover {
-      background-color: rgba(234, 67, 53, 0.04);
+      background-color: var(--hover-color);
     }
 
     /* Common Buttons */
@@ -2253,18 +2254,18 @@ export interface HostRule {
       display: flex;
       align-items: center;
       gap: 8px;
-      color: #1976d2;
-      border: 1px dashed #1976d2;
+      color: var(--primary-color);
+      border: 1px dashed var(--primary-color);
       background: transparent;
       margin-top: 16px;
     }
 
     .add-button:hover {
-      background: rgba(25, 118, 210, 0.04);
+      background: var(--hover-color);
     }
 
     .expand-icon {
-      color: #5f6368;
+      color: var(--text-secondary-color);
       transition: transform 0.2s ease;
     }
 
@@ -2477,27 +2478,27 @@ export interface HostRule {
     }
 
     .host-rules-section h5 {
-      color: #202124;
+      color: var(--text-color);
       font-size: 14px;
       font-weight: 500;
       margin-bottom: 12px;
     }
 
     .host-rules-content {
-      background: #f8f9fa;
-      border: 1px solid #e0e0e0;
+      background: var(--hover-color);
+      border: 1px solid var(--border-color);
       border-radius: 6px;
       padding: 16px;
-      color: #5f6368;
+      color: var(--text-secondary-color);
     }
 
     .undefined-rules {
-      color: #5f6368;
+      color: var(--text-secondary-color);
       font-size: 14px;
     }
 
     .route-rules-section h5 {
-      color: #202124;
+      color: var(--text-color);
       font-size: 14px;
       font-weight: 500;
       margin-bottom: 16px;
@@ -2527,19 +2528,20 @@ export interface HostRule {
     .filter-button,
     .help-button,
     .columns-button {
-      color: #5f6368;
+      color: var(--text-secondary-color);
     }
 
     .filter-text {
-      color: #5f6368;
+      color: var(--text-secondary-color);
       font-size: 14px;
       margin-right: 8px;
     }
 
     .route-rules-table {
-      border: 1px solid #e0e0e0;
+      border: 1px solid var(--border-color);
       border-radius: 8px;
       overflow: hidden;
+      background: var(--surface-color);
     }
 
     .advanced-rules-table {
@@ -2547,27 +2549,27 @@ export interface HostRule {
     }
 
     .advanced-rules-table .mat-header-cell {
-      background: #f8f9fa;
-      color: #5f6368;
+      background: var(--hover-color);
+      color: var(--text-secondary-color);
       font-weight: 500;
       font-size: 12px;
       padding: 12px 16px;
-      border-bottom: 1px solid #e0e0e0;
+      border-bottom: 1px solid var(--border-color);
     }
 
     .advanced-rules-table .mat-cell {
       padding: 12px 16px;
-      color: #202124;
+      color: var(--text-color);
       font-size: 14px;
-      border-bottom: 1px solid #f1f3f4;
+      border-bottom: 1px solid var(--border-color);
     }
 
     .advanced-rules-table .mat-header-row {
-      background: #f8f9fa;
+      background: var(--hover-color);
     }
 
     .advanced-rules-table .mat-row:hover {
-      background: #f8f9fa;
+      background: var(--hover-color);
     }
 
     .advanced-rules-table .mat-row:last-child .mat-cell {
@@ -2579,7 +2581,7 @@ export interface HostRule {
     }
 
     .yaml-editor {
-      border: 1px solid #e0e0e0;
+      border: 1px solid var(--border-color);
       border-radius: 6px;
       overflow: hidden;
     }
@@ -2593,13 +2595,13 @@ export interface HostRule {
       font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
       font-size: 14px;
       line-height: 1.5;
-      background: #f8f9fa;
-      color: #202124;
+      background: var(--hover-color);
+      color: var(--text-color);
     }
 
     .yaml-textarea:focus {
       outline: none;
-      background: white;
+      background: var(--surface-color);
     }
 
     .default-rule-actions {
@@ -2607,22 +2609,22 @@ export interface HostRule {
       gap: 8px;
       justify-content: flex-end;
       padding: 16px 24px;
-      border-top: 1px solid #e0e0e0;
-      background: #f8f9fa;
+      border-top: 1px solid var(--border-color);
+      background: var(--hover-color);
     }
 
     .add-host-rule-button {
       display: flex;
       align-items: center;
       gap: 8px;
-      color: #1976d2;
-      border: 1px dashed #1976d2;
+      color: var(--primary-color);
+      border: 1px dashed var(--primary-color);
       background: transparent;
       margin-top: 16px;
     }
 
     .add-host-rule-button:hover {
-      background: rgba(25, 118, 210, 0.04);
+      background: var(--hover-color);
     }
 
     /* Table Responsive */
@@ -2660,7 +2662,7 @@ export interface HostRule {
 
     /* Material Table Overrides */
     .mat-table {
-      background: white;
+      background: var(--surface-color);
     }
 
     .mat-header-cell {
@@ -2682,15 +2684,15 @@ export interface HostRule {
 
     /* Advanced Rule States */
     .rule-editing {
-      background: #e3f2fd !important;
+      background: var(--hover-color) !important;
     }
 
     .rule-error {
-      background: #ffebee !important;
+      background: rgba(244, 67, 54, 0.1) !important;
     }
 
     .rule-warning {
-      background: #fff3e0 !important;
+      background: rgba(255, 193, 7, 0.1) !important;
     }
 
     /* Tooltip Overrides */
@@ -2701,29 +2703,30 @@ export interface HostRule {
 
     /* Additional Host and Route Rules */
     .host-and-route-rule-container {
-      border: 1px solid #e0e0e0;
+      border: 1px solid var(--border-color);
       border-radius: 8px;
       margin-bottom: 16px;
       overflow: hidden;
+      background: var(--surface-color);
     }
 
     .rule-header {
       padding: 16px;
-      background: #f8f9fa;
+      background: var(--hover-color);
       cursor: pointer;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      border-bottom: 1px solid #e0e0e0;
+      border-bottom: 1px solid var(--border-color);
     }
 
     .rule-header:hover {
-      background: #f1f3f4;
+      background: var(--selected-color);
     }
 
     .rule-title {
       font-weight: 500;
-      color: #202124;
+      color: var(--text-color);
       font-size: 16px;
     }
 
@@ -2734,7 +2737,7 @@ export interface HostRule {
     }
 
     .rule-content {
-      background: white;
+      background: var(--surface-color);
     }
 
     .host-rules-section {
@@ -2761,15 +2764,15 @@ export interface HostRule {
       display: flex;
       align-items: center;
       gap: 8px;
-      color: #1976d2;
-      border: 1px dashed #1976d2;
+      color: var(--primary-color);
+      border: 1px dashed var(--primary-color);
       background: transparent;
       margin-top: 8px;
       align-self: flex-start;
     }
 
     .add-host-button:hover {
-      background: rgba(25, 118, 210, 0.04);
+      background: var(--hover-color);
     }
 
     .rule-actions-footer {
@@ -2777,8 +2780,8 @@ export interface HostRule {
       gap: 8px;
       justify-content: flex-end;
       padding: 16px 24px;
-      border-top: 1px solid #e0e0e0;
-      background: #f8f9fa;
+      border-top: 1px solid var(--border-color);
+      background: var(--hover-color);
     }
 
     /* Responsive Design for New Rules */
@@ -3076,7 +3079,7 @@ export interface HostRule {
     @media print {
       .illustration-modal {
         box-shadow: none;
-        border: 1px solid #ccc;
+        border: 1px solid var(--border-color);
       }
 
       .modal-actions {
