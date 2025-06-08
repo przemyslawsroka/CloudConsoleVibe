@@ -43,24 +43,24 @@ import { Component } from '@angular/core';
             <!-- Background shapes -->
             <defs>
               <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
-                <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#e0e0e0" stroke-width="1"/>
+                <path d="M 20 0 L 0 0 0 20" fill="none" stroke="var(--divider-color)" stroke-width="1"/>
               </pattern>
             </defs>
             <rect width="400" height="300" fill="url(#grid)" opacity="0.3"/>
             
             <!-- Hand drawing gesture -->
             <path d="M 80 120 Q 100 100 120 120 Q 140 140 160 120 Q 180 100 200 120" 
-                  fill="none" stroke="#9aa0a6" stroke-width="3" stroke-linecap="round"/>
+                  fill="none" stroke="var(--text-secondary-color)" stroke-width="3" stroke-linecap="round"/>
             
             <!-- Document/grid representation -->
-            <rect x="250" y="180" width="80" height="60" fill="white" stroke="#dadce0" stroke-width="2" rx="4"/>
-            <line x1="260" y1="190" x2="320" y2="190" stroke="#dadce0" stroke-width="1"/>
-            <line x1="260" y1="200" x2="320" y2="200" stroke="#dadce0" stroke-width="1"/>
-            <line x1="260" y1="210" x2="320" y2="210" stroke="#dadce0" stroke-width="1"/>
-            <line x1="260" y1="220" x2="320" y2="220" stroke="#dadce0" stroke-width="1"/>
-            <line x1="270" y1="185" x2="270" y2="235" stroke="#dadce0" stroke-width="1"/>
-            <line x1="280" y1="185" x2="280" y2="235" stroke="#dadce0" stroke-width="1"/>
-            <line x1="290" y1="185" x2="290" y2="235" stroke="#dadce0" stroke-width="1"/>
+            <rect x="250" y="180" width="80" height="60" fill="var(--surface-color)" stroke="var(--border-color)" stroke-width="2" rx="4"/>
+            <line x1="260" y1="190" x2="320" y2="190" stroke="var(--border-color)" stroke-width="1"/>
+            <line x1="260" y1="200" x2="320" y2="200" stroke="var(--border-color)" stroke-width="1"/>
+            <line x1="260" y1="210" x2="320" y2="210" stroke="var(--border-color)" stroke-width="1"/>
+            <line x1="260" y1="220" x2="320" y2="220" stroke="var(--border-color)" stroke-width="1"/>
+            <line x1="270" y1="185" x2="270" y2="235" stroke="var(--border-color)" stroke-width="1"/>
+            <line x1="280" y1="185" x2="280" y2="235" stroke="var(--border-color)" stroke-width="1"/>
+            <line x1="290" y1="185" x2="290" y2="235" stroke="var(--border-color)" stroke-width="1"/>
             
             <!-- Abstract geometric shapes -->
             <polygon points="50,50 70,40 90,50 80,70 60,70" fill="#e8f0fe" stroke="#4285f4" stroke-width="2"/>
@@ -68,8 +68,8 @@ import { Component } from '@angular/core';
             <rect x="150" y="40" width="40" height="40" fill="#e6f4ea" stroke="#34a853" stroke-width="2" rx="4"/>
             
             <!-- Connection lines -->
-            <path d="M 75 70 Q 100 90 150 60" fill="none" stroke="#9aa0a6" stroke-width="2" stroke-dasharray="5,5"/>
-            <path d="M 190 60 Q 250 70 295 80" fill="none" stroke="#9aa0a6" stroke-width="2" stroke-dasharray="5,5"/>
+            <path d="M 75 70 Q 100 90 150 60" fill="none" stroke="var(--text-secondary-color)" stroke-width="2" stroke-dasharray="5,5"/>
+            <path d="M 190 60 Q 250 70 295 80" fill="none" stroke="var(--text-secondary-color)" stroke-width="2" stroke-dasharray="5,5"/>
           </svg>
         </div>
       </div>
@@ -84,21 +84,21 @@ import { Component } from '@angular/core';
           <div class="solution-diagram">
             <svg viewBox="0 0 280 200" class="distributed-app-diagram">
               <!-- On-premises section -->
-              <rect x="10" y="20" width="80" height="160" fill="#f8f9fa" stroke="#dadce0" stroke-width="1" rx="8"/>
+              <rect x="10" y="20" width="80" height="160" fill="var(--hover-color)" stroke="var(--border-color)" stroke-width="1" rx="8"/>
               <text x="50" y="15" text-anchor="middle" class="diagram-label">On-premises</text>
               
               <!-- Database -->
-              <circle cx="50" cy="50" r="15" fill="#4285f4" stroke="white" stroke-width="2"/>
+              <circle cx="50" cy="50" r="15" fill="#4285f4" stroke="var(--surface-color)" stroke-width="2"/>
               <text x="50" y="55" text-anchor="middle" class="node-label">DB</text>
               
               <!-- Apps -->
-              <circle cx="30" cy="100" r="12" fill="#34a853" stroke="white" stroke-width="2"/>
+              <circle cx="30" cy="100" r="12" fill="#34a853" stroke="var(--surface-color)" stroke-width="2"/>
               <text x="30" y="105" text-anchor="middle" class="node-label-small">App</text>
-              <circle cx="70" cy="100" r="12" fill="#34a853" stroke="white" stroke-width="2"/>
+              <circle cx="70" cy="100" r="12" fill="#34a853" stroke="var(--surface-color)" stroke-width="2"/>
               <text x="70" y="105" text-anchor="middle" class="node-label-small">App</text>
               
               <!-- VPN Gateway -->
-              <circle cx="50" cy="150" r="12" fill="#fbbc04" stroke="white" stroke-width="2"/>
+              <circle cx="50" cy="150" r="12" fill="#fbbc04" stroke="var(--surface-color)" stroke-width="2"/>
               <text x="50" y="155" text-anchor="middle" class="node-label-small">VPN</text>
               
               <!-- Cloud section -->
@@ -106,18 +106,18 @@ import { Component } from '@angular/core';
               <image x="115" y="75" width="50" height="50" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTAiIGhlaWdodD0iNTAiIHZpZXdCb3g9IjAgMCA1MCA1MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTI1IDEwQzE5LjQ3NzIgMTAgMTUgMTQuNDc3MiAxNSAyMEMxNSAyNS41MjI4IDE5LjQ3NzIgMzAgMjUgMzBDMzAuNTIyOCAzMCAzNSAyNS41MjI4IDM1IDIwQzM1IDE0LjQ3NzIgMzAuNTIyOCAxMCAyNSAxMFoiIGZpbGw9IiM0Mjg1RjQiLz4KPC9zdmc+"/>
               
               <!-- VPN connection line -->
-              <line x1="62" y1="150" x2="78" y2="130" stroke="#9aa0a6" stroke-width="2" stroke-dasharray="3,3"/>
+              <line x1="62" y1="150" x2="78" y2="130" stroke="var(--text-secondary-color)" stroke-width="2" stroke-dasharray="3,3"/>
               
               <!-- Multi-cloud connections -->
-              <circle cx="220" cy="60" r="20" fill="#ea4335" stroke="white" stroke-width="2"/>
+              <circle cx="220" cy="60" r="20" fill="#ea4335" stroke="var(--surface-color)" stroke-width="2"/>
               <text x="220" y="66" text-anchor="middle" class="node-label">AWS</text>
               
-              <circle cx="220" cy="140" r="20" fill="#0078d4" stroke="white" stroke-width="2"/>
+              <circle cx="220" cy="140" r="20" fill="#0078d4" stroke="var(--surface-color)" stroke-width="2"/>
               <text x="220" y="146" text-anchor="middle" class="node-label">Azure</text>
               
               <!-- Connection lines -->
-              <line x1="200" y1="100" x2="240" y2="80" stroke="#9aa0a6" stroke-width="2"/>
-              <line x1="200" y1="100" x2="240" y2="120" stroke="#9aa0a6" stroke-width="2"/>
+              <line x1="200" y1="100" x2="240" y2="80" stroke="var(--text-secondary-color)" stroke-width="2"/>
+              <line x1="200" y1="100" x2="240" y2="120" stroke="var(--text-secondary-color)" stroke-width="2"/>
             </svg>
           </div>
           <div class="solution-content">
@@ -145,16 +145,16 @@ import { Component } from '@angular/core';
               <image x="115" y="75" width="50" height="50" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTAiIGhlaWdodD0iNTAiIHZpZXdCb3g9IjAgMCA1MCA1MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTI1IDEwQzE5LjQ3NzIgMTAgMTUgMTQuNDc3MiAxNSAyMEMxNSAyNS41MjI4IDE5LjQ3NzIgMzAgMjUgMzBDMzAuNTIyOCAzMCAzNSAyNS41MjI4IDM1IDIwQzM1IDE0LjQ3NzIgMzAuNTIyOCAxMCAyNSAxMFoiIGZpbGw9IiM0Mjg1RjQiLz4KPC9zdmc+"/>
               
               <!-- Regional endpoints -->
-              <circle cx="60" cy="50" r="18" fill="#34a853" stroke="white" stroke-width="2"/>
+              <circle cx="60" cy="50" r="18" fill="#34a853" stroke="var(--surface-color)" stroke-width="2"/>
               <text x="60" y="56" text-anchor="middle" class="node-label-small">Web & Mobile</text>
               
-              <circle cx="220" cy="50" r="18" fill="#34a853" stroke="white" stroke-width="2"/>
+              <circle cx="220" cy="50" r="18" fill="#34a853" stroke="var(--surface-color)" stroke-width="2"/>
               <text x="220" y="56" text-anchor="middle" class="node-label-small">Web & Mobile</text>
               
-              <circle cx="60" cy="150" r="18" fill="#34a853" stroke="white" stroke-width="2"/>
+              <circle cx="60" cy="150" r="18" fill="#34a853" stroke="var(--surface-color)" stroke-width="2"/>
               <text x="60" y="156" text-anchor="middle" class="node-label-small">Web Apps</text>
               
-              <circle cx="220" cy="150" r="18" fill="#34a853" stroke="white" stroke-width="2"/>
+              <circle cx="220" cy="150" r="18" fill="#34a853" stroke="var(--surface-color)" stroke-width="2"/>
               <text x="220" y="156" text-anchor="middle" class="node-label-small">Web Apps</text>
               
               <!-- Connection lines to cloud -->
@@ -195,16 +195,16 @@ import { Component } from '@angular/core';
               <image x="115" y="85" width="50" height="30" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTAiIGhlaWdodD0iMzAiIHZpZXdCb3g9IjAgMCA1MCAzMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTI1IDVDMTkuNDc3MiA1IDE1IDkuNDc3MiAxNSAxNUMxNSAyMC41MjI4IDE5LjQ3NzIgMjUgMjUgMjVDMzAuNTIyOCAyNSAzNSAyMC41MjI4IDM1IDE1QzM1IDkuNDc3MiAzMC41MjI4IDUgMjUgNVoiIGZpbGw9IiM0Mjg1RjQiLz4KPC9zdmc+"/>
               
               <!-- Data centers around -->
-              <rect x="20" y="40" width="40" height="25" fill="#f3e5f5" stroke="#9c27b0" stroke-width="2" rx="4"/>
+              <rect x="20" y="40" width="40" height="25" fill="rgba(156, 39, 176, 0.12)" stroke="#9c27b0" stroke-width="2" rx="4"/>
               <text x="40" y="57" text-anchor="middle" class="node-label-small">Private Apps</text>
               
-              <rect x="220" y="40" width="40" height="25" fill="#f3e5f5" stroke="#9c27b0" stroke-width="2" rx="4"/>
+              <rect x="220" y="40" width="40" height="25" fill="rgba(156, 39, 176, 0.12)" stroke="#9c27b0" stroke-width="2" rx="4"/>
               <text x="240" y="57" text-anchor="middle" class="node-label-small">Public workloads</text>
               
-              <rect x="20" y="135" width="40" height="25" fill="#e8f5e8" stroke="#4caf50" stroke-width="2" rx="4"/>
+              <rect x="20" y="135" width="40" height="25" fill="rgba(76, 175, 80, 0.12)" stroke="#4caf50" stroke-width="2" rx="4"/>
               <text x="40" y="152" text-anchor="middle" class="node-label-small">On-prem</text>
               
-              <rect x="220" y="135" width="40" height="25" fill="#e8f5e8" stroke="#4caf50" stroke-width="2" rx="4"/>
+              <rect x="220" y="135" width="40" height="25" fill="rgba(76, 175, 80, 0.12)" stroke="#4caf50" stroke-width="2" rx="4"/>
               <text x="240" y="152" text-anchor="middle" class="node-label-small">Multiple workloads</text>
               
               <!-- Network connections -->
@@ -216,8 +216,8 @@ import { Component } from '@angular/core';
               <!-- Internet connection indicators -->
               <circle cx="140" cy="30" r="6" fill="#fbbc04"/>
               <circle cx="140" cy="170" r="6" fill="#fbbc04"/>
-              <line x1="140" y1="36" x2="140" y2="70" stroke="#9aa0a6" stroke-width="2" stroke-dasharray="2,2"/>
-              <line x1="140" y1="130" x2="140" y2="164" stroke="#9aa0a6" stroke-width="2" stroke-dasharray="2,2"/>
+              <line x1="140" y1="36" x2="140" y2="70" stroke="var(--text-secondary-color)" stroke-width="2" stroke-dasharray="2,2"/>
+              <line x1="140" y1="130" x2="140" y2="164" stroke="var(--text-secondary-color)" stroke-width="2" stroke-dasharray="2,2"/>
             </svg>
           </div>
           <div class="solution-content">
@@ -244,20 +244,20 @@ import { Component } from '@angular/core';
               <!-- Coming soon illustration -->
               <defs>
                 <linearGradient id="futureGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" style="stop-color:#e8f0fe;stop-opacity:1" />
-                  <stop offset="100%" style="stop-color:#f8f9fa;stop-opacity:1" />
+                  <stop offset="0%" style="stop-color:#e8f0fe;stop-opacity:0.6" />
+                  <stop offset="100%" style="stop-color:var(--hover-color);stop-opacity:0.8" />
                 </linearGradient>
               </defs>
               <rect width="280" height="200" fill="url(#futureGradient)"/>
               
               <!-- Abstract network nodes -->
-              <circle cx="70" cy="80" r="20" fill="#e3f2fd" stroke="#2196f3" stroke-width="2" stroke-dasharray="5,5"/>
-              <circle cx="210" cy="80" r="20" fill="#e3f2fd" stroke="#2196f3" stroke-width="2" stroke-dasharray="5,5"/>
-              <circle cx="140" cy="140" r="25" fill="#e3f2fd" stroke="#2196f3" stroke-width="2" stroke-dasharray="5,5"/>
+              <circle cx="70" cy="80" r="20" fill="rgba(33, 150, 243, 0.12)" stroke="#2196f3" stroke-width="2" stroke-dasharray="5,5"/>
+              <circle cx="210" cy="80" r="20" fill="rgba(33, 150, 243, 0.12)" stroke="#2196f3" stroke-width="2" stroke-dasharray="5,5"/>
+              <circle cx="140" cy="140" r="25" fill="rgba(33, 150, 243, 0.12)" stroke="#2196f3" stroke-width="2" stroke-dasharray="5,5"/>
               
               <!-- Dotted connections -->
-              <line x1="90" y1="90" x2="115" y2="125" stroke="#9aa0a6" stroke-width="2" stroke-dasharray="3,3" opacity="0.6"/>
-              <line x1="190" y1="90" x2="165" y2="125" stroke="#9aa0a6" stroke-width="2" stroke-dasharray="3,3" opacity="0.6"/>
+              <line x1="90" y1="90" x2="115" y2="125" stroke="var(--text-secondary-color)" stroke-width="2" stroke-dasharray="3,3" opacity="0.6"/>
+              <line x1="190" y1="90" x2="165" y2="125" stroke="var(--text-secondary-color)" stroke-width="2" stroke-dasharray="3,3" opacity="0.6"/>
               
               <!-- Future indicator -->
               <text x="140" y="50" text-anchor="middle" class="future-label">Future Solutions</text>
@@ -299,8 +299,10 @@ import { Component } from '@angular/core';
       max-width: 1200px;
       margin: 0 auto;
       padding: 24px;
-      background-color: #ffffff;
+      background-color: var(--background-color);
       font-family: 'Google Sans', Roboto, sans-serif;
+      color: var(--text-color);
+      transition: background-color 0.3s ease, color 0.3s ease;
     }
 
     .header-section {
@@ -310,20 +312,20 @@ import { Component } from '@angular/core';
     .header-section h1 {
       font-size: 28px;
       font-weight: 400;
-      color: #202124;
+      color: var(--text-color);
       margin: 0 0 16px 0;
     }
 
     .header-description {
       font-size: 14px;
       line-height: 1.6;
-      color: #5f6368;
+      color: var(--text-secondary-color);
       margin: 0;
       max-width: 800px;
     }
 
     .learn-more-link {
-      color: #1a73e8;
+      color: var(--primary-color);
       text-decoration: none;
       margin-left: 4px;
     }
@@ -353,7 +355,7 @@ import { Component } from '@angular/core';
     }
 
     .step-number {
-      background-color: #1a73e8;
+      background-color: var(--primary-color);
       color: white;
       width: 24px;
       height: 24px;
@@ -369,13 +371,13 @@ import { Component } from '@angular/core';
     .step-content h3 {
       font-size: 16px;
       font-weight: 500;
-      color: #202124;
+      color: var(--text-color);
       margin: 0 0 8px 0;
     }
 
     .step-content p {
       font-size: 14px;
-      color: #5f6368;
+      color: var(--text-secondary-color);
       margin: 0;
       line-height: 1.5;
     }
@@ -398,15 +400,15 @@ import { Component } from '@angular/core';
     }
 
     .solution-card {
-      border: 1px solid #dadce0;
+      border: 1px solid var(--border-color);
       border-radius: 8px;
       padding: 24px;
-      background-color: white;
+      background-color: var(--surface-color);
       transition: box-shadow 0.2s ease;
     }
 
     .solution-card:hover {
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
     }
 
     .solution-card.future-card {
@@ -418,8 +420,8 @@ import { Component } from '@angular/core';
     }
 
     .by-google-badge {
-      background-color: #e8f0fe;
-      color: #1a73e8;
+      background-color: rgba(66, 133, 244, 0.12);
+      color: var(--primary-color);
       padding: 4px 8px;
       border-radius: 12px;
       font-size: 12px;
@@ -442,7 +444,7 @@ import { Component } from '@angular/core';
 
     .diagram-label {
       font-size: 10px;
-      fill: #5f6368;
+      fill: var(--text-secondary-color);
       font-weight: 500;
     }
 
@@ -460,31 +462,31 @@ import { Component } from '@angular/core';
 
     .small-label {
       font-size: 6px;
-      fill: #5f6368;
+      fill: var(--text-secondary-color);
     }
 
     .future-label {
       font-size: 14px;
-      fill: #1a73e8;
+      fill: var(--primary-color);
       font-weight: 500;
     }
 
     .coming-soon {
       font-size: 10px;
-      fill: #9aa0a6;
+      fill: var(--text-secondary-color);
       font-style: italic;
     }
 
     .solution-content h3 {
       font-size: 18px;
       font-weight: 500;
-      color: #202124;
+      color: var(--text-color);
       margin: 0 0 8px 0;
     }
 
     .solution-content p {
       font-size: 14px;
-      color: #5f6368;
+      color: var(--text-secondary-color);
       line-height: 1.5;
       margin: 0 0 16px 0;
     }
@@ -497,7 +499,7 @@ import { Component } from '@angular/core';
 
     .documentation-link,
     .github-link {
-      color: #1a73e8;
+      color: var(--primary-color);
       text-decoration: none;
       font-size: 14px;
     }
@@ -520,16 +522,16 @@ import { Component } from '@angular/core';
     }
 
     .preview-btn {
-      border-color: #dadce0;
-      color: #5f6368;
+      border-color: var(--border-color);
+      color: var(--text-secondary-color);
     }
 
     .get-started-btn {
-      background-color: #1a73e8;
+      background-color: var(--primary-color);
     }
 
     .bottom-section {
-      border-top: 1px solid #dadce0;
+      border-top: 1px solid var(--border-color);
       padding-top: 32px;
     }
 
@@ -550,9 +552,70 @@ import { Component } from '@angular/core';
 
     .gemini-content p {
       font-size: 14px;
-      color: #5f6368;
+      color: var(--text-secondary-color);
       margin: 0;
       line-height: 1.5;
+    }
+
+    /* Dark theme specific adjustments */
+    :host-context(.dark-theme) {
+      .solution-card {
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+      }
+
+      .solution-card:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+      }
+    }
+
+    /* Material component overrides for dark theme */
+    :host-context(.dark-theme) ::ng-deep {
+      .mat-mdc-button {
+        color: var(--text-color);
+      }
+
+      .mat-mdc-outlined-button {
+        border-color: var(--border-color);
+        color: var(--text-secondary-color);
+      }
+
+      .mat-mdc-outlined-button:not([disabled]):hover {
+        background-color: var(--hover-color);
+      }
+
+      .mat-mdc-raised-button.mat-primary {
+        background-color: var(--primary-color) !important;
+        color: white !important;
+      }
+
+      .mat-mdc-raised-button.mat-primary:hover {
+        background-color: var(--primary-hover-color) !important;
+      }
+
+      .mat-mdc-raised-button[disabled] {
+        background-color: var(--hover-color) !important;
+        color: var(--text-secondary-color) !important;
+      }
+
+      .mat-mdc-outlined-button[disabled] {
+        border-color: var(--divider-color) !important;
+        color: var(--text-secondary-color) !important;
+      }
+    }
+
+    /* Standard overrides (for light theme compatibility) */
+    ::ng-deep .mat-mdc-outlined-button {
+      border-color: var(--border-color);
+      color: var(--text-secondary-color);
+    }
+
+    ::ng-deep .mat-mdc-outlined-button:not([disabled]):hover {
+      background-color: var(--hover-color);
+    }
+
+    ::ng-deep .mat-mdc-raised-button.mat-primary {
+      background-color: var(--primary-color);
+      color: white;
     }
 
     @media (max-width: 768px) {
