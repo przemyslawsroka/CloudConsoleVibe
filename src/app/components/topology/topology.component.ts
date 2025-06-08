@@ -314,30 +314,33 @@ import { forkJoin } from 'rxjs';
     .topology-container {
       padding: 24px;
       max-width: 100%;
-      background-color: #f8f9fa;
+      background-color: var(--background-color);
       min-height: 100vh;
+      color: var(--text-color);
+      transition: background-color 0.3s ease, color 0.3s ease;
     }
 
     .header {
       margin-bottom: 24px;
-      background: white;
+      background: var(--surface-color);
       padding: 24px;
       border-radius: 8px;
       box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      border: 1px solid var(--border-color);
     }
 
     .header-content h1 {
       margin: 0 0 8px 0;
       font-size: 28px;
       font-weight: 400;
-      color: #202124;
+      color: var(--text-color);
       display: flex;
       align-items: center;
       gap: 12px;
     }
 
     .header-icon {
-      color: #1976d2;
+      color: var(--primary-color);
       font-size: 32px;
       width: 32px;
       height: 32px;
@@ -345,7 +348,7 @@ import { forkJoin } from 'rxjs';
 
     .header-description {
       margin: 0;
-      color: #5f6368;
+      color: var(--text-secondary-color);
       font-size: 14px;
     }
 
@@ -354,9 +357,10 @@ import { forkJoin } from 'rxjs';
     }
 
     .controls-card {
-      background: white;
+      background: var(--surface-color);
       border-radius: 8px;
       box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      border: 1px solid var(--border-color);
     }
 
     .controls-grid {
@@ -367,7 +371,7 @@ import { forkJoin } from 'rxjs';
 
     .control-group h4 {
       margin: 0 0 12px 0;
-      color: #202124;
+      color: var(--text-color);
       font-size: 16px;
       font-weight: 500;
       display: flex;
@@ -377,7 +381,7 @@ import { forkJoin } from 'rxjs';
 
     .control-group p {
       margin: 4px 0;
-      color: #5f6368;
+      color: var(--text-secondary-color);
       font-size: 14px;
     }
 
@@ -393,15 +397,16 @@ import { forkJoin } from 'rxjs';
 
     .graph-card {
       margin-bottom: 24px;
-      background: white;
+      background: var(--surface-color);
       border-radius: 8px;
       box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      border: 1px solid var(--border-color);
     }
 
     .graph-container {
       width: 100%;
       height: 700px;
-      background: #ffffff;
+      background: var(--graph-background-color, var(--surface-color));
       border-radius: 8px;
       position: relative;
     }
@@ -416,10 +421,10 @@ import { forkJoin } from 'rxjs';
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      background: rgba(255, 255, 255, 0.9);
+      background: rgba(var(--surface-rgb), 0.9);
       border-radius: 8px;
       z-index: 10;
-      color: #5f6368;
+      color: var(--text-secondary-color);
     }
 
     .loading-overlay p {
@@ -428,9 +433,10 @@ import { forkJoin } from 'rxjs';
     }
 
     .insights-card {
-      background: white;
+      background: var(--surface-color);
       border-radius: 8px;
       box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      border: 1px solid var(--border-color);
     }
 
     .insights-grid {
@@ -441,9 +447,9 @@ import { forkJoin } from 'rxjs';
 
     .connection-item {
       padding: 16px;
-      border: 1px solid #e0e0e0;
+      border: 1px solid var(--border-color);
       border-radius: 8px;
-      background: #fafafa;
+      background: var(--hover-color);
     }
 
     .connection-header {
@@ -458,19 +464,20 @@ import { forkJoin } from 'rxjs';
       align-items: center;
       gap: 8px;
       font-weight: 500;
-      color: #202124;
+      color: var(--text-color);
     }
 
     .subnet-name {
       font-family: 'Roboto Mono', monospace;
       font-size: 13px;
-      background: #e3f2fd;
+      background: rgba(66, 133, 244, 0.12);
+      color: var(--primary-color);
       padding: 4px 8px;
       border-radius: 4px;
     }
 
     .arrow-icon {
-      color: #5f6368;
+      color: var(--text-secondary-color);
       font-size: 16px;
       width: 16px;
       height: 16px;
@@ -478,7 +485,7 @@ import { forkJoin } from 'rxjs';
 
     .traffic-amount {
       font-weight: 600;
-      color: #1976d2;
+      color: var(--primary-color);
     }
 
     .traffic-amount.traffic-high {
@@ -507,7 +514,7 @@ import { forkJoin } from 'rxjs';
     }
 
     .sample-count {
-      color: #5f6368;
+      color: var(--text-secondary-color);
       font-size: 14px;
     }
 
@@ -541,10 +548,11 @@ import { forkJoin } from 'rxjs';
 
     .debug-card {
       margin-bottom: 24px;
-      background: #fff3e0;
+      background: rgba(255, 193, 7, 0.1);
       border-left: 4px solid #ff9800;
       border-radius: 8px;
       box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      border: 1px solid var(--border-color);
     }
 
     .debug-grid {
@@ -558,7 +566,8 @@ import { forkJoin } from 'rxjs';
       justify-content: space-between;
       align-items: center;
       padding: 8px 0;
-      border-bottom: 1px solid #e0e0e0;
+      border-bottom: 1px solid var(--border-color);
+      color: var(--text-color);
     }
 
     .debug-item:last-child {
@@ -576,10 +585,11 @@ import { forkJoin } from 'rxjs';
       gap: 8px;
       margin: 0;
       padding: 12px;
-      background: #e3f2fd;
+      background: rgba(33, 150, 243, 0.12);
       border-radius: 4px;
       color: #1565c0;
       font-size: 14px;
+      border: 1px solid var(--border-color);
     }
 
     .debug-help-title {
@@ -594,10 +604,11 @@ import { forkJoin } from 'rxjs';
 
     .debug-solutions {
       margin-top: 16px;
-      background: #f3e5f5;
+      background: rgba(156, 39, 176, 0.12);
       padding: 16px;
       border-radius: 8px;
       border-left: 4px solid #9c27b0;
+      border: 1px solid var(--border-color);
     }
 
     .solution-list {
@@ -612,7 +623,7 @@ import { forkJoin } from 'rxjs';
     }
 
     .solution-list a {
-      color: #1976d2;
+      color: var(--primary-color);
       text-decoration: none;
     }
 
@@ -623,7 +634,7 @@ import { forkJoin } from 'rxjs';
     .demo-note {
       margin-top: 16px;
       padding: 12px;
-      background: #e8f5e8;
+      background: rgba(76, 175, 80, 0.12);
       border-radius: 8px;
       border-left: 4px solid #4caf50;
       display: flex;
@@ -631,6 +642,7 @@ import { forkJoin } from 'rxjs';
       gap: 8px;
       font-size: 14px;
       color: #2e7d32;
+      border: 1px solid var(--border-color);
     }
 
     .status-success {
@@ -654,27 +666,28 @@ import { forkJoin } from 'rxjs';
     }
 
     .debug-help code {
-      background: #f5f5f5;
+      background: var(--hover-color);
       padding: 2px 6px;
       border-radius: 3px;
       font-family: 'Roboto Mono', monospace;
       font-size: 12px;
       color: #d32f2f;
+      border: 1px solid var(--border-color);
     }
 
     .debug-help.success {
-      background: #e8f5e8;
+      background: rgba(76, 175, 80, 0.12);
       color: #2e7d32;
       border-left: 4px solid #4caf50;
     }
 
     .debug-solutions.success {
-      background: #e8f5e8;
+      background: rgba(76, 175, 80, 0.12);
       border-left: 4px solid #4caf50;
     }
 
     .demo-note.success {
-      background: #e8f5e8;
+      background: rgba(76, 175, 80, 0.12);
       border-left: 4px solid #4caf50;
       color: #2e7d32;
     }
@@ -686,7 +699,7 @@ import { forkJoin } from 'rxjs';
 
     .filter-note {
       font-size: 12px;
-      color: #5f6368;
+      color: var(--text-secondary-color);
       font-style: italic;
       margin-left: 8px;
     }
@@ -705,19 +718,22 @@ import { forkJoin } from 'rxjs';
     }
 
     .traffic-row:hover {
-      background-color: #f5f5f5;
+      background-color: var(--hover-color);
     }
 
     .traffic-table th {
-      background-color: #fafafa;
+      background-color: var(--hover-color);
       font-weight: 600;
-      color: #202124;
+      color: var(--text-color);
     }
 
     .subnet-chip {
-      background-color: #e3f2fd;
+      background-color: rgba(66, 133, 244, 0.12);
+      color: var(--primary-color);
       padding: 4px 8px;
       border-radius: 4px;
+      font-family: 'Roboto Mono', monospace;
+      font-size: 12px;
     }
 
     .protocol-chips {
@@ -726,16 +742,27 @@ import { forkJoin } from 'rxjs';
     }
 
     .protocol-chip {
-      background-color: #e3f2fd;
+      background-color: rgba(76, 175, 80, 0.12);
+      color: #2e7d32;
       padding: 4px 8px;
       border-radius: 4px;
+      font-size: 11px;
+      font-weight: 500;
+    }
+
+    .traffic-table-card {
+      background: var(--surface-color);
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      border: 1px solid var(--border-color);
     }
 
     .no-traffic-card {
       margin-top: 24px;
-      background: white;
+      background: var(--surface-color);
       border-radius: 8px;
       box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      border: 1px solid var(--border-color);
     }
 
     .no-traffic-message {
@@ -743,10 +770,198 @@ import { forkJoin } from 'rxjs';
       text-align: center;
     }
 
+    .no-traffic-message h3 {
+      color: var(--text-color);
+      margin: 16px 0 8px 0;
+    }
+
+    .no-traffic-message p {
+      color: var(--text-secondary-color);
+      margin: 8px 0;
+    }
+
     .no-traffic-icon {
-      color: #5f6368;
+      color: var(--text-secondary-color);
       font-size: 48px;
       margin-bottom: 16px;
+    }
+
+    /* Dark theme specific adjustments */
+    :host-context(.dark-theme) {
+      .header,
+      .controls-card,
+      .graph-card,
+      .insights-card,
+      .traffic-table-card,
+      .no-traffic-card {
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+      }
+
+      .debug-card {
+        background: rgba(255, 193, 7, 0.15);
+      }
+
+      .loading-overlay {
+        background: rgba(var(--surface-rgb), 0.95);
+      }
+
+      .graph-container {
+        --graph-background-color: var(--surface-color);
+      }
+    }
+
+    /* Material component overrides for dark theme */
+    :host-context(.dark-theme) ::ng-deep {
+      .mat-mdc-card {
+        background-color: var(--surface-color) !important;
+        color: var(--text-color) !important;
+      }
+
+      .mat-mdc-card-header {
+        color: var(--text-color) !important;
+      }
+
+      .mat-mdc-card-title {
+        color: var(--text-color) !important;
+      }
+
+      .mat-mdc-card-subtitle {
+        color: var(--text-secondary-color) !important;
+      }
+
+      .mat-mdc-card-content {
+        color: var(--text-color) !important;
+      }
+
+      .mat-mdc-form-field {
+        background-color: var(--surface-color) !important;
+      }
+
+      .mat-mdc-form-field .mat-mdc-text-field-wrapper {
+        background-color: var(--surface-color) !important;
+      }
+
+      .mat-mdc-form-field .mat-mdc-floating-label {
+        color: var(--text-secondary-color) !important;
+      }
+
+      .mat-mdc-form-field.mat-focused .mat-mdc-floating-label {
+        color: var(--primary-color) !important;
+      }
+
+      .mat-mdc-form-field .mat-mdc-outline {
+        color: var(--border-color) !important;
+      }
+
+      .mat-mdc-form-field.mat-focused .mat-mdc-outline {
+        color: var(--primary-color) !important;
+      }
+
+      .mat-mdc-select {
+        color: var(--text-color) !important;
+      }
+
+      .mat-mdc-select-arrow {
+        color: var(--text-secondary-color) !important;
+      }
+
+      .mat-mdc-option {
+        color: var(--text-color) !important;
+      }
+
+      .mat-mdc-option:hover {
+        background-color: var(--hover-color) !important;
+      }
+
+      .mat-mdc-option.mdc-list-item--selected {
+        background-color: rgba(var(--primary-rgb), 0.12) !important;
+      }
+
+      .mat-mdc-table {
+        background-color: var(--surface-color) !important;
+        color: var(--text-color) !important;
+      }
+
+      .mat-mdc-header-row {
+        background-color: var(--hover-color) !important;
+      }
+
+      .mat-mdc-header-cell {
+        color: var(--text-color) !important;
+        border-bottom-color: var(--border-color) !important;
+      }
+
+      .mat-mdc-cell {
+        color: var(--text-color) !important;
+        border-bottom-color: var(--border-color) !important;
+      }
+
+      .mat-mdc-row:hover {
+        background-color: var(--hover-color) !important;
+      }
+
+      .mat-mdc-checkbox {
+        --mdc-checkbox-unselected-icon-color: var(--text-secondary-color);
+        --mdc-checkbox-selected-icon-color: var(--primary-color);
+      }
+
+      .mat-mdc-checkbox .mdc-form-field {
+        color: var(--text-color) !important;
+      }
+
+      .mat-mdc-progress-spinner circle {
+        stroke: var(--primary-color) !important;
+      }
+
+      .mat-mdc-button {
+        color: var(--text-color) !important;
+      }
+
+      .mat-mdc-chip {
+        background-color: rgba(66, 133, 244, 0.12) !important;
+        color: var(--primary-color) !important;
+      }
+    }
+
+    /* Standard overrides (for light theme compatibility) */
+    ::ng-deep .mat-mdc-card {
+      background-color: var(--surface-color);
+      color: var(--text-color);
+      border: 1px solid var(--border-color);
+    }
+
+    ::ng-deep .mat-mdc-card-title {
+      color: var(--text-color);
+    }
+
+    ::ng-deep .mat-mdc-card-subtitle {
+      color: var(--text-secondary-color);
+    }
+
+    ::ng-deep .mat-mdc-card-content {
+      color: var(--text-color);
+    }
+
+    ::ng-deep .mat-mdc-form-field {
+      background-color: var(--surface-color);
+    }
+
+    ::ng-deep .mat-mdc-select {
+      color: var(--text-color);
+    }
+
+    ::ng-deep .mat-mdc-table {
+      background-color: var(--surface-color);
+      color: var(--text-color);
+    }
+
+    ::ng-deep .mat-mdc-checkbox .mdc-form-field {
+      color: var(--text-color);
+    }
+
+    ::ng-deep .mat-mdc-chip {
+      background-color: rgba(66, 133, 244, 0.12);
+      color: var(--primary-color);
     }
   `]
 })
