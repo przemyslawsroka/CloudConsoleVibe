@@ -49,66 +49,51 @@ export class CloudRouterComponent implements OnInit {
       key: 'network',
       label: 'Network',
       type: 'text',
-      sortable: true,
-      format: (value: string) => `<span class="network-name">${value}</span>`
+      sortable: true
     },
     {
       key: 'region',
       label: 'Region',
       type: 'text',
-      sortable: true,
-      format: (value: string) => `<span class="region-name">${value}</span>`
+      sortable: true
     },
     {
       key: 'interconnectEncryption',
       label: 'Interconnect encryption',
       type: 'text',
-      sortable: true,
-      format: (value: string) => `<span class="encryption-status">${value}</span>`
+      sortable: true
     },
     {
       key: 'cloudRouterASN',
       label: 'Cloud Router ASN',
       type: 'text',
-      sortable: true,
-      format: (value: number) => `<span class="asn-number">${value}</span>`
+      sortable: true
     },
     {
       key: 'interconnectVpnGateway',
       label: 'Interconnect / VPN gateway',
       type: 'text',
-      sortable: false,
-      format: (value: string) => `<span class="gateway-name">${value}</span>`
+      sortable: false
     },
     {
       key: 'connection',
       label: 'Connection',
       type: 'text',
       sortable: false,
-      format: (value: string) => value ? `<span class="connection-name">${value}</span>` : '<span class="no-connection">-</span>'
+      format: (value: string) => value || '-'
     },
     {
       key: 'bgpSessions',
       label: 'BGP sessions',
-      type: 'custom',
-      sortable: false,
-      format: (value: number) => {
-        const color = this.getBgpSessionsColor(value);
-        const icon = this.getBgpSessionsIcon(value);
-        return `
-          <div class="bgp-sessions">
-            <mat-icon style="color: ${color}; font-size: 16px; width: 16px; height: 16px;">${icon}</mat-icon>
-            <span class="session-count">${value}</span>
-          </div>
-        `;
-      }
+      type: 'text',
+      sortable: false
     },
     {
       key: 'logs',
       label: 'Logs',
-      type: 'custom',
+      type: 'text',
       sortable: false,
-      format: () => '<button mat-button color="primary" class="view-logs-btn">View</button>'
+      format: () => 'View'
     }
   ];
 
