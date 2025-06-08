@@ -96,6 +96,8 @@ import { CloudCdnDetailsComponent } from './components/cloud-cdn-details/cloud-c
 import { CloudRouterComponent } from './components/cloud-router/cloud-router.component';
 import { CloudRouterDetailsComponent } from './components/cloud-router-details/cloud-router-details.component';
 import { CreateCloudRouterComponent } from './components/create-cloud-router/create-cloud-router.component';
+import { CloudNatComponent } from './components/cloud-nat/cloud-nat.component';
+import { CloudNatService } from './services/cloud-nat.service';
 
 @NgModule({
   declarations: [
@@ -152,7 +154,8 @@ import { CreateCloudRouterComponent } from './components/create-cloud-router/cre
     CloudCdnDetailsComponent,
     CloudRouterComponent,
     CloudRouterDetailsComponent,
-    CreateCloudRouterComponent
+    CreateCloudRouterComponent,
+    CloudNatComponent
   ],
   imports: [
     BrowserModule,
@@ -179,7 +182,7 @@ import { CreateCloudRouterComponent } from './components/create-cloud-router/cre
     MatDividerModule,
     TextFieldModule
   ],
-  providers: [AuthService, VpcService, TPPIService, PacketMirroringService, NetworkHealthMonitorService, AppNetaService],
+  providers: [AuthService, VpcService, TPPIService, PacketMirroringService, NetworkHealthMonitorService, AppNetaService, CloudNatService],
   bootstrap: [AppComponent]
 })
 export class AppModule { } 
