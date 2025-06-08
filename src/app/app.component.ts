@@ -319,6 +319,7 @@ export class AppComponent implements OnInit {
       icon: 'hub',
       expanded: false,
       items: [
+        { name: 'Cloud Router', route: '/cloud-router', icon: 'router' },
         { name: 'Network Solutions', route: '/network-solutions', icon: 'hub' }
       ]
     },

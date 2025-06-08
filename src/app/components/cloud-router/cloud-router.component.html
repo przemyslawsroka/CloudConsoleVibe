@@ -1,0 +1,190 @@
+<!-- Cloud Router Header -->
+<div class="header-container">
+  <div class="header-content">
+    <h1>Cloud Router</h1>
+    <p class="subtitle">Manage dynamic routing for your VPC networks</p>
+  </div>
+</div>
+
+<!-- Loading Spinner -->
+<div *ngIf="loading" class="loading-container">
+  <mat-spinner diameter="40"></mat-spinner>
+  <p>Loading routers...</p>
+</div>
+
+<!-- Content Container -->
+<div *ngIf="!loading" class="content-container">
+  <!-- Action Bar -->
+  <div class="action-bar">
+    <div class="left-actions">
+      <button mat-raised-button color="primary" (click)="createRouter()" class="create-btn">
+        <mat-icon>add</mat-icon>
+        Create router
+      </button>
+      <button mat-stroked-button (click)="refreshRouters()" class="refresh-btn">
+        <mat-icon>refresh</mat-icon>
+        Refresh
+      </button>
+      <button mat-stroked-button 
+              [disabled]="selection.selected.length === 0"
+              (click)="deleteSelectedRouters()"
+              class="delete-btn">
+        <mat-icon>delete</mat-icon>
+        Remove
+      </button>
+    </div>
+    
+    <div class="right-actions">
+      <mat-form-field appearance="outline" class="filter-field">
+        <mat-label>Filter routers</mat-label>
+        <input matInput 
+               [(ngModel)]="filterValue" 
+               (input)="applyFilter()"
+               placeholder="Search by name, network, or region">
+        <mat-icon matSuffix *ngIf="!filterValue">search</mat-icon>
+        <button matSuffix 
+                mat-icon-button 
+                *ngIf="filterValue" 
+                (click)="clearFilter()"
+                aria-label="Clear">
+          <mat-icon>close</mat-icon>
+        </button>
+      </mat-form-field>
+    </div>
+  </div>
+
+  <!-- Router Table -->
+  <div class="table-container">
+    <table mat-table [dataSource]="dataSource" matSort class="router-table">
+      
+      <!-- Checkbox Column -->
+      <ng-container matColumnDef="select">
+        <th mat-header-cell *matHeaderCellDef>
+          <mat-checkbox (change)="$event ? masterToggle() : null"
+                        [checked]="selection.hasValue() && isAllSelected()"
+                        [indeterminate]="selection.hasValue() && !isAllSelected()">
+          </mat-checkbox>
+        </th>
+        <td mat-cell *matCellDef="let router">
+          <mat-checkbox (click)="$event.stopPropagation()"
+                        (change)="$event ? selection.toggle(router) : null"
+                        [checked]="selection.isSelected(router)">
+          </mat-checkbox>
+        </td>
+      </ng-container>
+
+      <!-- Name Column -->
+      <ng-container matColumnDef="name">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Name</th>
+        <td mat-cell *matCellDef="let router" 
+            class="router-name-cell"
+            (click)="onRouterClick(router)">
+          <div class="router-name">{{ router.name }}</div>
+        </td>
+      </ng-container>
+
+      <!-- Network Column -->
+      <ng-container matColumnDef="network">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Network</th>
+        <td mat-cell *matCellDef="let router">
+          <div class="network-name">{{ router.network }}</div>
+        </td>
+      </ng-container>
+
+      <!-- Region Column -->
+      <ng-container matColumnDef="region">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Region</th>
+        <td mat-cell *matCellDef="let router">
+          <div class="region-name">{{ router.region }}</div>
+        </td>
+      </ng-container>
+
+      <!-- Interconnect Encryption Column -->
+      <ng-container matColumnDef="interconnectEncryption">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Interconnect encryption</th>
+        <td mat-cell *matCellDef="let router">
+          <div class="encryption-status">{{ router.interconnectEncryption }}</div>
+        </td>
+      </ng-container>
+
+      <!-- Cloud Router ASN Column -->
+      <ng-container matColumnDef="cloudRouterASN">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Cloud Router ASN</th>
+        <td mat-cell *matCellDef="let router">
+          <div class="asn-number">{{ router.cloudRouterASN }}</div>
+        </td>
+      </ng-container>
+
+      <!-- Interconnect / VPN Gateway Column -->
+      <ng-container matColumnDef="interconnectVpnGateway">
+        <th mat-header-cell *matHeaderCellDef>Interconnect / VPN gateway</th>
+        <td mat-cell *matCellDef="let router">
+          <div class="gateway-name">{{ router.interconnectVpnGateway }}</div>
+        </td>
+      </ng-container>
+
+      <!-- Connection Column -->
+      <ng-container matColumnDef="connection">
+        <th mat-header-cell *matHeaderCellDef>Connection</th>
+        <td mat-cell *matCellDef="let router">
+          <div class="connection-name" *ngIf="router.connection">
+            {{ router.connection }}
+          </div>
+          <div class="no-connection" *ngIf="!router.connection">-</div>
+        </td>
+      </ng-container>
+
+      <!-- BGP Sessions Column -->
+      <ng-container matColumnDef="bgpSessions">
+        <th mat-header-cell *matHeaderCellDef>BGP sessions</th>
+        <td mat-cell *matCellDef="let router">
+          <div class="bgp-sessions" *ngIf="router.bgpSessions > 0">
+            <mat-icon [style.color]="getBgpSessionsColor(router.bgpSessions)">
+              {{ getBgpSessionsIcon(router.bgpSessions) }}
+            </mat-icon>
+            <span class="session-count">{{ router.bgpSessions }}</span>
+          </div>
+          <div class="no-sessions" *ngIf="router.bgpSessions === 0">
+            <mat-icon style="color: #9aa0a6;">radio_button_unchecked</mat-icon>
+            <span class="session-count">0</span>
+          </div>
+        </td>
+      </ng-container>
+
+      <!-- Logs Column -->
+      <ng-container matColumnDef="logs">
+        <th mat-header-cell *matHeaderCellDef>Logs</th>
+        <td mat-cell *matCellDef="let router">
+          <button mat-button 
+                  color="primary" 
+                  (click)="viewLogs(router); $event.stopPropagation()"
+                  class="view-logs-btn">
+            View
+          </button>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let router; columns: displayedColumns;" 
+          class="router-row"
+          [class.selected]="selection.isSelected(router)"></tr>
+    </table>
+
+    <!-- No Data Message -->
+    <div *ngIf="dataSource.data.length === 0" class="no-data">
+      <mat-icon>router</mat-icon>
+      <h3>No routers found</h3>
+      <p>Create your first Cloud Router to enable dynamic routing for your VPC network.</p>
+      <button mat-raised-button color="primary" (click)="createRouter()">
+        <mat-icon>add</mat-icon>
+        Create router
+      </button>
+    </div>
+  </div>
+
+  <!-- Paginator -->
+  <mat-paginator [pageSizeOptions]="[10, 25, 50, 100]" 
+                 showFirstLastButtons
+                 class="router-paginator">
+  </mat-paginator>
+</div>

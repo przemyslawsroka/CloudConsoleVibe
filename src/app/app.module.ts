@@ -91,6 +91,7 @@ import { AppNetaService } from './services/appneta.service';
 import { CNRComponent } from './components/cnr/cnr.component';
 import { CloudCdnComponent } from './components/cloud-cdn/cloud-cdn.component';
 import { CloudCdnDetailsComponent } from './components/cloud-cdn-details/cloud-cdn-details.component';
+import { CloudRouterComponent } from './components/cloud-router/cloud-router.component';
 
 @NgModule({
   declarations: [
@@ -143,7 +144,8 @@ import { CloudCdnDetailsComponent } from './components/cloud-cdn-details/cloud-c
     CreateMonitoringPolicyDialogComponent,
     CNRComponent,
     CloudCdnComponent,
-    CloudCdnDetailsComponent
+    CloudCdnDetailsComponent,
+    CloudRouterComponent
   ],
   imports: [
     BrowserModule,

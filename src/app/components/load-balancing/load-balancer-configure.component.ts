@@ -172,7 +172,7 @@ export interface HostRule {
                 <div class="frontend-info">
                   <span class="frontend-name">{{ frontend.name }}</span>
                   <span class="frontend-protocol">Protocol: {{ frontend.protocol }}, Port: {{ frontend.port }}</span>
-                  <span class="frontend-status">(Not saved)</span>
+                <span class="frontend-status">(Not saved)</span>
                 </div>
                 <div class="frontend-actions">
                   <button *ngIf="i > 0" 
@@ -181,9 +181,9 @@ export interface HostRule {
                           matTooltip="Delete frontend">
                     <mat-icon>delete</mat-icon>
                   </button>
-                  <mat-icon class="expand-icon">
+                <mat-icon class="expand-icon">
                     {{ expandedFrontends[i] ? 'expand_less' : 'expand_more' }}
-                  </mat-icon>
+                </mat-icon>
                 </div>
               </div>
               
@@ -279,7 +279,7 @@ export interface HostRule {
                     {{ backendService.backends.length === 1 ? 'Instance group' : 'Instance groups' }}, 
                     Cloud CDN: {{ backendService.cloudCDN ? 'On' : 'Off' }}
                   </span>
-                  <span class="backend-status">(Not saved)</span>
+                <span class="backend-status">(Not saved)</span>
                 </div>
                 <div class="backend-actions">
                   <button mat-icon-button (click)="deleteBackendService(i); $event.stopPropagation()">
@@ -288,9 +288,9 @@ export interface HostRule {
                   <mat-icon class="expand-icon">
                     {{ expandedBackendServices[i] ? 'expand_less' : 'expand_more' }}
                   </mat-icon>
-                </div>
               </div>
-              
+            </div>
+
               <!-- Backend Service Details -->
               <div class="backend-details-panel" *ngIf="expandedBackendServices[i]">
                 <form [formGroup]="getBackendServiceForm(i)">
@@ -533,9 +533,9 @@ export interface HostRule {
                     </div>
 
                     <button mat-button color="primary" class="add-button" (click)="addBackend(i)">
-                      <mat-icon>add</mat-icon>
+              <mat-icon>add</mat-icon>
                       ADD BACKEND
-                    </button>
+            </button>
                   </div>
 
                   <!-- Health Check Section (only for services) -->
@@ -543,8 +543,8 @@ export interface HostRule {
                     <div class="health-check-header" (click)="editHealthCheck(i)">
                       <h4>Health check</h4>
                       <mat-icon class="edit-icon">edit</mat-icon>
-                    </div>
-                    
+            </div>
+
                     <div class="health-check-info">
                       <div class="health-check-row">
                         <span class="label">Health check policy name</span>
@@ -593,50 +593,50 @@ export interface HostRule {
                 <h4>Routing rules mode</h4>
                 
                 <mat-radio-group [(ngModel)]="routingMode" class="routing-mode-group">
-                  <div class="routing-option">
-                    <mat-radio-button value="simple">Simple</mat-radio-button>
-                    <div class="routing-description">
+                <div class="routing-option">
+                  <mat-radio-button value="simple">Simple</mat-radio-button>
+                  <div class="routing-description">
                       <p>Configure simple routing based on the request host and path.</p>
-                    </div>
                   </div>
+                </div>
                   
-                  <div class="routing-option">
-                    <mat-radio-button value="advanced">Advanced</mat-radio-button>
-                    <div class="routing-description">
+                <div class="routing-option">
+                  <mat-radio-button value="advanced">Advanced</mat-radio-button>
+                  <div class="routing-description">
                       <p>Configure advanced traffic management features such as redirects, URL rewrites, traffic splitting, HTTP header transformations, and so on.</p>
-                    </div>
                   </div>
-                </mat-radio-group>
-              </div>
+                </div>
+              </mat-radio-group>
+                </div>
 
               <div *ngIf="routingMode === 'simple'" class="simple-routing">
                 <h4>Simple host and path rules</h4>
                 
                 <div *ngFor="let rule of routingRules; let i = index; trackBy: trackByRuleId" class="routing-rule-row">
-                  <mat-form-field appearance="outline" class="form-field-inline">
+                    <mat-form-field appearance="outline" class="form-field-inline">
                     <mat-label>Host {{ i + 1 }} {{ i === 0 ? '(Default)' : '' }}</mat-label>
                     <input matInput 
                            [(ngModel)]="rule.hostPattern" 
                            [placeholder]="i === 0 ? '*' : 'web.example.com'">
                     <mat-hint *ngIf="i > 0">Example: web.example.com</mat-hint>
-                  </mat-form-field>
+                    </mat-form-field>
 
-                  <mat-form-field appearance="outline" class="form-field-inline">
+                    <mat-form-field appearance="outline" class="form-field-inline">
                     <mat-label>Path {{ i + 1 }} {{ i === 0 ? '(Default)' : '' }}</mat-label>
                     <input matInput 
                            [(ngModel)]="rule.pathPattern" 
                            [placeholder]="i === 0 ? '/*' : '/images/*'">
                     <mat-hint *ngIf="i > 0">Example: /images/*</mat-hint>
-                  </mat-form-field>
+                    </mat-form-field>
 
-                  <mat-form-field appearance="outline" class="form-field-inline">
-                    <mat-label>Backend service *</mat-label>
+                    <mat-form-field appearance="outline" class="form-field-inline">
+                      <mat-label>Backend service *</mat-label>
                     <mat-select [(ngModel)]="rule.backendService">
                       <mat-option *ngFor="let bs of backendServices" [value]="bs.name">
                         {{ bs.name }}
                       </mat-option>
-                    </mat-select>
-                  </mat-form-field>
+                      </mat-select>
+                    </mat-form-field>
 
                   <button *ngIf="i > 0" 
                           mat-icon-button 
@@ -645,13 +645,13 @@ export interface HostRule {
                           matTooltip="Delete rule">
                     <mat-icon>delete</mat-icon>
                   </button>
-                </div>
+                  </div>
 
                 <button mat-button color="primary" class="add-button" (click)="addRoutingRule()">
-                  <mat-icon>add</mat-icon>
-                  ADD HOST AND PATH RULE
-                </button>
-              </div>
+                    <mat-icon>add</mat-icon>
+                    ADD HOST AND PATH RULE
+                  </button>
+                </div>
 
               <div *ngIf="routingMode === 'advanced'" class="advanced-routing">
                 <h4>Advanced host and route rules</h4>
@@ -663,7 +663,7 @@ export interface HostRule {
                     <mat-icon class="expand-icon">
                       {{ expandedDefaultRule ? 'expand_less' : 'expand_more' }}
                     </mat-icon>
-                  </div>
+              </div>
                   
                   <div class="default-rule-content" *ngIf="expandedDefaultRule">
                     <!-- View Tabs -->
@@ -943,8 +943,8 @@ export interface HostRule {
               <h3>Health check *</h3>
               <button mat-icon-button (click)="closeHealthCheckModal()">
                 <mat-icon>close</mat-icon>
-              </button>
-            </div>
+          </button>
+        </div>
 
             <div class="health-check-dropdown">
               <mat-form-field appearance="outline" class="dropdown-field">
@@ -2291,8 +2291,8 @@ export interface HostRule {
     /* Responsive Design */
     @media (max-width: 768px) {
       .config-form {
-        padding: 16px;
-      }
+      padding: 16px;
+    }
 
       .form-row {
         flex-direction: column;
@@ -3528,7 +3528,7 @@ pathMatchers: []`;
           this.createLoadBalancer();
         } else {
           // Dialog closed normally, navigate back to list
-          this.router.navigate(['/load-balancing']);
+    this.router.navigate(['/load-balancing']);
         }
       });
     } else {
