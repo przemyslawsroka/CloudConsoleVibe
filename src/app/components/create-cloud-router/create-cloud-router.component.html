@@ -1,0 +1,238 @@
+<!-- Breadcrumb Navigation -->
+<div class="breadcrumb-container">
+  <nav class="breadcrumb">
+    <a routerLink="/cloud-router" class="breadcrumb-link">Cloud Router</a>
+    <mat-icon class="breadcrumb-separator">chevron_right</mat-icon>
+    <span class="breadcrumb-current">Create a cloud router</span>
+  </nav>
+</div>
+
+<!-- Header -->
+<div class="header-container">
+  <div class="header-content">
+    <button mat-icon-button (click)="onCancel()" class="back-button">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <div class="header-text">
+      <h1>Create a cloud router</h1>
+      <p class="subtitle">
+        Google Cloud Router dynamically exchanges routes between your Virtual Private 
+        Cloud (VPC) and on-premises networks by using Border Gateway Protocol (BGP)
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- Form Container -->
+<div class="form-container">
+  <form [formGroup]="routerForm" (ngSubmit)="onSubmit()" class="router-form">
+    
+    <!-- Basic Configuration -->
+    <div class="form-section">
+      <!-- Name Field -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Name *</mat-label>
+        <input matInput 
+               formControlName="name" 
+               placeholder="my-router"
+               maxlength="63">
+        <mat-icon matSuffix class="help-icon" 
+                  matTooltip="Lowercase letters, numbers, hyphens allowed">
+          help_outline
+        </mat-icon>
+        <mat-error *ngIf="routerForm.get('name')?.hasError('required')">
+          Name is required
+        </mat-error>
+        <mat-error *ngIf="routerForm.get('name')?.hasError('pattern')">
+          Only lowercase letters, numbers, and hyphens are allowed
+        </mat-error>
+        <mat-error *ngIf="routerForm.get('name')?.hasError('maxlength')">
+          Name must not exceed 63 characters
+        </mat-error>
+        <mat-hint>Lowercase letters, numbers, hyphens allowed</mat-hint>
+      </mat-form-field>
+
+      <!-- Description Field -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Description</mat-label>
+        <textarea matInput 
+                  formControlName="description" 
+                  rows="3"
+                  placeholder="Optional description for this router">
+        </textarea>
+      </mat-form-field>
+
+      <!-- Network Field -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Network *</mat-label>
+        <mat-select formControlName="network">
+          <mat-option *ngFor="let network of networks" [value]="network.name">
+            <div class="network-option">
+              <div class="network-name">{{ network.name }}</div>
+              <div class="network-description" *ngIf="network.description">
+                {{ network.description }}
+              </div>
+            </div>
+          </mat-option>
+        </mat-select>
+        <mat-icon matSuffix class="help-icon" 
+                  matTooltip="Select the VPC network for this router">
+          help_outline
+        </mat-icon>
+        <mat-error *ngIf="routerForm.get('network')?.hasError('required')">
+          Network is required
+        </mat-error>
+      </mat-form-field>
+
+      <!-- Region Field -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Region *</mat-label>
+        <mat-select formControlName="region">
+          <mat-option *ngFor="let region of regions" [value]="region.name">
+            <div class="region-option">
+              <div class="region-name">{{ region.name }}</div>
+              <div class="region-description">{{ region.description }}</div>
+            </div>
+          </mat-option>
+        </mat-select>
+        <mat-icon matSuffix class="help-icon" 
+                  matTooltip="Select the region for this router">
+          help_outline
+        </mat-icon>
+        <mat-error *ngIf="routerForm.get('region')?.hasError('required')">
+          Region is required
+        </mat-error>
+      </mat-form-field>
+
+      <!-- Cloud Router ASN -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Cloud Router ASN</mat-label>
+        <input matInput 
+               type="number"
+               formControlName="asn"
+               min="64512"
+               max="65534">
+        <mat-icon matSuffix class="help-icon" 
+                  matTooltip="Autonomous System Number (64512-65534)">
+          help_outline
+        </mat-icon>
+        <mat-error *ngIf="routerForm.get('asn')?.hasError('required')">
+          Cloud Router ASN is required
+        </mat-error>
+        <mat-error *ngIf="routerForm.get('asn')?.hasError('min') || routerForm.get('asn')?.hasError('max')">
+          ASN must be between 64512 and 65534
+        </mat-error>
+      </mat-form-field>
+
+      <!-- BGP Peer Keepalive Interval -->
+      <mat-form-field appearance="outline" class="bgp-interval-field">
+        <mat-label>BGP peer keepalive interval</mat-label>
+        <input matInput 
+               type="number"
+               formControlName="bgpKeepaliveInterval"
+               min="1"
+               max="60">
+        <span matSuffix class="suffix-text">seconds</span>
+        <mat-icon matSuffix class="help-icon" 
+                  matTooltip="BGP keepalive interval in seconds (1-60)">
+          help_outline
+        </mat-icon>
+        <mat-error *ngIf="routerForm.get('bgpKeepaliveInterval')?.hasError('required')">
+          BGP keepalive interval is required
+        </mat-error>
+        <mat-error *ngIf="routerForm.get('bgpKeepaliveInterval')?.hasError('min') || routerForm.get('bgpKeepaliveInterval')?.hasError('max')">
+          Interval must be between 1 and 60 seconds
+        </mat-error>
+      </mat-form-field>
+
+      <!-- BGP Identifier -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>BGP identifier</mat-label>
+        <input matInput 
+               formControlName="bgpIdentifier"
+               placeholder="169.254.16.16/30">
+        <mat-icon matSuffix class="help-icon" 
+                  matTooltip="IPv4 address used as BGP identifier">
+          help_outline
+        </mat-icon>
+        <mat-hint>E.g. 169.254.16.16/30. If not specified, Google will automatically assign an IPv4 range.</mat-hint>
+      </mat-form-field>
+    </div>
+
+    <!-- Advertised Routes Section -->
+    <div class="form-section">
+      <h3 class="section-title">
+        Advertised routes
+        <mat-icon class="help-icon" 
+                  matTooltip="Configure which routes the router will advertise">
+          help_outline
+        </mat-icon>
+      </h3>
+      
+      <div class="routes-section">
+        <h4 class="subsection-title">Routes</h4>
+        <mat-radio-group formControlName="advertiseMode" class="radio-group">
+          <mat-radio-button value="DEFAULT" class="radio-option">
+            <div class="radio-content">
+              <div class="radio-title">Advertise all subnets visible to the Cloud Router (Default)</div>
+            </div>
+          </mat-radio-button>
+          <mat-radio-button value="CUSTOM" class="radio-option">
+            <div class="radio-content">
+              <div class="radio-title">Create custom routes</div>
+            </div>
+          </mat-radio-button>
+        </mat-radio-group>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="action-buttons">
+      <button mat-raised-button 
+              color="primary" 
+              type="submit"
+              [disabled]="!routerForm.valid || isSubmitting"
+              class="create-button">
+        <mat-spinner diameter="20" *ngIf="isSubmitting"></mat-spinner>
+        <span *ngIf="!isSubmitting">Create</span>
+        <span *ngIf="isSubmitting">Creating...</span>
+      </button>
+      <button mat-button 
+              type="button"
+              (click)="onCancel()"
+              [disabled]="isSubmitting"
+              class="cancel-button">
+        Cancel
+      </button>
+    </div>
+
+    <!-- Equivalent Command/REST -->
+    <div class="equivalent-section">
+      <div class="equivalent-tabs">
+        <button type="button"
+                mat-button 
+                (click)="toggleEquivalentCommand()"
+                [class.active]="showEquivalentCommand"
+                class="tab-button">
+          Equivalent command line
+        </button>
+        <button type="button"
+                mat-button 
+                (click)="toggleEquivalentRest()"
+                [class.active]="showEquivalentRest"
+                class="tab-button">
+          Equivalent REST
+        </button>
+      </div>
+
+      <div *ngIf="showEquivalentCommand" class="equivalent-content">
+        <pre class="code-block">{{ getEquivalentCommand() }}</pre>
+      </div>
+
+      <div *ngIf="showEquivalentRest" class="equivalent-content">
+        <pre class="code-block">{{ getEquivalentRest() }}</pre>
+      </div>
+    </div>
+
+  </form>
+</div>

@@ -90,9 +90,7 @@ export class CloudRouterComponent implements OnInit, AfterViewInit {
   }
 
   createRouter(): void {
-    this.snackBar.open('Create Router functionality would be implemented here', 'Close', {
-      duration: 3000
-    });
+    this.router.navigate(['/cloud-router/create']);
   }
 
   deleteSelectedRouters(): void {

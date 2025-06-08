@@ -55,6 +55,33 @@ export interface RouterInterface {
   interconnectAttachment?: string;
 }
 
+export interface CreateRouterRequest {
+  name: string;
+  region: string;
+  network: string;
+  asn: number;
+  bgpKeepaliveInterval: number;
+  advertiseMode: string;
+  advertisedGroups: string[];
+  description: string;
+}
+
+export interface NetworkOption {
+  id: string;
+  name: string;
+  selfLink: string;
+  autoCreateSubnetworks: boolean;
+  description: string;
+}
+
+export interface RegionOption {
+  id: string;
+  name: string;
+  selfLink: string;
+  description: string;
+  status: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -160,6 +187,80 @@ export class CloudRouterService {
       catchError(error => {
         console.error('Error fetching BGP sessions:', error);
         return of([]);
+      })
+    );
+  }
+
+  /**
+   * Create a new Cloud Router
+   */
+  createCloudRouter(routerData: CreateRouterRequest): Observable<any> {
+    if (this.authService.isDemoMode()) {
+      // Return mock success response
+      return of({
+        kind: 'compute#operation',
+        operationType: 'insert',
+        status: 'DONE',
+        name: 'operation-create-router-' + Date.now(),
+        targetLink: `projects/demo-project/regions/${routerData.region}/routers/${routerData.name}`
+      });
+    }
+
+    const project = this.getCurrentProject();
+    const url = `${this.baseUrl}/projects/${project}/regions/${routerData.region}/routers`;
+
+    const requestBody = {
+      name: routerData.name,
+      description: routerData.description,
+      network: `projects/${project}/global/networks/${routerData.network}`,
+      asn: routerData.asn,
+      bgp: {
+        asn: routerData.asn,
+        keepaliveInterval: routerData.bgpKeepaliveInterval,
+        advertiseMode: routerData.advertiseMode,
+        advertisedGroups: routerData.advertisedGroups
+      }
+    };
+
+    return this.http.post<any>(url, requestBody, { headers: this.getHeaders() });
+  }
+
+  /**
+   * Get available networks for router creation
+   */
+  getNetworks(): Observable<NetworkOption[]> {
+    if (this.authService.isDemoMode()) {
+      return of(this.getMockNetworks());
+    }
+
+    const project = this.getCurrentProject();
+    const url = `${this.baseUrl}/projects/${project}/global/networks`;
+
+    return this.http.get<any>(url, { headers: this.getHeaders() }).pipe(
+      map(response => this.transformNetworksResponse(response.items || [])),
+      catchError(error => {
+        console.error('Error fetching networks:', error);
+        return of(this.getMockNetworks());
+      })
+    );
+  }
+
+  /**
+   * Get available regions for router creation
+   */
+  getRegions(): Observable<RegionOption[]> {
+    if (this.authService.isDemoMode()) {
+      return of(this.getMockRegions());
+    }
+
+    const project = this.getCurrentProject();
+    const url = `${this.baseUrl}/projects/${project}/regions`;
+
+    return this.http.get<any>(url, { headers: this.getHeaders() }).pipe(
+      map(response => this.transformRegionsResponse(response.items || [])),
+      catchError(error => {
+        console.error('Error fetching regions:', error);
+        return of(this.getMockRegions());
       })
     );
   }
@@ -355,5 +456,84 @@ export class CloudRouterService {
         }
       ]
     };
+  }
+
+  private transformNetworksResponse(networks: any[]): NetworkOption[] {
+    return networks.map(network => ({
+      id: network.id,
+      name: network.name,
+      selfLink: network.selfLink,
+      autoCreateSubnetworks: network.autoCreateSubnetworks,
+      description: network.description
+    }));
+  }
+
+  private transformRegionsResponse(regions: any[]): RegionOption[] {
+    return regions.map(region => ({
+      id: region.id,
+      name: region.name,
+      selfLink: region.selfLink,
+      description: region.description,
+      status: region.status
+    }));
+  }
+
+  private getMockNetworks(): NetworkOption[] {
+    return [
+      {
+        id: '1',
+        name: 'default',
+        selfLink: 'projects/demo-project/global/networks/default',
+        autoCreateSubnetworks: true,
+        description: 'Default network for the project'
+      },
+      {
+        id: '2',
+        name: 'production-vpc',
+        selfLink: 'projects/demo-project/global/networks/production-vpc',
+        autoCreateSubnetworks: false,
+        description: 'Production VPC network'
+      },
+      {
+        id: '3',
+        name: 'staging-vpc',
+        selfLink: 'projects/demo-project/global/networks/staging-vpc',
+        autoCreateSubnetworks: false,
+        description: 'Staging VPC network'
+      }
+    ];
+  }
+
+  private getMockRegions(): RegionOption[] {
+    return [
+      {
+        id: '1',
+        name: 'us-central1',
+        selfLink: 'projects/demo-project/regions/us-central1',
+        description: 'Iowa',
+        status: 'UP'
+      },
+      {
+        id: '2',
+        name: 'us-east1',
+        selfLink: 'projects/demo-project/regions/us-east1',
+        description: 'South Carolina',
+        status: 'UP'
+      },
+      {
+        id: '3',
+        name: 'europe-west1',
+        selfLink: 'projects/demo-project/regions/europe-west1',
+        description: 'Belgium',
+        status: 'UP'
+      },
+      {
+        id: '4',
+        name: 'asia-east1',
+        selfLink: 'projects/demo-project/regions/asia-east1',
+        description: 'Taiwan',
+        status: 'UP'
+      }
+    ];
   }
 } 
