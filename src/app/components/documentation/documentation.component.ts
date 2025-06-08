@@ -1,5 +1,7 @@
-import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Router, ActivatedRoute } from '@angular/router';
+import { Location } from '@angular/common';
+import { Subscription } from 'rxjs';
 
 interface DocumentationSection {
   id: string;
@@ -10,7 +12,7 @@ interface DocumentationSection {
 @Component({
   selector: 'app-documentation',
   template: `
-    <div class="documentation-container">
+    <div class="documentation-container" (scroll)="onScroll($event)">
       <div class="documentation-header">
         <div class="header-content">
           <button mat-icon-button (click)="goBack()" class="back-button" matTooltip="Back to Console">
@@ -1001,8 +1003,9 @@ gcloud services enable monitoring.googleapis.com</code></pre>
     }
   `]
 })
-export class DocumentationComponent implements OnInit {
+export class DocumentationComponent implements OnInit, OnDestroy {
   activeSection = 'overview';
+  private fragmentSubscription: Subscription | undefined;
   
   sections = [
     { id: 'overview', title: 'Overview', icon: 'info' },
@@ -1315,15 +1318,39 @@ export class DocumentationComponent implements OnInit {
     }
   ];
 
-  constructor(private router: Router) { }
+  constructor(
+    private router: Router,
+    private activatedRoute: ActivatedRoute,
+    private location: Location
+  ) { }
 
   ngOnInit() {
-    // Component initialization
+    // Listen for URL fragment changes
+    this.fragmentSubscription = this.activatedRoute.fragment.subscribe(fragment => {
+      if (fragment) {
+        this.activeSection = fragment;
+        setTimeout(() => {
+          this.scrollToElementById(fragment);
+        }, 100);
+      }
+    });
+  }
+
+  ngOnDestroy() {
+    if (this.fragmentSubscription) {
+      this.fragmentSubscription.unsubscribe();
+    }
   }
 
   scrollToSection(sectionId: string) {
     this.activeSection = sectionId;
-    const element = document.getElementById(sectionId);
+    // Update URL with fragment
+    this.location.go('/documentation#' + sectionId);
+    this.scrollToElementById(sectionId);
+  }
+
+  private scrollToElementById(elementId: string) {
+    const element = document.getElementById(elementId);
     if (element) {
       element.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
@@ -1341,7 +1368,11 @@ export class DocumentationComponent implements OnInit {
       }
     });
     
-    this.activeSection = currentSection;
+    if (this.activeSection !== currentSection) {
+      this.activeSection = currentSection;
+      // Update URL fragment without triggering navigation
+      this.location.go('/documentation#' + currentSection);
+    }
   }
 
   goBack() {
