@@ -260,7 +260,7 @@
       <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: config.stickyHeader"></tr>
       <tr 
         mat-row 
-        *matRowDef="let row; columns: displayedColumns; trackBy: trackByRow"
+        *matRowDef="let row; columns: displayedColumns;"
         (click)="onRowClick(row, $event)"
         class="data-row">
       </tr>
