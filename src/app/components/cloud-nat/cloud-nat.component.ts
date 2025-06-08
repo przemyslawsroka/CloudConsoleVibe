@@ -584,10 +584,8 @@ export class CloudNatComponent implements OnInit {
   }
 
   viewGatewayDetails(gateway: CloudNatGateway) {
-    // Navigate to gateway details (to be implemented)
-    this.snackBar.open(`View details for "${gateway.name}" would be implemented here`, 'Close', {
-      duration: 3000
-    });
+    // Navigate to gateway details
+    this.router.navigate(['/cloud-nat', gateway.name]);
   }
 
   editGateway(gateway: CloudNatGateway) {
