@@ -196,8 +196,9 @@ export class RoutesComponent implements OnInit, OnDestroy {
     // Listen for navigation events to refresh data when returning from create page
     this.routerSubscription = this.router.events
       .pipe(filter(event => event instanceof NavigationEnd))
-      .subscribe((event: NavigationEnd) => {
-        if (event.url === '/routes') {
+      .subscribe((event) => {
+        const navigationEvent = event as NavigationEnd;
+        if (navigationEvent.url === '/routes') {
           this.loadRoutes();
         }
       });
