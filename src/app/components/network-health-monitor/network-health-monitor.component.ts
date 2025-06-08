@@ -293,14 +293,16 @@ import { CreateHealthMonitorDialogComponent } from './create-health-monitor-dial
   `,
   styles: [`
     .health-monitor-container {
-      background: #f8f9fa;
+      background: var(--background-color);
       min-height: 100vh;
+      color: var(--text-color);
+      transition: background-color 0.3s ease, color 0.3s ease;
     }
 
     .page-header {
-      background: white;
+      background: var(--surface-color);
       padding: 24px 40px;
-      border-bottom: 1px solid #e0e0e0;
+      border-bottom: 1px solid var(--border-color);
     }
 
     .header-content {
@@ -337,12 +339,12 @@ import { CreateHealthMonitorDialogComponent } from './create-health-monitor-dial
       margin: 0 0 4px 0;
       font-size: 28px;
       font-weight: 400;
-      color: #202124;
+      color: var(--text-color);
     }
 
     .service-tagline {
       margin: 0;
-      color: #5f6368;
+      color: var(--text-secondary-color);
       font-size: 14px;
     }
 
@@ -360,20 +362,23 @@ import { CreateHealthMonitorDialogComponent } from './create-health-monitor-dial
     .overview-card {
       border-radius: 8px;
       box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+      background: var(--surface-color);
+      border: 1px solid var(--border-color);
     }
 
     .overview-description {
       font-size: 14px;
       line-height: 1.5;
-      color: #202124;
+      color: var(--text-color);
       margin-bottom: 32px;
     }
 
     .network-diagram {
       margin: 32px 0;
       padding: 24px;
-      background: #f8f9fa;
+      background: var(--hover-color);
       border-radius: 8px;
+      border: 1px solid var(--border-color);
     }
 
     .diagram-container {
@@ -399,7 +404,7 @@ import { CreateHealthMonitorDialogComponent } from './create-health-monitor-dial
 
     .network-label {
       font-size: 14px;
-      color: #5f6368;
+      color: var(--text-secondary-color);
     }
 
     .gateway-section {
@@ -410,7 +415,7 @@ import { CreateHealthMonitorDialogComponent } from './create-health-monitor-dial
       border: 2px dashed #4285f4;
       border-radius: 8px;
       padding: 16px 24px;
-      background: white;
+      background: var(--surface-color);
     }
 
     .gateway-label {
@@ -432,13 +437,14 @@ import { CreateHealthMonitorDialogComponent } from './create-health-monitor-dial
 
     .subnet-box {
       flex: 1;
-      background: #e8f0fe;
+      background: rgba(66, 133, 244, 0.1);
       border-radius: 8px;
       padding: 20px;
       display: flex;
       flex-direction: column;
       align-items: center;
       gap: 12px;
+      border: 1px solid rgba(66, 133, 244, 0.2);
     }
 
     .vm-instance {
@@ -446,10 +452,11 @@ import { CreateHealthMonitorDialogComponent } from './create-health-monitor-dial
       flex-direction: column;
       align-items: center;
       gap: 4px;
-      background: white;
+      background: var(--surface-color);
       padding: 12px;
       border-radius: 6px;
       box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+      border: 1px solid var(--border-color);
     }
 
     .vm-instance mat-icon {
@@ -462,6 +469,7 @@ import { CreateHealthMonitorDialogComponent } from './create-health-monitor-dial
     .vm-instance span {
       font-size: 12px;
       font-weight: 500;
+      color: var(--text-color);
     }
 
     .subnet-label {
@@ -497,7 +505,7 @@ import { CreateHealthMonitorDialogComponent } from './create-health-monitor-dial
       margin: 0 0 24px 0;
       font-size: 18px;
       font-weight: 500;
-      color: #202124;
+      color: var(--text-color);
     }
 
     .techniques-grid {
@@ -508,9 +516,10 @@ import { CreateHealthMonitorDialogComponent } from './create-health-monitor-dial
 
     .technique-card {
       padding: 24px;
-      background: white;
+      background: var(--surface-color);
       border-radius: 8px;
       box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+      border: 1px solid var(--border-color);
     }
 
     .technique-icon {
@@ -528,18 +537,19 @@ import { CreateHealthMonitorDialogComponent } from './create-health-monitor-dial
       margin: 0 0 12px 0;
       font-size: 16px;
       font-weight: 500;
-      color: #202124;
+      color: var(--text-color);
     }
 
     .technique-card p {
       margin: 0 0 16px 0;
       font-size: 14px;
       line-height: 1.5;
-      color: #5f6368;
+      color: var(--text-secondary-color);
     }
 
     .technique-uses {
       font-size: 14px;
+      color: var(--text-color);
     }
 
     .technique-uses ul {
@@ -549,26 +559,26 @@ import { CreateHealthMonitorDialogComponent } from './create-health-monitor-dial
 
     .technique-uses li {
       margin-bottom: 4px;
-      color: #5f6368;
+      color: var(--text-secondary-color);
     }
 
     .additional-info {
       margin-top: 12px;
       padding-top: 12px;
-      border-top: 1px solid #e8eaed;
+      border-top: 1px solid var(--border-color);
     }
 
     .overview-footer {
       margin-top: 32px;
       padding-top: 24px;
-      border-top: 1px solid #e8eaed;
+      border-top: 1px solid var(--border-color);
       text-align: center;
     }
 
     .overview-footer p {
       margin: 0 0 8px 0;
       font-size: 14px;
-      color: #5f6368;
+      color: var(--text-secondary-color);
     }
 
     .learn-more-link {
@@ -594,7 +604,7 @@ import { CreateHealthMonitorDialogComponent } from './create-health-monitor-dial
       margin: 0;
       font-size: 20px;
       font-weight: 500;
-      color: #202124;
+      color: var(--text-color);
     }
 
     .table-controls {
@@ -611,12 +621,12 @@ import { CreateHealthMonitorDialogComponent } from './create-health-monitor-dial
     }
 
     .filter-button {
-      color: #5f6368;
+      color: var(--text-secondary-color);
     }
 
     .filter-label {
       font-size: 14px;
-      color: #5f6368;
+      color: var(--text-secondary-color);
     }
 
     .table-info {
@@ -626,21 +636,22 @@ import { CreateHealthMonitorDialogComponent } from './create-health-monitor-dial
     }
 
     .info-icon {
-      color: #5f6368;
+      color: var(--text-secondary-color);
       font-size: 16px;
       width: 16px;
       height: 16px;
     }
 
     .view-options {
-      color: #5f6368;
+      color: var(--text-secondary-color);
     }
 
     .monitors-table-container {
-      background: white;
+      background: var(--surface-color);
       border-radius: 8px;
       box-shadow: 0 1px 3px rgba(0,0,0,0.12);
       overflow: hidden;
+      border: 1px solid var(--border-color);
     }
 
     .monitors-table {
@@ -648,9 +659,9 @@ import { CreateHealthMonitorDialogComponent } from './create-health-monitor-dial
     }
 
     .monitors-table th {
-      background: #f8f9fa;
+      background: var(--hover-color);
       font-weight: 500;
-      color: #5f6368;
+      color: var(--text-secondary-color);
       font-size: 12px;
       text-transform: uppercase;
       letter-spacing: 0.5px;
@@ -705,7 +716,7 @@ import { CreateHealthMonitorDialogComponent } from './create-health-monitor-dial
 
     .network-location {
       font-size: 14px;
-      color: #202124;
+      color: var(--text-color);
     }
 
     .delete-action {
@@ -717,8 +728,8 @@ import { CreateHealthMonitorDialogComponent } from './create-health-monitor-dial
       justify-content: space-between;
       align-items: center;
       padding: 16px 24px;
-      background: white;
-      border-top: 1px solid #e8eaed;
+      background: var(--surface-color);
+      border-top: 1px solid var(--border-color);
     }
 
     .pagination-info {
@@ -726,7 +737,7 @@ import { CreateHealthMonitorDialogComponent } from './create-health-monitor-dial
       align-items: center;
       gap: 16px;
       font-size: 14px;
-      color: #5f6368;
+      color: var(--text-secondary-color);
     }
 
     .page-size-select {
@@ -783,6 +794,173 @@ import { CreateHealthMonitorDialogComponent } from './create-health-monitor-dial
         flex-direction: column;
         gap: 16px;
       }
+    }
+
+    /* Dark theme specific adjustments */
+    :host-context(.dark-theme) {
+      .overview-card,
+      .technique-card,
+      .monitors-table-container,
+      .vm-instance {
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+      }
+
+      .network-diagram {
+        background: rgba(var(--primary-rgb), 0.05);
+      }
+
+      .subnet-box {
+        background: rgba(66, 133, 244, 0.08);
+        border: 1px solid rgba(66, 133, 244, 0.15);
+      }
+    }
+
+    /* Material component overrides for dark theme */
+    :host-context(.dark-theme) ::ng-deep {
+      .mat-mdc-card {
+        background-color: var(--surface-color) !important;
+        color: var(--text-color) !important;
+      }
+
+      .mat-mdc-card-header {
+        color: var(--text-color) !important;
+      }
+
+      .mat-mdc-card-title {
+        color: var(--text-color) !important;
+      }
+
+      .mat-mdc-card-subtitle {
+        color: var(--text-secondary-color) !important;
+      }
+
+      .mat-mdc-card-content {
+        color: var(--text-color) !important;
+      }
+
+      .mat-mdc-button {
+        color: var(--text-color) !important;
+      }
+
+      .mat-mdc-raised-button {
+        background-color: var(--surface-color) !important;
+        color: var(--text-color) !important;
+      }
+
+      .mat-mdc-stroked-button {
+        color: var(--text-color) !important;
+        border-color: var(--border-color) !important;
+      }
+
+      .mat-mdc-icon-button {
+        color: var(--text-color) !important;
+      }
+
+      .mat-mdc-table {
+        background-color: var(--surface-color) !important;
+        color: var(--text-color) !important;
+      }
+
+      .mat-mdc-header-row {
+        background-color: var(--hover-color) !important;
+      }
+
+      .mat-mdc-header-cell {
+        color: var(--text-secondary-color) !important;
+        background-color: var(--hover-color) !important;
+      }
+
+      .mat-mdc-row {
+        background-color: var(--surface-color) !important;
+        color: var(--text-color) !important;
+      }
+
+      .mat-mdc-cell {
+        color: var(--text-color) !important;
+      }
+
+      .mat-mdc-row:hover {
+        background-color: var(--hover-color) !important;
+      }
+
+      .mat-mdc-menu-panel {
+        background-color: var(--surface-color) !important;
+        color: var(--text-color) !important;
+      }
+
+      .mat-mdc-menu-item {
+        color: var(--text-color) !important;
+      }
+
+      .mat-mdc-menu-item:hover {
+        background-color: var(--hover-color) !important;
+      }
+
+      .mat-mdc-select {
+        color: var(--text-color) !important;
+      }
+
+      .mat-mdc-select-panel {
+        background-color: var(--surface-color) !important;
+      }
+
+      .mat-mdc-option {
+        color: var(--text-color) !important;
+      }
+
+      .mat-mdc-option:hover {
+        background-color: var(--hover-color) !important;
+      }
+    }
+
+    /* Standard overrides (for light theme compatibility) */
+    ::ng-deep .mat-mdc-card {
+      background-color: var(--surface-color);
+      color: var(--text-color);
+      border: 1px solid var(--border-color);
+    }
+
+    ::ng-deep .mat-mdc-card-title {
+      color: var(--text-color);
+    }
+
+    ::ng-deep .mat-mdc-card-subtitle {
+      color: var(--text-secondary-color);
+    }
+
+    ::ng-deep .mat-mdc-card-content {
+      color: var(--text-color);
+    }
+
+    ::ng-deep .mat-mdc-button {
+      color: var(--text-color);
+    }
+
+    ::ng-deep .mat-mdc-table {
+      background-color: var(--surface-color);
+      color: var(--text-color);
+    }
+
+    ::ng-deep .mat-mdc-header-row {
+      background-color: var(--hover-color);
+    }
+
+    ::ng-deep .mat-mdc-header-cell {
+      color: var(--text-secondary-color);
+      background-color: var(--hover-color);
+    }
+
+    ::ng-deep .mat-mdc-row {
+      background-color: var(--surface-color);
+      color: var(--text-color);
+    }
+
+    ::ng-deep .mat-mdc-cell {
+      color: var(--text-color);
+    }
+
+    ::ng-deep .mat-mdc-row:hover {
+      background-color: var(--hover-color);
     }
   `]
 })
