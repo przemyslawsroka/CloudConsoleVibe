@@ -1407,7 +1407,7 @@ export interface HostRule {
   `,
   styles: [`
     .configure-page {
-      background: #f8f9fa;
+      background: var(--background-color);
       min-height: calc(100vh - 64px);
       padding: 0;
       position: relative;
@@ -1415,8 +1415,8 @@ export interface HostRule {
     }
 
     .page-header {
-      background: white;
-      border-bottom: 1px solid #e0e0e0;
+      background: var(--surface-color);
+      border-bottom: 1px solid var(--border-color);
       padding: 16px 24px;
       display: flex;
       justify-content: space-between;
@@ -1430,7 +1430,7 @@ export interface HostRule {
       display: flex;
       align-items: center;
       gap: 8px;
-      color: #5f6368;
+      color: var(--text-secondary-color);
       font-size: 14px;
     }
 
@@ -1438,7 +1438,7 @@ export interface HostRule {
       display: flex;
       align-items: center;
       gap: 4px;
-      color: #1976d2;
+      color: var(--primary-color);
       text-decoration: none;
       cursor: pointer;
     }
@@ -1466,7 +1466,7 @@ export interface HostRule {
       gap: 8px;
       font-size: 12px;
       font-weight: 500;
-      color: #1976d2;
+      color: var(--primary-color);
     }
 
     .config-form {
@@ -1483,13 +1483,14 @@ export interface HostRule {
     }
 
     .config-section mat-card-header {
-      background: #f8f9fa;
-      border-bottom: 1px solid #e0e0e0;
+      background: var(--hover-color);
+      border-bottom: 1px solid var(--border-color);
       padding: 16px 24px;
     }
 
     .config-section mat-card-content {
       padding: 24px;
+      background: var(--surface-color);
     }
 
     .section-header {
@@ -1498,13 +1499,13 @@ export interface HostRule {
 
     .section-header h3 {
       margin: 0;
-      color: #202124;
+      color: var(--text-color);
       font-size: 16px;
       font-weight: 500;
     }
 
     .section-description {
-      color: #5f6368;
+      color: var(--text-secondary-color);
       font-size: 14px;
       margin-bottom: 16px;
     }
@@ -1526,32 +1527,33 @@ export interface HostRule {
     }
 
     .info-icon {
-      color: #5f6368;
+      color: var(--text-secondary-color);
       font-size: 16px;
       cursor: help;
     }
 
     .edit-icon {
-      color: #1976d2;
+      color: var(--primary-color);
       font-size: 16px;
       cursor: pointer;
     }
 
     .tier-label {
-      color: #5f6368;
+      color: var(--text-secondary-color);
       font-size: 14px;
     }
 
     /* Frontend Configuration */
     .frontend-item {
-      border: 1px solid #e0e0e0;
+      border: 1px solid var(--border-color);
       border-radius: 8px;
       margin-bottom: 16px;
+      background: var(--surface-color);
     }
 
     .frontend-header {
       padding: 16px;
-      background: #f8f9fa;
+      background: var(--hover-color);
       border-radius: 8px 8px 0 0;
       cursor: pointer;
       display: flex;
@@ -1560,22 +1562,22 @@ export interface HostRule {
     }
 
     .frontend-header:hover {
-      background: #f1f3f4;
+      background: var(--selected-color);
     }
 
     .frontend-name {
       font-weight: 500;
-      color: #202124;
+      color: var(--text-color);
     }
 
     .frontend-protocol {
-      color: #5f6368;
+      color: var(--text-secondary-color);
       font-size: 14px;
       margin-left: 16px;
     }
 
     .frontend-status {
-      color: #ea4335;
+      color: var(--warn-color);
       font-size: 12px;
       margin-left: auto;
       margin-right: 16px;
@@ -1583,7 +1585,8 @@ export interface HostRule {
 
     .frontend-details {
       padding: 24px;
-      border-top: 1px solid #e0e0e0;
+      border-top: 1px solid var(--border-color);
+      background: var(--surface-color);
     }
 
     .frontend-actions {
@@ -1595,14 +1598,15 @@ export interface HostRule {
 
     /* Backend Configuration */
     .backend-item {
-      border: 1px solid #e0e0e0;
+      border: 1px solid var(--border-color);
       border-radius: 8px;
       margin-bottom: 16px;
+      background: var(--surface-color);
     }
 
     .backend-header {
       padding: 16px;
-      background: #f8f9fa;
+      background: var(--hover-color);
       border-radius: 8px 8px 0 0;
       cursor: pointer;
       display: flex;
@@ -1611,7 +1615,7 @@ export interface HostRule {
     }
 
     .backend-header:hover {
-      background: #f1f3f4;
+      background: var(--selected-color);
     }
 
     .backend-info {
@@ -1620,19 +1624,19 @@ export interface HostRule {
 
     .backend-name {
       font-weight: 500;
-      color: #202124;
+      color: var(--text-color);
       display: block;
     }
 
     .backend-details {
-      color: #5f6368;
+      color: var(--text-secondary-color);
       font-size: 14px;
       display: block;
       margin-top: 4px;
     }
 
     .backend-status {
-      color: #ea4335;
+      color: var(--warn-color);
       font-size: 12px;
       margin-top: 4px;
       display: block;
@@ -1646,8 +1650,8 @@ export interface HostRule {
 
     .backend-details-panel {
       padding: 24px;
-      border-top: 1px solid #e0e0e0;
-      background: white;
+      border-top: 1px solid var(--border-color);
+      background: var(--surface-color);
     }
 
     /* Adding Method Section */
@@ -1656,7 +1660,7 @@ export interface HostRule {
     }
 
     .adding-method-section h4 {
-      color: #202124;
+      color: var(--text-color);
       font-size: 16px;
       font-weight: 500;
       margin-bottom: 16px;
@@ -1678,7 +1682,7 @@ export interface HostRule {
     }
 
     .basics-section h4 {
-      color: #1976d2;
+      color: var(--primary-color);
       font-size: 16px;
       font-weight: 500;
       margin-bottom: 16px;
@@ -1693,7 +1697,7 @@ export interface HostRule {
     }
 
     .bucket-icon {
-      color: #34a853;
+      color: var(--accent-color);
       margin-right: 8px;
     }
 
@@ -1734,12 +1738,12 @@ export interface HostRule {
     /* Hints and Info Icons */
     .mat-form-field-hint {
       font-size: 12px;
-      color: #5f6368;
+      color: var(--text-secondary-color);
       margin-top: 4px;
     }
 
     .info-icon {
-      color: #5f6368;
+      color: var(--text-secondary-color);
       font-size: 16px;
       cursor: help;
     }
@@ -1755,34 +1759,34 @@ export interface HostRule {
       align-items: center;
       cursor: pointer;
       padding: 16px;
-      background: #f8f9fa;
-      border: 1px solid #e0e0e0;
+      background: var(--hover-color);
+      border: 1px solid var(--border-color);
       border-radius: 8px;
       transition: background-color 0.2s ease;
     }
 
     .advanced-features-header:hover {
-      background: #f1f3f4;
+      background: var(--selected-color);
     }
 
     .advanced-features-header h4 {
-      color: #1976d2;
+      color: var(--primary-color);
       font-size: 16px;
       font-weight: 500;
       margin: 0;
     }
 
     .advanced-features-summary {
-      background: #f8f9fa;
-      border: 1px solid #e0e0e0;
+      background: var(--hover-color);
+      border: 1px solid var(--border-color);
       border-top: none;
       border-radius: 0 0 8px 8px;
       padding: 16px;
     }
 
     .advanced-features-form {
-      background: white;
-      border: 1px solid #e0e0e0;
+      background: var(--surface-color);
+      border: 1px solid var(--border-color);
       border-top: none;
       border-radius: 0 0 8px 8px;
       padding: 24px;
@@ -1814,7 +1818,7 @@ export interface HostRule {
       justify-content: flex-end;
       margin-top: 24px;
       padding-top: 16px;
-      border-top: 1px solid #e0e0e0;
+      border-top: 1px solid var(--divider-color);
     }
 
     /* Feature Row Styling */
@@ -1829,19 +1833,19 @@ export interface HostRule {
     }
 
     .feature-row .label {
-      color: #5f6368;
+      color: var(--text-secondary-color);
       font-size: 14px;
     }
 
     .feature-row .value {
-      color: #202124;
+      color: var(--text-color);
       font-size: 14px;
       font-weight: 500;
     }
 
     /* Toggle and Form Styling */
     .mat-slide-toggle.mat-checked .mat-slide-toggle-thumb {
-      background-color: #1976d2;
+      background-color: var(--primary-color);
     }
 
     .mat-slide-toggle.mat-checked .mat-slide-toggle-bar {
@@ -2801,7 +2805,7 @@ export interface HostRule {
 
     /* Advanced Features Modal */
     .advanced-features-modal {
-      background: white;
+      background: var(--surface-color);
       border-radius: 8px;
       width: 90%;
       max-width: 600px;
@@ -2818,8 +2822,8 @@ export interface HostRule {
     }
 
     .advanced-features-info {
-      background: #f8f9fa;
-      border: 1px solid #e0e0e0;
+      background: var(--hover-color);
+      border: 1px solid var(--border-color);
       border-radius: 6px;
       padding: 16px;
     }
@@ -2833,19 +2837,19 @@ export interface HostRule {
     }
 
     .advanced-features-header h4 {
-      color: #1976d2;
+      color: var(--primary-color);
       font-size: 16px;
       font-weight: 500;
       margin: 0;
     }
 
     .advanced-features-header:hover .edit-icon {
-      color: #1565c0;
+      color: var(--primary-color);
     }
 
     /* Load Balancer Illustration Modal */
     .illustration-modal {
-      background: white;
+      background: var(--surface-color);
       border-radius: 12px;
       width: 95%;
       max-width: 1200px;
@@ -2859,8 +2863,8 @@ export interface HostRule {
     }
 
     .diagram-container {
-      background: white;
-      border: 1px solid #e0e0e0;
+      background: var(--surface-color);
+      border: 1px solid var(--border-color);
       border-radius: 8px;
       margin-bottom: 24px;
       overflow: hidden;
@@ -2870,7 +2874,7 @@ export interface HostRule {
       width: 100%;
       height: auto;
       max-height: 600px;
-      background: #fafafa;
+      background: var(--hover-color);
     }
 
     /* SVG Text Styles */
@@ -2878,32 +2882,32 @@ export interface HostRule {
       font-family: 'Roboto', sans-serif;
       font-size: 14px;
       font-weight: 500;
-      fill: #202124;
+      fill: var(--text-color);
     }
 
     .section-subtitle {
       font-family: 'Roboto', sans-serif;
       font-size: 12px;
-      fill: #5f6368;
+      fill: var(--text-secondary-color);
     }
 
     .main-title {
       font-family: 'Roboto', sans-serif;
       font-size: 16px;
       font-weight: 600;
-      fill: #202124;
+      fill: var(--text-color);
     }
 
     .config-text {
       font-family: 'Roboto', sans-serif;
       font-size: 12px;
-      fill: #5f6368;
+      fill: var(--text-secondary-color);
     }
 
     .status-text {
       font-family: 'Roboto', sans-serif;
       font-size: 11px;
-      fill: #1976d2;
+      fill: var(--primary-color);
       font-weight: 500;
     }
 
@@ -2911,26 +2915,26 @@ export interface HostRule {
       font-family: 'Roboto', sans-serif;
       font-size: 12px;
       font-weight: 500;
-      fill: #202124;
+      fill: var(--text-color);
     }
 
     .small-text {
       font-family: 'Roboto', sans-serif;
       font-size: 10px;
-      fill: #5f6368;
+      fill: var(--text-secondary-color);
     }
 
     .backend-title {
       font-family: 'Roboto', sans-serif;
       font-size: 11px;
       font-weight: 500;
-      fill: #1976d2;
+      fill: var(--primary-color);
     }
 
     .backend-text {
       font-family: 'Roboto', sans-serif;
       font-size: 9px;
-      fill: #5f6368;
+      fill: var(--text-secondary-color);
     }
 
     .flow-text {
@@ -2944,26 +2948,26 @@ export interface HostRule {
       font-family: 'Roboto', sans-serif;
       font-size: 12px;
       font-weight: 600;
-      fill: #202124;
+      fill: var(--text-color);
     }
 
     .legend-text {
       font-family: 'Roboto', sans-serif;
       font-size: 10px;
-      fill: #5f6368;
+      fill: var(--text-secondary-color);
     }
 
     /* Configuration Summary */
     .config-summary {
-      background: #f8f9fa;
-      border: 1px solid #e0e0e0;
+      background: var(--hover-color);
+      border: 1px solid var(--border-color);
       border-radius: 8px;
       padding: 20px;
     }
 
     .config-summary h4 {
       margin: 0 0 16px 0;
-      color: #202124;
+      color: var(--text-color);
       font-size: 16px;
       font-weight: 500;
     }
@@ -2979,19 +2983,19 @@ export interface HostRule {
       justify-content: space-between;
       align-items: center;
       padding: 8px 12px;
-      background: white;
-      border: 1px solid #e8eaed;
+      background: var(--surface-color);
+      border: 1px solid var(--border-color);
       border-radius: 6px;
     }
 
     .summary-item strong {
-      color: #5f6368;
+      color: var(--text-secondary-color);
       font-size: 13px;
       font-weight: 500;
     }
 
     .summary-item span {
-      color: #202124;
+      color: var(--text-color);
       font-size: 13px;
       font-weight: 400;
       text-align: right;
@@ -3045,7 +3049,7 @@ export interface HostRule {
       .summary-item span {
         text-align: left;
         font-weight: 500;
-        color: #1976d2;
+        color: var(--primary-color);
       }
 
       /* Adjust SVG text for mobile */
@@ -3100,12 +3104,207 @@ export interface HostRule {
       justify-content: center;
       align-items: center;
       height: 400px;
-      background: #f8f9fa;
+      background: var(--hover-color);
       border-radius: 8px;
     }
 
     .diagram-loading mat-spinner {
       margin-right: 16px;
+    }
+
+    /* Dark theme specific adjustments */
+    :host-context(.dark-theme) {
+      .config-section,
+      .frontend-item,
+      .backend-item,
+      .advanced-features-modal,
+      .illustration-modal,
+      .diagram-container {
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+      }
+
+      .frontend-header:hover,
+      .backend-header:hover,
+      .advanced-features-header:hover {
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+      }
+
+      .summary-item {
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+      }
+    }
+
+    /* Angular Material overrides for dark theme */
+    :host-context(.dark-theme) ::ng-deep {
+      .mat-mdc-card {
+        background-color: var(--surface-color) !important;
+        color: var(--text-color) !important;
+        border: 1px solid var(--border-color) !important;
+      }
+
+      .mat-mdc-card-header {
+        background-color: var(--hover-color) !important;
+        color: var(--text-color) !important;
+      }
+
+      .mat-mdc-card-title {
+        color: var(--text-color) !important;
+      }
+
+      .mat-mdc-card-subtitle {
+        color: var(--text-secondary-color) !important;
+      }
+
+      .mat-mdc-card-content {
+        background-color: var(--surface-color) !important;
+        color: var(--text-color) !important;
+      }
+
+      .mat-mdc-form-field {
+        .mat-mdc-text-field-wrapper {
+          background-color: var(--surface-color) !important;
+        }
+
+        .mat-mdc-form-field-input-control {
+          color: var(--text-color) !important;
+        }
+
+        .mat-mdc-floating-label {
+          color: var(--text-secondary-color) !important;
+        }
+
+        .mat-mdc-form-field-outline {
+          color: var(--border-color) !important;
+        }
+
+        input, textarea {
+          color: var(--text-color) !important;
+        }
+      }
+
+      .mat-mdc-select {
+        color: var(--text-color) !important;
+      }
+
+      .mat-mdc-select-panel {
+        background-color: var(--surface-color) !important;
+      }
+
+      .mat-mdc-option {
+        color: var(--text-color) !important;
+      }
+
+      .mat-mdc-option:hover {
+        background-color: var(--hover-color) !important;
+      }
+
+      .mat-mdc-radio-button {
+        .mat-mdc-radio-outer-circle {
+          border-color: var(--text-secondary-color) !important;
+        }
+
+        &.mat-mdc-radio-checked .mat-mdc-radio-outer-circle {
+          border-color: var(--primary-color) !important;
+        }
+
+        &.mat-mdc-radio-checked .mat-mdc-radio-inner-circle {
+          background-color: var(--primary-color) !important;
+        }
+
+        .mat-mdc-radio-label-content {
+          color: var(--text-color) !important;
+        }
+      }
+
+      .mat-mdc-slide-toggle {
+        .mat-mdc-slide-toggle-bar {
+          background-color: var(--border-color) !important;
+        }
+
+        &.mat-mdc-slide-toggle-checked .mat-mdc-slide-toggle-bar {
+          background-color: rgba(66, 133, 244, 0.54) !important;
+        }
+
+        .mat-mdc-slide-toggle-thumb {
+          background-color: var(--surface-color) !important;
+        }
+
+        &.mat-mdc-slide-toggle-checked .mat-mdc-slide-toggle-thumb {
+          background-color: var(--primary-color) !important;
+        }
+      }
+
+      .mat-mdc-button {
+        color: var(--text-color) !important;
+      }
+
+      .mat-mdc-raised-button {
+        background-color: var(--surface-color) !important;
+        color: var(--text-color) !important;
+      }
+
+      .mat-mdc-stroked-button {
+        color: var(--text-color) !important;
+        border-color: var(--border-color) !important;
+      }
+
+      .mat-mdc-icon-button {
+        color: var(--text-color) !important;
+      }
+
+      .mat-mdc-menu-panel {
+        background-color: var(--surface-color) !important;
+        color: var(--text-color) !important;
+      }
+
+      .mat-mdc-menu-item {
+        color: var(--text-color) !important;
+      }
+
+      .mat-mdc-menu-item:hover {
+        background-color: var(--hover-color) !important;
+      }
+
+      .mat-mdc-dialog-container {
+        background-color: var(--surface-color) !important;
+        color: var(--text-color) !important;
+      }
+
+      .mat-mdc-snack-bar-container {
+        background-color: var(--surface-color) !important;
+        color: var(--text-color) !important;
+      }
+
+      .mat-mdc-progress-spinner circle {
+        stroke: var(--primary-color) !important;
+      }
+
+      .mat-mdc-table {
+        background-color: var(--surface-color) !important;
+        color: var(--text-color) !important;
+      }
+
+      .mat-mdc-header-row {
+        background-color: var(--hover-color) !important;
+      }
+
+      .mat-mdc-header-cell {
+        color: var(--text-secondary-color) !important;
+        background-color: var(--hover-color) !important;
+      }
+
+      .mat-mdc-row {
+        background-color: var(--surface-color) !important;
+        color: var(--text-color) !important;
+      }
+
+      .mat-mdc-cell {
+        color: var(--text-color) !important;
+      }
+
+      .mat-mdc-row:hover {
+        background-color: var(--hover-color) !important;
+      }
     }
   `]
 })
