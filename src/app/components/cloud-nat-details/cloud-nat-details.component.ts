@@ -3,6 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { CloudNatService, CloudNatGateway } from '../../services/cloud-nat.service';
 import { ProjectService, Project } from '../../services/project.service';
+import { FormControl } from '@angular/forms';
 
 @Component({
   selector: 'app-cloud-nat-details',
@@ -137,9 +138,9 @@ import { ProjectService, Project } from '../../services/project.service';
                 <mat-card-content>
                   <div class="rules-filter">
                     <mat-form-field appearance="outline" class="filter-field">
-                      <mat-label>Enter property name or value</mat-label>
-                      <input matInput [(ngModel)]="rulesFilterValue" (input)="applyRulesFilter()" placeholder="Filter">
-                      <mat-icon matPrefix>search</mat-icon>
+                      <mat-label>Filter</mat-label>
+                      <input matInput [formControl]="rulesFilterControl" placeholder="Filter">
+                      <mat-icon matSuffix>search</mat-icon>
                     </mat-form-field>
                   </div>
                   
@@ -643,7 +644,7 @@ export class CloudNatDetailsComponent implements OnInit {
   gatewayName: string = '';
   
   // Rules table
-  rulesFilterValue = '';
+  rulesFilterControl = new FormControl('');
   filteredRules: any[] = [];
   rulesDisplayedColumns: string[] = [
     'ruleType', 'matchIpRanges', 'cloudNatIps', 'description', 
@@ -727,7 +728,7 @@ export class CloudNatDetailsComponent implements OnInit {
 
   applyRulesFilter() {
     // Filter rules based on search term
-    const searchTerm = this.rulesFilterValue.toLowerCase();
+    const searchTerm = (this.rulesFilterControl.value || '').toLowerCase();
     
     if (!searchTerm) {
       this.setupRulesData();

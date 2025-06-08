@@ -1,5 +1,5 @@
 import { Component, OnInit, ChangeDetectorRef, ViewChild, ElementRef } from '@angular/core';
-import { FormBuilder, FormGroup } from '@angular/forms';
+import { FormBuilder, FormGroup, FormControl } from '@angular/forms';
 import { FlowAnalyzerService, FlowLogEntry, FlowMetrics, FilterOptions, MetricType, AggregationPeriod, FlowAnalysisResult } from '../../services/flow-analyzer.service';
 import { ProjectService, Project } from '../../services/project.service';
 import { Chart, registerables } from 'chart.js';
@@ -186,7 +186,7 @@ Chart.register(...registerables);
               <mat-form-field appearance="outline" class="sql-field">
                 <textarea
                   matInput
-                  [(ngModel)]="customSqlQuery"
+                  [formControl]="customSqlQueryControl"
                   placeholder="Example: src_ip = '10.0.0.1' OR dest_ip = '10.0.0.2'"
                   rows="6"
                   cdkTextareaAutosize
@@ -1167,10 +1167,10 @@ Chart.register(...registerables);
 export class FlowAnalyzerComponent implements OnInit {
   @ViewChild('chartCanvas', { static: false }) chartCanvas!: ElementRef<HTMLCanvasElement>;
 
-  // Form and Filters
+  // Form controls
   filtersForm: FormGroup;
   filterMode: 'basic' | 'sql' = 'basic';
-  customSqlQuery = '';
+  customSqlQueryControl = new FormControl('');
 
   // Data and State
   analysisResult: FlowAnalysisResult | null = null;
@@ -1274,11 +1274,16 @@ export class FlowAnalyzerComponent implements OnInit {
 
   onFilterModeChange() {
     if (this.filterMode === 'sql') {
-      this.customSqlQuery = this.generateSqlFromFilters();
+      this.customSqlQueryControl.setValue(this.generateSqlFromFilters());
     }
   }
 
   private generateSqlFromFilters(): string {
+    const customQuery = this.customSqlQueryControl.value || '';
+    if (this.filterMode === 'sql' && customQuery.trim()) {
+      return customQuery;
+    }
+
     const formValue = this.filtersForm.value;
     const conditions: string[] = [];
 
@@ -1338,7 +1343,7 @@ export class FlowAnalyzerComponent implements OnInit {
     this.analysisResult = null; // Clear previous results
 
     const filters = this.buildFilterOptions();
-    const customQuery = this.filterMode === 'sql' ? this.customSqlQuery : undefined;
+    const customQuery = this.filterMode === 'sql' ? this.generateSqlFromFilters() : undefined;
 
     this.flowAnalyzerService.queryFlowLogs(
       this.projectId,
@@ -1397,8 +1402,8 @@ export class FlowAnalyzerComponent implements OnInit {
 
   clearFilters() {
     this.filtersForm.reset();
-    this.customSqlQuery = '';
-    this.initializeDefaultTimeRange();
+    this.customSqlQueryControl.setValue('');
+    this.runQuery();
   }
 
   onMetricTypeChange() {

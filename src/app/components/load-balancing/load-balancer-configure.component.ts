@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, FormArray } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, FormArray, FormControl } from '@angular/forms';
 import { Router } from '@angular/router';
 import { LoadBalancerService } from '../../services/load-balancer.service';
 import { LoadBalancerCreationService, LoadBalancerCreationConfig } from '../../services/load-balancer-creation.service';

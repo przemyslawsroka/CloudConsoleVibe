@@ -5,6 +5,7 @@ import { IpAddressService, IpAddress } from '../../services/ip-address.service';
 import { ProjectService, Project } from '../../services/project.service';
 import { SelectionModel } from '@angular/cdk/collections';
 import { forkJoin } from 'rxjs';
+import { FormControl } from '@angular/forms';
 
 @Component({
   selector: 'app-ip-addresses',
@@ -50,7 +51,7 @@ import { forkJoin } from 'rxjs';
       <div class="filter-section">
         <mat-form-field appearance="outline" class="filter-field">
           <mat-label>Enter property name or value</mat-label>
-          <input matInput [(ngModel)]="filterValue" (input)="applyFilter()" placeholder="Filter">
+          <input matInput [formControl]="filterControl" (input)="applyFilter()" placeholder="Filter">
           <mat-icon matPrefix>search</mat-icon>
         </mat-form-field>
         <button mat-icon-button matTooltip="Show filter options">
@@ -483,7 +484,7 @@ export class IpAddressesComponent implements OnInit {
   ];
   selection = new SelectionModel<IpAddress>(true, []);
   selectedTabIndex = 0;
-  filterValue = '';
+  filterControl = new FormControl('');
   projectId: string | null = null;
   isLoading = true;
 
@@ -513,15 +514,11 @@ export class IpAddressesComponent implements OnInit {
   }
 
   loadIpAddresses() {
-    // For development, load mock data even without project ID
     this.isLoading = true;
-    console.log('Loading IP addresses for project:', this.projectId);
-    
     this.ipAddressService.getIpAddresses(this.projectId || 'mock-project').subscribe({
-      next: (response) => {
-        console.log('IP addresses loaded:', response);
-        this.ipAddresses = response;
-        this.applyFilters();
+      next: (addresses) => {
+        this.ipAddresses = addresses;
+        this.applyFilter();
         this.isLoading = false;
         this.cdr.detectChanges();
       },
@@ -535,54 +532,21 @@ export class IpAddressesComponent implements OnInit {
 
   onTabChange(event: any) {
     this.selectedTabIndex = event.index;
-    this.applyFilters();
+    this.applyFilter();
   }
 
   applyFilter() {
-    this.applyFilters();
-  }
-
-  applyFilters() {
-    let filtered = [...this.ipAddresses];
-    console.log('Applying filters to:', this.ipAddresses.length, 'items');
-    console.log('Selected tab index:', this.selectedTabIndex);
-    console.log('Filter value:', this.filterValue);
-
-    // Apply tab filter
-    switch (this.selectedTabIndex) {
-      case 1: // Internal IP addresses
-        filtered = filtered.filter(ip => ip.accessType === 'Internal');
-        break;
-      case 2: // External IP addresses
-        filtered = filtered.filter(ip => ip.accessType === 'External');
-        break;
-      case 3: // IPv4 addresses
-        filtered = filtered.filter(ip => ip.version === 'IPv4');
-        break;
-      case 4: // IPv6 addresses
-        filtered = filtered.filter(ip => ip.version === 'IPv6');
-        break;
-      // case 0 (All) - no filter
-    }
-
-    // Apply text filter
-    if (this.filterValue) {
-      const searchTerm = this.filterValue.toLowerCase();
-      filtered = filtered.filter(ip =>
-        (ip.name?.toLowerCase().includes(searchTerm)) ||
-        ip.address.toLowerCase().includes(searchTerm) ||
-        ip.accessType.toLowerCase().includes(searchTerm) ||
-        ip.region.toLowerCase().includes(searchTerm) ||
-        ip.type.toLowerCase().includes(searchTerm) ||
-        (ip.inUseBy?.toLowerCase().includes(searchTerm)) ||
-        (ip.subnetwork?.toLowerCase().includes(searchTerm)) ||
-        (ip.vpcNetwork?.toLowerCase().includes(searchTerm))
-      );
-    }
-
-    this.filteredData = filtered;
-    console.log('Filtered data:', this.filteredData.length, 'items');
-    this.selection.clear();
+    const filterValue = (this.filterControl.value || '').toLowerCase();
+    this.filteredData = this.ipAddresses.filter(ip => 
+      (ip.name && ip.name.toLowerCase().includes(filterValue)) ||
+      ip.address.toLowerCase().includes(filterValue) ||
+      ip.accessType.toLowerCase().includes(filterValue) ||
+      (ip.region && ip.region.toLowerCase().includes(filterValue)) ||
+      ip.type.toLowerCase().includes(filterValue) ||
+      (ip.inUseBy && ip.inUseBy.toLowerCase().includes(filterValue)) ||
+      (ip.subnetwork && ip.subnetwork.toLowerCase().includes(filterValue)) ||
+      (ip.vpcNetwork && ip.vpcNetwork.toLowerCase().includes(filterValue))
+    );
   }
 
   refresh() {

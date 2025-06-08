@@ -1,9 +1,10 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { FormControl } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { SelectionModel } from '@angular/cdk/collections';
 import { DnsService, DnsZone } from '../../services/dns.service';
 import { ProjectService, Project } from '../../services/project.service';
-import { SelectionModel } from '@angular/cdk/collections';
 import { CreateZoneDialogComponent, CreateZoneDialogData } from './create-zone-dialog.component';
 
 @Component({
@@ -43,7 +44,7 @@ import { CreateZoneDialogComponent, CreateZoneDialogData } from './create-zone-d
         <div class="filter-section">
           <mat-form-field appearance="outline" class="filter-field">
             <mat-label>Enter property name or value</mat-label>
-            <input matInput [(ngModel)]="filterValue" (input)="applyFilter()" placeholder="Filter">
+            <input matInput [formControl]="filterControl" (input)="applyFilter()" placeholder="Filter">
             <mat-icon matPrefix>search</mat-icon>
           </mat-form-field>
         </div>
@@ -384,7 +385,7 @@ export class DnsManagementComponent implements OnInit {
   ];
   selection = new SelectionModel<DnsZone>(true, []);
   selectedTabIndex = 0;
-  filterValue = '';
+  filterControl = new FormControl('');
   projectId: string | null = null;
   isLoading = true;
 
@@ -398,9 +399,10 @@ export class DnsManagementComponent implements OnInit {
 
   ngOnInit() {
     this.projectService.currentProject$.subscribe((project: Project | null) => {
-      this.projectId = project?.id || null;
-      console.log('Project changed:', project);
-      this.loadDnsZones();
+      if (project) {
+        this.projectId = project.id;
+        this.loadDnsZones();
+      }
     });
 
     // Fallback: load data immediately for testing
@@ -437,21 +439,13 @@ export class DnsManagementComponent implements OnInit {
   }
 
   applyFilter() {
-    let filtered = [...this.dnsZones];
-
-    if (this.filterValue) {
-      const searchTerm = this.filterValue.toLowerCase();
-      filtered = filtered.filter(zone =>
-        zone.name.toLowerCase().includes(searchTerm) ||
-        zone.dnsName.toLowerCase().includes(searchTerm) ||
-        (zone.description?.toLowerCase().includes(searchTerm)) ||
-        zone.visibility.toLowerCase().includes(searchTerm) ||
-        (zone.inUseBy?.toLowerCase().includes(searchTerm))
-      );
-    }
-
-    this.filteredData = filtered;
-    this.selection.clear();
+    const filterValue = (this.filterControl.value || '').toLowerCase();
+    this.filteredData = this.dnsZones.filter(zone => 
+      zone.name.toLowerCase().includes(filterValue) ||
+      zone.dnsName.toLowerCase().includes(filterValue) ||
+      (zone.description && zone.description.toLowerCase().includes(filterValue)) ||
+      zone.visibility.toLowerCase().includes(filterValue)
+    );
   }
 
   refresh() {

@@ -1,5 +1,6 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { FormControl } from '@angular/forms';
 import { ProjectService, Project } from '../../services/project.service';
 
 @Component({
@@ -13,7 +14,7 @@ import { ProjectService, Project } from '../../services/project.service';
             <div class="search-bar">
               <mat-form-field appearance="outline" class="full-width">
                 <mat-label>Search projects and folders</mat-label>
-                <input matInput [(ngModel)]="searchText" (ngModelChange)="filterProjects()">
+                <input matInput [formControl]="searchControl">
               </mat-form-field>
             </div>
             <div class="loading" *ngIf="loading">
@@ -179,7 +180,7 @@ import { ProjectService, Project } from '../../services/project.service';
 })
 export class ProjectPickerComponent implements OnInit {
   selectedTab = 0;
-  searchText = '';
+  searchControl = new FormControl('');
   selectedProject: Project | null = null;
   loading = true;
 
@@ -197,6 +198,11 @@ export class ProjectPickerComponent implements OnInit {
 
   ngOnInit() {
     this.loadProjects();
+    
+    // Subscribe to search control changes
+    this.searchControl.valueChanges.subscribe(() => {
+      this.filterProjects();
+    });
   }
 
   loadProjects() {
@@ -223,7 +229,7 @@ export class ProjectPickerComponent implements OnInit {
   }
 
   filterProjects() {
-    const text = this.searchText.toLowerCase();
+    const text = (this.searchControl.value || '').toLowerCase();
     this.filteredRecent = this.allProjects.filter(p => 
       (p.name?.toLowerCase().includes(text)) || 
       (p.displayName?.toLowerCase().includes(text)) ||

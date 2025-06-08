@@ -1,8 +1,9 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
+import { FormControl } from '@angular/forms';
+import { SelectionModel } from '@angular/cdk/collections';
 import { FirewallService, FirewallRule, FirewallPolicy } from '../../services/firewall.service';
 import { ProjectService, Project } from '../../services/project.service';
-import { SelectionModel } from '@angular/cdk/collections';
 import { CreateFirewallRuleDialogComponent } from './create-firewall-rule-dialog.component';
 import { switchMap, map } from 'rxjs/operators';
 
@@ -123,7 +124,7 @@ import { switchMap, map } from 'rxjs/operators';
                 <div class="actions-right">
                   <mat-form-field appearance="outline" class="search-field">
                     <mat-label>Search rules</mat-label>
-                    <input matInput [(ngModel)]="rulesFilterValue" (input)="applyRulesFilter()" 
+                    <input matInput [formControl]="rulesFilterControl" (input)="applyRulesFilter()" 
                            placeholder="Filter by name, target, or protocol">
                     <mat-icon matSuffix>search</mat-icon>
                   </mat-form-field>
@@ -292,7 +293,7 @@ import { switchMap, map } from 'rxjs/operators';
                 <div class="actions-right">
                   <mat-form-field appearance="outline" class="search-field">
                     <mat-label>Search policies</mat-label>
-                    <input matInput [(ngModel)]="policiesFilterValue" (input)="applyPoliciesFilter()" 
+                    <input matInput [formControl]="policiesFilterControl" (input)="applyPoliciesFilter()" 
                            placeholder="Filter by name or description">
                     <mat-icon matSuffix>search</mat-icon>
                   </mat-form-field>
@@ -980,8 +981,8 @@ export class FirewallManagementComponent implements OnInit {
 
   // UI State
   selectedTabIndex = 0;
-  rulesFilterValue = '';
-  policiesFilterValue = '';
+  rulesFilterControl = new FormControl('');
+  policiesFilterControl = new FormControl('');
   isLoadingRules = true;
   isLoadingPolicies = true;
   projectId: string | null = null;
@@ -1133,8 +1134,8 @@ export class FirewallManagementComponent implements OnInit {
   // Filtering
   applyRulesFilter() {
     let filtered = [...this.firewallRules];
-    if (this.rulesFilterValue) {
-      const searchTerm = this.rulesFilterValue.toLowerCase();
+    if (this.rulesFilterControl.value) {
+      const searchTerm = this.rulesFilterControl.value.toLowerCase();
       filtered = filtered.filter(rule =>
         rule.name.toLowerCase().includes(searchTerm) ||
         (rule.targets || '').toLowerCase().includes(searchTerm) ||
@@ -1148,8 +1149,8 @@ export class FirewallManagementComponent implements OnInit {
 
   applyPoliciesFilter() {
     let filtered = [...this.firewallPolicies];
-    if (this.policiesFilterValue) {
-      const searchTerm = this.policiesFilterValue.toLowerCase();
+    if (this.policiesFilterControl.value) {
+      const searchTerm = this.policiesFilterControl.value.toLowerCase();
       filtered = filtered.filter(policy =>
         policy.name.toLowerCase().includes(searchTerm) ||
         (policy.description?.toLowerCase().includes(searchTerm)) ||

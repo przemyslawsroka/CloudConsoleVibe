@@ -6,6 +6,7 @@ import { CloudNatService, CloudNatGateway } from '../../services/cloud-nat.servi
 import { ProjectService, Project } from '../../services/project.service';
 import { SelectionModel } from '@angular/cdk/collections';
 import { forkJoin } from 'rxjs';
+import { FormControl } from '@angular/forms';
 
 @Component({
   selector: 'app-cloud-nat',
@@ -38,7 +39,7 @@ import { forkJoin } from 'rxjs';
       <div class="filter-section">
         <mat-form-field appearance="outline" class="filter-field">
           <mat-label>Enter property name or value</mat-label>
-          <input matInput [(ngModel)]="filterValue" (input)="applyFilter()" placeholder="Filter">
+          <input matInput [formControl]="filterControl" (input)="applyFilter()" placeholder="Filter">
           <mat-icon matPrefix>search</mat-icon>
         </mat-form-field>
         <button mat-icon-button matTooltip="Show filter options">
@@ -453,7 +454,7 @@ export class CloudNatComponent implements OnInit {
     'select', 'name', 'network', 'region', 'natType', 'cloudRouter', 'status', 'actions'
   ];
   selection = new SelectionModel<CloudNatGateway>(true, []);
-  filterValue = '';
+  filterControl = new FormControl('');
   projectId: string | null = null;
   isLoading = true;
 
@@ -504,22 +505,15 @@ export class CloudNatComponent implements OnInit {
   }
 
   applyFilter() {
-    let filtered = [...this.natGateways];
-    
-    if (this.filterValue) {
-      const searchTerm = this.filterValue.toLowerCase();
-      filtered = filtered.filter(gateway =>
-        gateway.name.toLowerCase().includes(searchTerm) ||
-        gateway.network.toLowerCase().includes(searchTerm) ||
-        gateway.region.toLowerCase().includes(searchTerm) ||
-        gateway.natType.toLowerCase().includes(searchTerm) ||
-        gateway.cloudRouter.toLowerCase().includes(searchTerm) ||
-        gateway.status.toLowerCase().includes(searchTerm)
-      );
-    }
-
-    this.filteredData = filtered;
-    this.selection.clear();
+    const filterValue = (this.filterControl.value || '').toLowerCase();
+    this.filteredData = this.natGateways.filter(gateway => 
+      gateway.name.toLowerCase().includes(filterValue) ||
+      gateway.network.toLowerCase().includes(filterValue) ||
+      gateway.region.toLowerCase().includes(filterValue) ||
+      gateway.natType.toLowerCase().includes(filterValue) ||
+      gateway.cloudRouter.toLowerCase().includes(filterValue) ||
+      gateway.status.toLowerCase().includes(filterValue)
+    );
   }
 
   refresh() {

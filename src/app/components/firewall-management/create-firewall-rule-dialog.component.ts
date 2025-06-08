@@ -360,15 +360,13 @@ interface Protocol {
                   
                   <!-- TCP -->
                   <div class="protocol-row">
-                    <mat-checkbox [(ngModel)]="protocols.tcp.enabled" 
-                                  [ngModelOptions]="{standalone: true}"
+                    <mat-checkbox [formControl]="tcpEnabledControl"
                                   (change)="updateProtocolsForm()">
                       <span class="protocol-name">TCP</span>
                     </mat-checkbox>
-                    <mat-form-field *ngIf="protocols.tcp.enabled" appearance="outline" class="port-field">
+                    <mat-form-field *ngIf="tcpEnabledControl.value" appearance="outline" class="port-field">
                       <mat-label>Ports</mat-label>
-                      <input matInput [(ngModel)]="protocols.tcp.ports" 
-                             [ngModelOptions]="{standalone: true}"
+                      <input matInput [formControl]="tcpPortsControl"
                              (input)="updateProtocolsForm()"
                              placeholder="80, 443, 8080-8090">
                       <mat-hint>Examples: 80, 443, 8080-8090</mat-hint>
@@ -377,15 +375,13 @@ interface Protocol {
 
                   <!-- UDP -->
                   <div class="protocol-row">
-                    <mat-checkbox [(ngModel)]="protocols.udp.enabled" 
-                                  [ngModelOptions]="{standalone: true}"
+                    <mat-checkbox [formControl]="udpEnabledControl"
                                   (change)="updateProtocolsForm()">
                       <span class="protocol-name">UDP</span>
                     </mat-checkbox>
-                    <mat-form-field *ngIf="protocols.udp.enabled" appearance="outline" class="port-field">
+                    <mat-form-field *ngIf="udpEnabledControl.value" appearance="outline" class="port-field">
                       <mat-label>Ports</mat-label>
-                      <input matInput [(ngModel)]="protocols.udp.ports" 
-                             [ngModelOptions]="{standalone: true}"
+                      <input matInput [formControl]="udpPortsControl"
                              (input)="updateProtocolsForm()"
                              placeholder="53, 67-68">
                       <mat-hint>Examples: 53, 67-68</mat-hint>
@@ -394,8 +390,7 @@ interface Protocol {
 
                   <!-- ICMP -->
                   <div class="protocol-row">
-                    <mat-checkbox [(ngModel)]="protocols.icmp.enabled" 
-                                  [ngModelOptions]="{standalone: true}"
+                    <mat-checkbox [formControl]="icmpEnabledControl"
                                   (change)="updateProtocolsForm()">
                       <span class="protocol-name">ICMP</span>
                       <span class="protocol-description">(ping, traceroute)</span>
@@ -899,12 +894,19 @@ export class CreateFirewallRuleDialogComponent implements OnInit {
     icmp: { enabled: false, ports: '' }
   };
 
+  tcpEnabledControl = this.fb.control(true);
+  tcpPortsControl = this.fb.control('80,443');
+  udpEnabledControl = this.fb.control(false);
+  udpPortsControl = this.fb.control('');
+  icmpEnabledControl = this.fb.control(false);
+
   constructor(
     public dialogRef: MatDialogRef<CreateFirewallRuleDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: CreateFirewallRuleDialogData,
     private fb: FormBuilder
   ) {
     this.initializeForms();
+    this.initializeProtocolControls();
   }
 
   ngOnInit() {
@@ -935,6 +937,14 @@ export class CreateFirewallRuleDialogComponent implements OnInit {
       protocolType: ['specified', Validators.required],
       disabled: [false]
     });
+  }
+
+  initializeProtocolControls() {
+    this.tcpEnabledControl = this.fb.control(true);
+    this.tcpPortsControl = this.fb.control('80,443');
+    this.udpEnabledControl = this.fb.control(false);
+    this.udpPortsControl = this.fb.control('');
+    this.icmpEnabledControl = this.fb.control(false);
   }
 
   populateFormWithRule(rule: any) {
@@ -981,31 +991,37 @@ export class CreateFirewallRuleDialogComponent implements OnInit {
 
   // Protocol management
   updateProtocolsForm() {
-    // This will be called when protocols change
+    // Update protocols object from form controls
+    this.protocols.tcp.enabled = this.tcpEnabledControl.value || false;
+    this.protocols.tcp.ports = this.tcpPortsControl.value || '';
+    this.protocols.udp.enabled = this.udpEnabledControl.value || false;
+    this.protocols.udp.ports = this.udpPortsControl.value || '';
+    this.protocols.icmp.enabled = this.icmpEnabledControl.value || false;
   }
 
   applyPreset(preset: string) {
     switch (preset) {
       case 'web':
-        this.protocols.tcp.enabled = true;
-        this.protocols.tcp.ports = '80,443';
-        this.protocols.udp.enabled = false;
-        this.protocols.icmp.enabled = false;
+        this.tcpEnabledControl.setValue(true);
+        this.tcpPortsControl.setValue('80,443');
+        this.udpEnabledControl.setValue(false);
+        this.icmpEnabledControl.setValue(false);
         this.targetTags = ['http-server', 'https-server'];
         break;
       case 'ssh':
-        this.protocols.tcp.enabled = true;
-        this.protocols.tcp.ports = '22';
-        this.protocols.udp.enabled = false;
-        this.protocols.icmp.enabled = false;
+        this.tcpEnabledControl.setValue(true);
+        this.tcpPortsControl.setValue('22');
+        this.udpEnabledControl.setValue(false);
+        this.icmpEnabledControl.setValue(false);
         break;
       case 'rdp':
-        this.protocols.tcp.enabled = true;
-        this.protocols.tcp.ports = '3389';
-        this.protocols.udp.enabled = false;
-        this.protocols.icmp.enabled = false;
+        this.tcpEnabledControl.setValue(true);
+        this.tcpPortsControl.setValue('3389');
+        this.udpEnabledControl.setValue(false);
+        this.icmpEnabledControl.setValue(false);
         break;
     }
+    this.updateProtocolsForm();
   }
 
   getProtocolsSummary(): string {
@@ -1014,13 +1030,13 @@ export class CreateFirewallRuleDialogComponent implements OnInit {
     }
 
     const enabledProtocols = [];
-    if (this.protocols.tcp.enabled) {
-      enabledProtocols.push(`TCP${this.protocols.tcp.ports ? ':' + this.protocols.tcp.ports : ''}`);
+    if (this.tcpEnabledControl.value) {
+      enabledProtocols.push(`TCP${this.tcpPortsControl.value ? ':' + this.tcpPortsControl.value : ''}`);
     }
-    if (this.protocols.udp.enabled) {
-      enabledProtocols.push(`UDP${this.protocols.udp.ports ? ':' + this.protocols.udp.ports : ''}`);
+    if (this.udpEnabledControl.value) {
+      enabledProtocols.push(`UDP${this.udpPortsControl.value ? ':' + this.udpPortsControl.value : ''}`);
     }
-    if (this.protocols.icmp.enabled) {
+    if (this.icmpEnabledControl.value) {
       enabledProtocols.push('ICMP');
     }
 

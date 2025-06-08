@@ -1,4 +1,5 @@
 import { Component, OnInit, ElementRef, ViewChild, AfterViewInit } from '@angular/core';
+import { FormControl } from '@angular/forms';
 import { VpcService, SubnetDetails } from '../../services/vpc.service';
 import { ProjectService, Project } from '../../services/project.service';
 import { MonitoringService, SubnetworkTrafficEdge } from '../../services/monitoring.service';
@@ -68,10 +69,10 @@ import { forkJoin } from 'rxjs';
                       <mat-option value="168">Last 7 days</mat-option>
                     </mat-select>
                   </mat-form-field>
-                  <mat-checkbox [(ngModel)]="showTrafficLabels" (change)="updateGraph()">
+                  <mat-checkbox [formControl]="showTrafficLabelsControl" (change)="updateGraph()">
                     Show traffic labels
                   </mat-checkbox>
-                  <mat-checkbox [(ngModel)]="showOnlyTrafficEdges" (change)="updateGraph()">
+                  <mat-checkbox [formControl]="showOnlyTrafficEdgesControl" (change)="updateGraph()">
                     Show only traffic connections
                   </mat-checkbox>
                 </div>
@@ -974,10 +975,10 @@ export class TopologyComponent implements OnInit, AfterViewInit {
   trafficInsights: any = null;
   isLoading = false;
   
-  // Visualization options
+  // Reactive form controls
   selectedTimeRange = 24;
-  showTrafficLabels = true;
-  showOnlyTrafficEdges = false;
+  showTrafficLabelsControl = new FormControl(true);
+  showOnlyTrafficEdgesControl = new FormControl(false);
   
   // Debug information
   apiStatus = {
@@ -1199,7 +1200,7 @@ export class TopologyComponent implements OnInit, AfterViewInit {
     const nodes = subnetworksWithTraffic.map(subnet => ({
       id: subnet.name,
       name: subnet.name,
-      label: this.showTrafficLabels ? 
+      label: this.showTrafficLabelsControl.value ? 
         `${subnet.name}\n${subnet.ipCidrRange || 'N/A'}\nRegion: ${subnet.region}` :
         `${subnet.name}\n${subnet.ipCidrRange || 'N/A'}`,
       val: this.getNodeValue(subnet),
@@ -1214,7 +1215,7 @@ export class TopologyComponent implements OnInit, AfterViewInit {
     // Build links from traffic data
     const links: any[] = [];
     
-    if (this.showOnlyTrafficEdges) {
+    if (this.showOnlyTrafficEdgesControl.value) {
       // Only show traffic-based connections
       this.trafficEdges.forEach(edge => {
         const sourceExists = nodes.find(n => n.id === edge.sourceSubnetwork);
@@ -1224,7 +1225,7 @@ export class TopologyComponent implements OnInit, AfterViewInit {
           links.push({
             source: edge.sourceSubnetwork,
             target: edge.targetSubnetwork,
-            label: this.showTrafficLabels ? 
+            label: this.showTrafficLabelsControl.value ? 
               `${this.formatBytes(edge.totalBytes)}\n${edge.protocols.join(', ')}` : 
               this.formatBytes(edge.totalBytes),
             traffic: edge.totalBytes,
@@ -1243,7 +1244,7 @@ export class TopologyComponent implements OnInit, AfterViewInit {
           links.push({
             source: edge.sourceSubnetwork,
             target: edge.targetSubnetwork,
-            label: this.showTrafficLabels ? 
+            label: this.showTrafficLabelsControl.value ? 
               `${this.formatBytes(edge.totalBytes)}\n${edge.protocols.join(', ')}` : 
               this.formatBytes(edge.totalBytes),
             traffic: edge.totalBytes,
