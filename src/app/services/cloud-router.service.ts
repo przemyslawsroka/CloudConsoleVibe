@@ -112,12 +112,8 @@ export class CloudRouterService {
    */
   getCloudRouters(): Observable<CloudRouter[]> {
     // In demo mode, return mock data
-    console.log('Is demo mode?', this.authService.isDemoMode());
     if (this.authService.isDemoMode()) {
-      console.log('Returning mock routers');
-      const mockRouters = this.getMockRouters();
-      console.log('Mock routers:', mockRouters);
-      return of(mockRouters);
+      return of(this.getMockRouters());
     }
 
     const project = this.getCurrentProject();
@@ -125,13 +121,14 @@ export class CloudRouterService {
     
     return this.http.get<any>(url, { headers: this.getHeaders() }).pipe(
       map(response => {
-        console.log('Aggregated routers response:', response);
         const routers: CloudRouter[] = [];
         const errors: string[] = [];
         
         // Handle partial success
-        if (response.warning && response.warning.length > 0) {
-          response.warning.forEach((warning: any) => {
+        if (response.warning) {
+          // Handle both single warning object and array of warnings
+          const warnings = Array.isArray(response.warning) ? response.warning : [response.warning];
+          warnings.forEach((warning: any) => {
             console.warn(`Warning for ${warning.code}:`, warning.message);
             errors.push(`${warning.code}: ${warning.message}`);
           });
@@ -139,14 +136,14 @@ export class CloudRouterService {
 
         // Process items from each region
         if (response.items) {
-          console.log('Processing regions:', Object.keys(response.items));
           Object.keys(response.items).forEach(regionKey => {
             const regionData = response.items[regionKey];
-            console.log(`Processing region ${regionKey}:`, regionData);
             
             // Skip regions with warnings/errors that have no routers
             if (regionData.warning) {
-              regionData.warning.forEach((warning: any) => {
+              // Handle both single warning object and array of warnings
+              const warnings = Array.isArray(regionData.warning) ? regionData.warning : [regionData.warning];
+              warnings.forEach((warning: any) => {
                 console.warn(`Warning for region ${regionKey}:`, warning.message);
                 errors.push(`${regionKey}: ${warning.message}`);
               });
@@ -154,17 +151,11 @@ export class CloudRouterService {
             
             // Process routers if they exist
             if (regionData.routers && regionData.routers.length > 0) {
-              console.log(`Found ${regionData.routers.length} routers in ${regionKey}`);
               const regionName = this.extractRegionFromKey(regionKey);
               const regionRouters = this.transformRoutersResponse(regionData.routers, regionName);
-              console.log('Transformed routers:', regionRouters);
               routers.push(...regionRouters);
-            } else {
-              console.log(`No routers found in ${regionKey}`);
             }
           });
-        } else {
-          console.log('No items in response');
         }
         
         // Log any errors but don't fail the request
@@ -172,7 +163,6 @@ export class CloudRouterService {
           console.warn('Some regions had errors:', errors);
         }
         
-        console.log('Final routers array:', routers);
         return routers;
       }),
       catchError(error => {
