@@ -327,8 +327,10 @@ interface MirroringResource {
   styles: [`
     .mirroring-container {
       padding: 0;
-      background: #f8f9fa;
+      background: var(--background-color);
       min-height: 100vh;
+      color: var(--text-color);
+      transition: background-color 0.3s ease, color 0.3s ease;
     }
 
     .page-header {
@@ -364,6 +366,8 @@ interface MirroringResource {
       margin: -20px 40px 32px;
       border-radius: 12px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      background: var(--surface-color);
+      border: 1px solid var(--border-color);
     }
 
     .architecture-diagram {
@@ -373,8 +377,9 @@ interface MirroringResource {
     .workflow-section {
       margin-bottom: 32px;
       padding: 20px;
-      background: #f8f9fa;
+      background: var(--hover-color);
       border-radius: 8px;
+      border: 1px solid var(--border-color);
     }
 
     .workflow-section h3 {
@@ -393,12 +398,13 @@ interface MirroringResource {
     }
 
     .step {
-      background: white;
+      background: var(--surface-color);
       padding: 16px;
       border-radius: 8px;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
       min-width: 200px;
       flex: 1;
+      border: 1px solid var(--border-color);
     }
 
     .step-number {
@@ -416,12 +422,12 @@ interface MirroringResource {
 
     .step-content h4 {
       margin: 0 0 8px 0;
-      color: #333;
+      color: var(--text-color);
     }
 
     .step-content p {
       margin: 0;
-      color: #666;
+      color: var(--text-secondary-color);
       font-size: 14px;
       line-height: 1.4;
     }
@@ -449,6 +455,8 @@ interface MirroringResource {
 
     .concept-card {
       text-align: center;
+      background: var(--surface-color);
+      border: 1px solid var(--border-color);
     }
 
     .concept-icon {
@@ -468,12 +476,12 @@ interface MirroringResource {
 
     .concept-card h4 {
       margin: 0 0 8px 0;
-      color: #333;
+      color: var(--text-color);
     }
 
     .concept-card p {
       margin: 0;
-      color: #666;
+      color: var(--text-secondary-color);
       font-size: 14px;
       line-height: 1.4;
     }
@@ -491,18 +499,21 @@ interface MirroringResource {
 
     .section-header h2 {
       margin: 0;
-      color: #333;
+      color: var(--text-color);
     }
 
     .view-toggle {
-      background: white;
+      background: var(--surface-color);
       border-radius: 8px;
+      border: 1px solid var(--border-color);
     }
 
     .resource-category-card {
       margin-bottom: 24px;
       border-radius: 12px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      background: var(--surface-color);
+      border: 1px solid var(--border-color);
     }
 
     .producer-icon {
@@ -520,14 +531,14 @@ interface MirroringResource {
     .resource-section h3 {
       margin: 0 0 16px 0;
       color: #1976d2;
-      border-bottom: 2px solid #e0e0e0;
+      border-bottom: 2px solid var(--border-color);
       padding-bottom: 8px;
     }
 
     .empty-state {
       text-align: center;
       padding: 40px;
-      color: #666;
+      color: var(--text-secondary-color);
     }
 
     .empty-state mat-icon {
@@ -536,6 +547,7 @@ interface MirroringResource {
       height: 64px;
       margin-bottom: 16px;
       opacity: 0.5;
+      color: var(--text-secondary-color);
     }
 
     .resources-grid {
@@ -547,6 +559,8 @@ interface MirroringResource {
     .resource-card {
       border-radius: 8px;
       transition: transform 0.2s ease, box-shadow 0.2s ease;
+      background: var(--surface-color);
+      border: 1px solid var(--border-color);
     }
 
     .resource-card:hover {
@@ -563,7 +577,7 @@ interface MirroringResource {
 
     .resource-header h4 {
       margin: 0;
-      color: #333;
+      color: var(--text-color);
     }
 
     .resource-details {
@@ -572,13 +586,15 @@ interface MirroringResource {
       gap: 4px;
       margin-top: 12px;
       font-size: 12px;
-      color: #666;
+      color: var(--text-secondary-color);
     }
 
     .quick-actions-card {
       margin: 0 40px 40px;
       border-radius: 12px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      background: var(--surface-color);
+      border: 1px solid var(--border-color);
     }
 
     .actions-grid {
@@ -593,31 +609,32 @@ interface MirroringResource {
       display: flex;
       align-items: flex-start;
       gap: 20px;
-      border: 2px solid #e0e0e0;
+      border: 2px solid var(--border-color);
       border-radius: 12px;
-      background: white;
+      background: var(--surface-color);
       transition: all 0.3s ease;
       min-height: 120px;
       width: 100%;
       box-sizing: border-box;
+      color: var(--text-color);
     }
 
     .action-button:hover {
       border-color: #1976d2;
-      background: #f3f8ff;
+      background: var(--hover-color);
       transform: translateY(-2px);
       box-shadow: 0 4px 12px rgba(25, 118, 210, 0.15);
     }
 
     .action-button.producer:hover {
       border-color: #1976d2;
-      background: #f3f8ff;
+      background: rgba(25, 118, 210, 0.08);
       box-shadow: 0 4px 12px rgba(25, 118, 210, 0.15);
     }
 
     .action-button.consumer:hover {
       border-color: #388e3c;
-      background: #f8fff8;
+      background: rgba(56, 142, 60, 0.08);
       box-shadow: 0 4px 12px rgba(56, 142, 60, 0.15);
     }
 
@@ -627,6 +644,7 @@ interface MirroringResource {
       height: 36px;
       margin-top: 2px;
       flex-shrink: 0;
+      color: var(--text-secondary-color);
     }
 
     .action-content {
@@ -636,7 +654,7 @@ interface MirroringResource {
 
     .action-content h4 {
       margin: 0 0 8px 0;
-      color: #333;
+      color: var(--text-color);
       font-size: 16px;
       font-weight: 500;
       line-height: 1.3;
@@ -645,7 +663,7 @@ interface MirroringResource {
 
     .action-content p {
       margin: 0;
-      color: #666;
+      color: var(--text-secondary-color);
       font-size: 14px;
       line-height: 1.4;
       word-wrap: break-word;
@@ -683,6 +701,142 @@ interface MirroringResource {
       .actions-grid {
         grid-template-columns: 1fr;
       }
+    }
+
+    /* Dark theme specific adjustments */
+    :host-context(.dark-theme) {
+      .architecture-card,
+      .resource-category-card,
+      .quick-actions-card,
+      .resource-card,
+      .concept-card {
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+      }
+
+      .workflow-section {
+        background: rgba(var(--primary-rgb), 0.05);
+      }
+
+      .step {
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+      }
+
+      .resource-card:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+      }
+
+      .action-button:hover {
+        box-shadow: 0 4px 12px rgba(25, 118, 210, 0.25);
+      }
+
+      .action-button.producer:hover {
+        box-shadow: 0 4px 12px rgba(25, 118, 210, 0.25);
+      }
+
+      .action-button.consumer:hover {
+        box-shadow: 0 4px 12px rgba(56, 142, 60, 0.25);
+      }
+    }
+
+    /* Material component overrides for dark theme */
+    :host-context(.dark-theme) ::ng-deep {
+      .mat-mdc-card {
+        background-color: var(--surface-color) !important;
+        color: var(--text-color) !important;
+      }
+
+      .mat-mdc-card-header {
+        color: var(--text-color) !important;
+      }
+
+      .mat-mdc-card-title {
+        color: var(--text-color) !important;
+      }
+
+      .mat-mdc-card-subtitle {
+        color: var(--text-secondary-color) !important;
+      }
+
+      .mat-mdc-card-content {
+        color: var(--text-color) !important;
+      }
+
+      .mat-mdc-chip {
+        background-color: rgba(66, 133, 244, 0.12) !important;
+        color: var(--primary-color) !important;
+      }
+
+      .mat-mdc-button {
+        color: var(--text-color) !important;
+      }
+
+      .mat-mdc-raised-button {
+        background-color: var(--surface-color) !important;
+        color: var(--text-color) !important;
+      }
+
+      .mat-mdc-button-toggle-group {
+        background-color: var(--surface-color) !important;
+        border: 1px solid var(--border-color) !important;
+      }
+
+      .mat-mdc-button-toggle {
+        color: var(--text-color) !important;
+        background-color: var(--surface-color) !important;
+        border: none !important;
+      }
+
+      .mat-mdc-button-toggle.mat-mdc-button-toggle-checked {
+        background-color: rgba(var(--primary-rgb), 0.12) !important;
+        color: var(--primary-color) !important;
+      }
+
+      .mat-mdc-button-toggle:hover {
+        background-color: var(--hover-color) !important;
+      }
+    }
+
+    /* Standard overrides (for light theme compatibility) */
+    ::ng-deep .mat-mdc-card {
+      background-color: var(--surface-color);
+      color: var(--text-color);
+      border: 1px solid var(--border-color);
+    }
+
+    ::ng-deep .mat-mdc-card-title {
+      color: var(--text-color);
+    }
+
+    ::ng-deep .mat-mdc-card-subtitle {
+      color: var(--text-secondary-color);
+    }
+
+    ::ng-deep .mat-mdc-card-content {
+      color: var(--text-color);
+    }
+
+    ::ng-deep .mat-mdc-chip {
+      background-color: rgba(66, 133, 244, 0.12);
+      color: var(--primary-color);
+    }
+
+    ::ng-deep .mat-mdc-button {
+      color: var(--text-color);
+    }
+
+    ::ng-deep .mat-mdc-button-toggle-group {
+      background-color: var(--surface-color);
+      border: 1px solid var(--border-color);
+    }
+
+    ::ng-deep .mat-mdc-button-toggle {
+      color: var(--text-color);
+      background-color: var(--surface-color);
+    }
+
+    ::ng-deep .mat-mdc-button-toggle.mat-mdc-button-toggle-checked {
+      background-color: rgba(var(--primary-rgb), 0.12);
+      color: var(--primary-color);
     }
   `]
 })
