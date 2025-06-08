@@ -99,6 +99,7 @@ import { CreateCloudRouterComponent } from './components/create-cloud-router/cre
 import { CloudNatComponent } from './components/cloud-nat/cloud-nat.component';
 import { CloudNatDetailsComponent } from './components/cloud-nat-details/cloud-nat-details.component';
 import { CreateCloudNatComponent } from './components/create-cloud-nat/create-cloud-nat.component';
+import { CreateRouteComponent } from './components/create-route/create-route.component';
 import { CloudNatService } from './services/cloud-nat.service';
 
 @NgModule({
@@ -159,7 +160,8 @@ import { CloudNatService } from './services/cloud-nat.service';
     CreateCloudRouterComponent,
     CloudNatComponent,
     CloudNatDetailsComponent,
-    CreateCloudNatComponent
+    CreateCloudNatComponent,
+    CreateRouteComponent
   ],
   imports: [
     BrowserModule,

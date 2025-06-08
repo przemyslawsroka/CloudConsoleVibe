@@ -1,8 +1,9 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
-import { MatDialog } from '@angular/material/dialog';
+import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { Router, NavigationEnd } from '@angular/router';
 import { VpcService, Route } from '../../services/vpc.service';
-import { CreateRouteDialogComponent } from '../create-route-dialog/create-route-dialog.component';
+import { Subscription } from 'rxjs';
+import { filter } from 'rxjs/operators';
 
 @Component({
   selector: 'app-routes',
@@ -81,6 +82,9 @@ import { CreateRouteDialogComponent } from '../create-route-dialog/create-route-
   styles: [`
     .routes-container {
       padding: 20px;
+      background: var(--background-color);
+      min-height: 100vh;
+      color: var(--text-color);
     }
     .header {
       display: flex;
@@ -88,6 +92,12 @@ import { CreateRouteDialogComponent } from '../create-route-dialog/create-route-
       align-items: center;
       margin-bottom: 20px;
     }
+    
+    .header h1 {
+      color: var(--text-color);
+      margin: 0;
+    }
+    
     table {
       width: 100%;
     }
@@ -104,25 +114,99 @@ import { CreateRouteDialogComponent } from '../create-route-dialog/create-route-
     .no-routes {
       text-align: center;
       padding: 20px;
-      color: #5f6368;
+      color: var(--text-secondary-color);
+    }
+
+    /* Dark theme specific adjustments */
+    :host-context(.dark-theme) ::ng-deep {
+      .mat-mdc-card {
+        background: var(--surface-color);
+        color: var(--text-color);
+        border: 1px solid var(--border-color);
+      }
+
+      .mat-mdc-table {
+        background: var(--surface-color);
+        color: var(--text-color);
+      }
+
+      .mat-mdc-header-cell {
+        color: var(--text-color);
+        border-bottom-color: var(--border-color);
+      }
+
+      .mat-mdc-cell {
+        color: var(--text-color);
+        border-bottom-color: var(--border-color);
+      }
+
+      .mat-mdc-row:hover {
+        background: var(--hover-color);
+      }
+
+      .mat-mdc-raised-button.mat-primary {
+        background-color: var(--primary-color);
+        color: white;
+      }
+
+      .mat-mdc-raised-button.mat-primary:hover {
+        background-color: var(--primary-hover-color);
+      }
+
+      .mat-mdc-icon-button {
+        color: var(--text-secondary-color);
+      }
+
+      .mat-mdc-menu-panel {
+        background: var(--surface-color);
+        border: 1px solid var(--border-color);
+      }
+
+      .mat-mdc-menu-item {
+        color: var(--text-color);
+      }
+
+      .mat-mdc-menu-item:hover {
+        background: var(--hover-color);
+      }
+
+      .mat-mdc-progress-spinner circle {
+        stroke: var(--primary-color);
+      }
     }
   `]
 })
-export class RoutesComponent implements OnInit {
+export class RoutesComponent implements OnInit, OnDestroy {
   routes: Route[] = [];
   displayedColumns: string[] = ['name', 'network', 'destRange', 'priority', 'nextHop', 'actions'];
   projectId = 'net-top-viz-demo-208511';
   isLoading = true;
+  private routerSubscription!: Subscription;
 
   constructor(
     private vpcService: VpcService,
     private cdr: ChangeDetectorRef,
-    private dialog: MatDialog,
+    private router: Router,
     private snackBar: MatSnackBar
   ) {}
 
   ngOnInit() {
     this.loadRoutes();
+    
+    // Listen for navigation events to refresh data when returning from create page
+    this.routerSubscription = this.router.events
+      .pipe(filter(event => event instanceof NavigationEnd))
+      .subscribe((event: NavigationEnd) => {
+        if (event.url === '/routes') {
+          this.loadRoutes();
+        }
+      });
+  }
+
+  ngOnDestroy() {
+    if (this.routerSubscription) {
+      this.routerSubscription.unsubscribe();
+    }
   }
 
   loadRoutes() {
@@ -163,24 +247,7 @@ export class RoutesComponent implements OnInit {
   }
 
   createRoute() {
-    const dialogRef = this.dialog.open(CreateRouteDialogComponent, {
-      data: { projectId: this.projectId }
-    });
-
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        this.vpcService.createRoute(this.projectId, result).subscribe({
-          next: () => {
-            this.snackBar.open('Route created successfully', 'Close', { duration: 3000 });
-            this.loadRoutes();
-          },
-          error: (error) => {
-            console.error('Error creating route:', error);
-            this.snackBar.open('Error creating route', 'Close', { duration: 3000 });
-          }
-        });
-      }
-    });
+    this.router.navigate(['/routes/create']);
   }
 
   viewRouteDetails(route: Route) {

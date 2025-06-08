@@ -38,6 +38,7 @@ import { CloudRouterDetailsComponent } from './components/cloud-router-details/c
 import { CloudNatComponent } from './components/cloud-nat/cloud-nat.component';
 import { CloudNatDetailsComponent } from './components/cloud-nat-details/cloud-nat-details.component';
 import { CreateCloudNatComponent } from './components/create-cloud-nat/create-cloud-nat.component';
+import { CreateRouteComponent } from './components/create-route/create-route.component';
 
 const routes: Routes = [
   { path: '', redirectTo: '/vpc', pathMatch: 'full' },
@@ -60,6 +61,7 @@ const routes: Routes = [
     canActivate: [AuthGuard]
   },
   { path: 'routes', component: RoutesComponent, canActivate: [AuthGuard] },
+  { path: 'routes/create', component: CreateRouteComponent, canActivate: [AuthGuard] },
   {
     path: 'flow-logs',
     component: VpcFlowLogsComponent,
