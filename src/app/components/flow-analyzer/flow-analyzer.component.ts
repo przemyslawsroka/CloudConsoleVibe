@@ -473,30 +473,33 @@ Chart.register(...registerables);
     .flow-analyzer-container {
       padding: 24px;
       max-width: 100%;
-      background-color: #f8f9fa;
+      background-color: var(--background-color);
       min-height: 100vh;
+      color: var(--text-color);
+      transition: background-color 0.3s ease, color 0.3s ease;
     }
 
     .header {
       margin-bottom: 24px;
-      background: white;
+      background: var(--surface-color);
       padding: 24px;
       border-radius: 8px;
       box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      border: 1px solid var(--border-color);
     }
 
     .header-content h1 {
       margin: 0 0 8px 0;
       font-size: 28px;
       font-weight: 400;
-      color: #202124;
+      color: var(--text-color);
       display: flex;
       align-items: center;
       gap: 12px;
     }
 
     .header-icon {
-      color: #1976d2;
+      color: var(--primary-color);
       font-size: 32px;
       width: 32px;
       height: 32px;
@@ -504,15 +507,16 @@ Chart.register(...registerables);
 
     .header-description {
       margin: 0;
-      color: #5f6368;
+      color: var(--text-secondary-color);
       font-size: 14px;
     }
 
     .query-section {
       margin-bottom: 24px;
-      background: white;
+      background: var(--surface-color);
       border-radius: 8px;
       box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      border: 1px solid var(--border-color);
     }
 
     .card-header-actions {
@@ -526,9 +530,9 @@ Chart.register(...registerables);
       align-items: center;
       gap: 8px;
       padding: 8px 16px;
-      border: 1px solid #dadce0;
-      background: white;
-      color: #202124;
+      border: 1px solid var(--border-color);
+      background: var(--surface-color);
+      color: var(--text-color);
       font-size: 14px;
       border-radius: 4px;
       cursor: pointer;
@@ -536,8 +540,8 @@ Chart.register(...registerables);
     }
 
     .data-source-button:hover {
-      background: #f8f9fa;
-      border-color: #5f6368;
+      background: var(--hover-color);
+      border-color: var(--text-secondary-color);
     }
 
     .data-source-button mat-icon {
@@ -555,7 +559,7 @@ Chart.register(...registerables);
     }
 
     .filter-mode-toggle mat-button-toggle-group {
-      border: 1px solid #dadce0;
+      border: 1px solid var(--border-color);
       border-radius: 4px;
     }
 
@@ -568,13 +572,15 @@ Chart.register(...registerables);
     }
 
     .filter-card {
-      border: 1px solid #e0e0e0;
+      border: 1px solid var(--border-color);
       box-shadow: none;
+      background: var(--surface-color);
+      color: var(--text-color);
     }
 
     .filter-card h4 {
       margin: 0 0 16px 0;
-      color: #202124;
+      color: var(--text-color);
       font-size: 16px;
       font-weight: 500;
       display: flex;
@@ -607,9 +613,10 @@ Chart.register(...registerables);
     }
 
     .sql-query-section {
-      border: 1px solid #e0e0e0;
+      border: 1px solid var(--border-color);
       border-radius: 4px;
       padding: 16px;
+      background: var(--hover-color);
     }
 
     .sql-header {
@@ -623,14 +630,14 @@ Chart.register(...registerables);
       margin: 0;
       font-size: 16px;
       font-weight: 500;
-      color: #202124;
+      color: var(--text-color);
     }
 
     .sql-info {
       display: flex;
       align-items: center;
       gap: 8px;
-      color: #5f6368;
+      color: var(--text-secondary-color);
       font-size: 14px;
     }
 
@@ -640,7 +647,7 @@ Chart.register(...registerables);
     }
 
     .sql-organize {
-      color: #5f6368;
+      color: var(--text-secondary-color);
       font-size: 14px;
     }
 
@@ -657,9 +664,10 @@ Chart.register(...registerables);
     }
 
     .chart-section {
-      background: white;
+      background: var(--surface-color);
       border-radius: 8px;
       box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      border: 1px solid var(--border-color);
     }
 
     .chart-header {
@@ -673,18 +681,18 @@ Chart.register(...registerables);
       margin: 0;
       font-size: 18px;
       font-weight: 500;
-      color: #202124;
+      color: var(--text-color);
     }
 
     .time-range-display {
       margin: 4px 0 0 0;
-      color: #5f6368;
+      color: var(--text-secondary-color);
       font-size: 14px;
     }
 
     .display-options {
       min-width: 300px;
-      border-left: 1px solid #e0e0e0;
+      border-left: 1px solid var(--border-color);
       padding-left: 24px;
     }
 
@@ -692,7 +700,7 @@ Chart.register(...registerables);
       margin: 0 0 16px 0;
       font-size: 16px;
       font-weight: 500;
-      color: #202124;
+      color: var(--text-color);
     }
 
     .metric-controls {
@@ -716,19 +724,20 @@ Chart.register(...registerables);
       align-items: center;
       gap: 24px;
       padding: 16px 0;
-      border-top: 1px solid #e0e0e0;
+      border-top: 1px solid var(--border-color);
       flex-wrap: wrap;
     }
 
     .stat-item {
-      color: #5f6368;
+      color: var(--text-secondary-color);
       font-size: 14px;
     }
 
     .table-section {
-      background: white;
+      background: var(--surface-color);
       border-radius: 8px;
       box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      border: 1px solid var(--border-color);
     }
 
     .table-actions {
@@ -764,11 +773,11 @@ Chart.register(...registerables);
     .ip-address {
       font-family: 'Roboto Mono', monospace;
       font-size: 13px;
-      color: #202124;
+      color: var(--text-color);
     }
 
     .project-link, .network-link {
-      color: #1976d2;
+      color: var(--primary-color);
       text-decoration: none;
       cursor: pointer;
     }
@@ -779,7 +788,7 @@ Chart.register(...registerables);
 
     .traffic-value {
       font-weight: 500;
-      color: #202124;
+      color: var(--text-color);
     }
 
     .loading-container {
@@ -795,12 +804,12 @@ Chart.register(...registerables);
 
     .loading-content p {
       margin: 16px 0 4px 0;
-      color: #202124;
+      color: var(--text-color);
       font-size: 16px;
     }
 
     .loading-detail {
-      color: #5f6368;
+      color: var(--text-secondary-color);
       font-size: 14px;
     }
 
@@ -812,7 +821,7 @@ Chart.register(...registerables);
 
       .display-options {
         border-left: none;
-        border-top: 1px solid #e0e0e0;
+        border-top: 1px solid var(--border-color);
         padding-left: 0;
         padding-top: 24px;
         min-width: unset;
@@ -841,7 +850,7 @@ Chart.register(...registerables);
     }
 
     .no-instance {
-      color: #5f6368;
+      color: var(--text-secondary-color);
       font-style: italic;
       font-size: 13px;
     }
@@ -854,13 +863,13 @@ Chart.register(...registerables);
 
     .instance-name {
       font-weight: 500;
-      color: #202124;
+      color: var(--text-color);
       font-size: 13px;
     }
 
     .instance-zone {
       font-size: 11px;
-      color: #5f6368;
+      color: var(--text-secondary-color);
       font-family: 'Roboto Mono', monospace;
     }
 
@@ -869,9 +878,10 @@ Chart.register(...registerables);
     }
 
     .error-card {
-      background: white;
+      background: var(--surface-color);
       border-radius: 8px;
       box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      border: 1px solid var(--border-color);
     }
 
     .error-content {
@@ -894,12 +904,12 @@ Chart.register(...registerables);
       margin: 0 0 8px 0;
       font-size: 18px;
       font-weight: 500;
-      color: #202124;
+      color: var(--text-color);
     }
 
     .error-message p {
       margin: 0;
-      color: #5f6368;
+      color: var(--text-secondary-color);
       font-size: 14px;
     }
 
@@ -911,7 +921,7 @@ Chart.register(...registerables);
       margin: 0 0 8px 0;
       font-size: 16px;
       font-weight: 500;
-      color: #202124;
+      color: var(--text-color);
     }
 
     .error-help ol {
@@ -921,6 +931,7 @@ Chart.register(...registerables);
 
     .error-help li {
       margin-bottom: 8px;
+      color: var(--text-color);
     }
 
     .error-actions {
@@ -934,7 +945,7 @@ Chart.register(...registerables);
       gap: 8px;
       margin: 16px 0;
       padding: 12px;
-      background: #e3f2fd;
+      background: rgba(33, 150, 243, 0.12);
       border: 1px solid #2196f3;
       border-radius: 4px;
       color: #1565c0;
@@ -951,6 +962,205 @@ Chart.register(...registerables);
       margin: 0;
       font-size: 13px;
       line-height: 1.4;
+    }
+
+    /* Dark theme specific adjustments */
+    :host-context(.dark-theme) {
+      .header {
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+      }
+
+      .query-section,
+      .chart-section,
+      .table-section,
+      .error-card {
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+      }
+
+      .loading-container mat-card {
+        background-color: var(--surface-color);
+        color: var(--text-color);
+      }
+    }
+
+    /* Material component overrides for dark theme */
+    :host-context(.dark-theme) ::ng-deep {
+      .mat-mdc-card {
+        background-color: var(--surface-color) !important;
+        color: var(--text-color) !important;
+      }
+
+      .mat-mdc-card-header {
+        color: var(--text-color) !important;
+      }
+
+      .mat-mdc-card-title {
+        color: var(--text-color) !important;
+      }
+
+      .mat-mdc-card-subtitle {
+        color: var(--text-secondary-color) !important;
+      }
+
+      .mat-mdc-card-content {
+        color: var(--text-color) !important;
+      }
+
+      .mat-mdc-form-field {
+        background-color: var(--surface-color) !important;
+      }
+
+      .mat-mdc-form-field .mat-mdc-text-field-wrapper {
+        background-color: var(--surface-color) !important;
+      }
+
+      .mat-mdc-form-field .mat-mdc-floating-label {
+        color: var(--text-secondary-color) !important;
+      }
+
+      .mat-mdc-form-field.mat-focused .mat-mdc-floating-label {
+        color: var(--primary-color) !important;
+      }
+
+      .mat-mdc-form-field .mat-mdc-outline {
+        color: var(--border-color) !important;
+      }
+
+      .mat-mdc-form-field.mat-focused .mat-mdc-outline {
+        color: var(--primary-color) !important;
+      }
+
+      .mat-mdc-input-element {
+        color: var(--text-color) !important;
+        caret-color: var(--primary-color) !important;
+      }
+
+      .mat-mdc-input-element::placeholder {
+        color: var(--text-secondary-color) !important;
+      }
+
+      .mat-mdc-select {
+        color: var(--text-color) !important;
+      }
+
+      .mat-mdc-select-arrow {
+        color: var(--text-secondary-color) !important;
+      }
+
+      .mat-mdc-option {
+        color: var(--text-color) !important;
+      }
+
+      .mat-mdc-option:hover {
+        background-color: var(--hover-color) !important;
+      }
+
+      .mat-mdc-option.mdc-list-item--selected {
+        background-color: rgba(var(--primary-rgb), 0.12) !important;
+      }
+
+      .mat-mdc-button-toggle-group {
+        background-color: var(--surface-color) !important;
+        border-color: var(--border-color) !important;
+      }
+
+      .mat-mdc-button-toggle {
+        background-color: var(--surface-color) !important;
+        color: var(--text-color) !important;
+        border-color: var(--border-color) !important;
+      }
+
+      .mat-mdc-button-toggle.mat-mdc-button-toggle-checked {
+        background-color: var(--primary-color) !important;
+        color: white !important;
+      }
+
+      .mat-mdc-table {
+        background-color: var(--surface-color) !important;
+        color: var(--text-color) !important;
+      }
+
+      .mat-mdc-header-row {
+        background-color: var(--hover-color) !important;
+      }
+
+      .mat-mdc-header-cell {
+        color: var(--text-color) !important;
+        border-bottom-color: var(--border-color) !important;
+      }
+
+      .mat-mdc-cell {
+        color: var(--text-color) !important;
+        border-bottom-color: var(--border-color) !important;
+      }
+
+      .mat-mdc-row:hover {
+        background-color: var(--hover-color) !important;
+      }
+
+      .mat-mdc-progress-spinner circle {
+        stroke: var(--primary-color) !important;
+      }
+
+      .mat-mdc-button {
+        color: var(--text-color) !important;
+      }
+
+      .mat-mdc-stroked-button {
+        border-color: var(--border-color) !important;
+        color: var(--text-color) !important;
+      }
+
+      .mat-mdc-stroked-button:hover {
+        background-color: var(--hover-color) !important;
+      }
+
+      .mat-mdc-dialog-container {
+        background-color: var(--surface-color) !important;
+        color: var(--text-color) !important;
+      }
+    }
+
+    /* Standard overrides (for light theme compatibility) */
+    ::ng-deep .mat-mdc-card {
+      background-color: var(--surface-color);
+      color: var(--text-color);
+      border: 1px solid var(--border-color);
+    }
+
+    ::ng-deep .mat-mdc-card-title {
+      color: var(--text-color);
+    }
+
+    ::ng-deep .mat-mdc-card-subtitle {
+      color: var(--text-secondary-color);
+    }
+
+    ::ng-deep .mat-mdc-card-content {
+      color: var(--text-color);
+    }
+
+    ::ng-deep .mat-mdc-form-field {
+      background-color: var(--surface-color);
+    }
+
+    ::ng-deep .mat-mdc-input-element {
+      color: var(--text-color);
+    }
+
+    ::ng-deep .mat-mdc-select {
+      color: var(--text-color);
+    }
+
+    ::ng-deep .mat-mdc-button-toggle {
+      background-color: var(--surface-color);
+      color: var(--text-color);
+      border-color: var(--border-color);
+    }
+
+    ::ng-deep .mat-mdc-table {
+      background-color: var(--surface-color);
+      color: var(--text-color);
     }
   `]
 })
