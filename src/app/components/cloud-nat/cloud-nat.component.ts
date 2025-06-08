@@ -527,9 +527,8 @@ export class CloudNatComponent implements OnInit {
   }
 
   createNatGateway() {
-    this.snackBar.open('Create Cloud NAT gateway functionality would be implemented here', 'Close', {
-      duration: 5000
-    });
+    // Navigate to create Cloud NAT page
+    this.router.navigate(['/cloud-nat/create']);
   }
 
   deleteSelected() {

@@ -37,6 +37,7 @@ import { CreateCloudRouterComponent } from './components/create-cloud-router/cre
 import { CloudRouterDetailsComponent } from './components/cloud-router-details/cloud-router-details.component';
 import { CloudNatComponent } from './components/cloud-nat/cloud-nat.component';
 import { CloudNatDetailsComponent } from './components/cloud-nat-details/cloud-nat-details.component';
+import { CreateCloudNatComponent } from './components/create-cloud-nat/create-cloud-nat.component';
 
 const routes: Routes = [
   { path: '', redirectTo: '/vpc', pathMatch: 'full' },
@@ -87,6 +88,7 @@ const routes: Routes = [
   { path: 'cloud-router/create', component: CreateCloudRouterComponent, canActivate: [AuthGuard] },
   { path: 'cloud-router/:name', component: CloudRouterDetailsComponent, canActivate: [AuthGuard] },
   { path: 'cloud-nat', component: CloudNatComponent, canActivate: [AuthGuard] },
+  { path: 'cloud-nat/create', component: CreateCloudNatComponent, canActivate: [AuthGuard] },
   { path: 'cloud-nat/:name', component: CloudNatDetailsComponent, canActivate: [AuthGuard] },
   { path: 'cloud-network-insights', component: CloudNetworkInsightsComponent, canActivate: [AuthGuard] },
   { path: 'cnr', component: CNRComponent, canActivate: [AuthGuard] },
