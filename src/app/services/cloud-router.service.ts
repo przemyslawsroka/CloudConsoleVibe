@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, of, forkJoin } from 'rxjs';
-import { catchError, map, mergeMap } from 'rxjs/operators';
+import { Observable, of } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
 import { AuthService } from './auth.service';
 import { ProjectService } from './project.service';
 
@@ -108,7 +108,7 @@ export class CloudRouterService {
   }
 
   /**
-   * Get list of Cloud Routers from all regions
+   * Get list of Cloud Routers from all regions using aggregatedList
    */
   getCloudRouters(): Observable<CloudRouter[]> {
     // In demo mode, return mock data
@@ -117,31 +117,49 @@ export class CloudRouterService {
     }
 
     const project = this.getCurrentProject();
+    const url = `${this.baseUrl}/projects/${project}/aggregated/routers`;
     
-    // First get all regions
-    const regionsUrl = `${this.baseUrl}/projects/${project}/regions`;
-    
-    return this.http.get<any>(regionsUrl, { headers: this.getHeaders() }).pipe(
-      mergeMap(regionsResponse => {
-        const regions = regionsResponse.items || [];
+    return this.http.get<any>(url, { headers: this.getHeaders() }).pipe(
+      map(response => {
+        const routers: CloudRouter[] = [];
+        const errors: string[] = [];
         
-        // Create requests for each region
-        const routerRequests = regions.map((region: any) => {
-          const regionName = region.name;
-          const routersUrl = `${this.baseUrl}/projects/${project}/regions/${regionName}/routers`;
-          
-          return this.http.get<any>(routersUrl, { headers: this.getHeaders() }).pipe(
-            map(routersResponse => this.transformRoutersResponse(routersResponse.items || [], regionName)),
-            catchError(error => {
-              console.warn(`Error fetching routers for region ${regionName}:`, error);
-              return of([]);
-            })
-          );
-        });
+        // Handle partial success
+        if (response.warning && response.warning.length > 0) {
+          response.warning.forEach((warning: any) => {
+            console.warn(`Warning for ${warning.code}:`, warning.message);
+            errors.push(`${warning.code}: ${warning.message}`);
+          });
+        }
 
-        return forkJoin(routerRequests as Observable<CloudRouter[]>[]).pipe(
-          map((routerArrays: CloudRouter[][]) => routerArrays.flat())
-        );
+        // Process items from each region
+        if (response.items) {
+          Object.keys(response.items).forEach(regionKey => {
+            const regionData = response.items[regionKey];
+            
+            // Skip regions with warnings/errors that have no routers
+            if (regionData.warning) {
+              regionData.warning.forEach((warning: any) => {
+                console.warn(`Warning for region ${regionKey}:`, warning.message);
+                errors.push(`${regionKey}: ${warning.message}`);
+              });
+            }
+            
+            // Process routers if they exist
+            if (regionData.routers && regionData.routers.length > 0) {
+              const regionName = this.extractRegionFromKey(regionKey);
+              const regionRouters = this.transformRoutersResponse(regionData.routers, regionName);
+              routers.push(...regionRouters);
+            }
+          });
+        }
+        
+        // Log any errors but don't fail the request
+        if (errors.length > 0) {
+          console.warn('Some regions had errors:', errors);
+        }
+        
+        return routers;
       }),
       catchError(error => {
         console.error('Error fetching Cloud Routers:', error);
@@ -332,6 +350,12 @@ export class CloudRouterService {
   private extractNetworkName(networkUrl: string): string {
     if (!networkUrl) return 'default';
     const parts = networkUrl.split('/');
+    return parts[parts.length - 1];
+  }
+
+  private extractRegionFromKey(regionKey: string): string {
+    // regionKey format is usually "regions/region-name"
+    const parts = regionKey.split('/');
     return parts[parts.length - 1];
   }
 
