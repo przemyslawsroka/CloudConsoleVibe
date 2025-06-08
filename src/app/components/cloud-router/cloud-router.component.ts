@@ -7,33 +7,139 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { SelectionModel } from '@angular/cdk/collections';
 import { Router } from '@angular/router';
 import { CloudRouterService, CloudRouter } from '../../services/cloud-router.service';
+import { TableColumn, TableAction, TableConfig } from '../../shared/gcp-data-table/gcp-data-table.component';
 
 @Component({
   selector: 'app-cloud-router',
-  templateUrl: './cloud-router.component.html',
-  styleUrls: ['./cloud-router.component.scss']
+  template: `
+    <app-gcp-data-table
+      [data]="routers"
+      [columns]="columns"
+      [actions]="actions"
+      [config]="tableConfig"
+      [loading]="loading"
+      [title]="'Cloud Router'"
+      [subtitle]="'Manage dynamic routing for your VPC networks'"
+      [createButtonLabel]="'Create router'"
+      [createButtonIcon]="'add'"
+      (create)="createRouter()"
+      (refresh)="refreshRouters()"
+      (rowClick)="onRouterClick($event)">
+    </app-gcp-data-table>
+  `,
+  styles: [`
+    :host {
+      display: block;
+      font-family: 'Google Sans', 'Helvetica Neue', sans-serif;
+    }
+  `]
 })
-export class CloudRouterComponent implements OnInit, AfterViewInit {
-  @ViewChild(MatPaginator) paginator!: MatPaginator;
-  @ViewChild(MatSort) sort!: MatSort;
+export class CloudRouterComponent implements OnInit {
+  routers: CloudRouter[] = [];
+  loading = false;
 
-  displayedColumns: string[] = [
-    'select',
-    'name',
-    'network',
-    'region',
-    'interconnectEncryption',
-    'cloudRouterASN',
-    'interconnectVpnGateway',
-    'connection',
-    'bgpSessions',
-    'logs'
+  columns: TableColumn[] = [
+    {
+      key: 'name',
+      label: 'Name',
+      type: 'link',
+      sortable: true
+    },
+    {
+      key: 'network',
+      label: 'Network',
+      type: 'text',
+      sortable: true,
+      format: (value: string) => `<span class="network-name">${value}</span>`
+    },
+    {
+      key: 'region',
+      label: 'Region',
+      type: 'text',
+      sortable: true,
+      format: (value: string) => `<span class="region-name">${value}</span>`
+    },
+    {
+      key: 'interconnectEncryption',
+      label: 'Interconnect encryption',
+      type: 'text',
+      sortable: true,
+      format: (value: string) => `<span class="encryption-status">${value}</span>`
+    },
+    {
+      key: 'cloudRouterASN',
+      label: 'Cloud Router ASN',
+      type: 'text',
+      sortable: true,
+      format: (value: number) => `<span class="asn-number">${value}</span>`
+    },
+    {
+      key: 'interconnectVpnGateway',
+      label: 'Interconnect / VPN gateway',
+      type: 'text',
+      sortable: false,
+      format: (value: string) => `<span class="gateway-name">${value}</span>`
+    },
+    {
+      key: 'connection',
+      label: 'Connection',
+      type: 'text',
+      sortable: false,
+      format: (value: string) => value ? `<span class="connection-name">${value}</span>` : '<span class="no-connection">-</span>'
+    },
+    {
+      key: 'bgpSessions',
+      label: 'BGP sessions',
+      type: 'custom',
+      sortable: false,
+      format: (value: number) => {
+        const color = this.getBgpSessionsColor(value);
+        const icon = this.getBgpSessionsIcon(value);
+        return `
+          <div class="bgp-sessions">
+            <mat-icon style="color: ${color}; font-size: 16px; width: 16px; height: 16px;">${icon}</mat-icon>
+            <span class="session-count">${value}</span>
+          </div>
+        `;
+      }
+    },
+    {
+      key: 'logs',
+      label: 'Logs',
+      type: 'custom',
+      sortable: false,
+      format: () => '<button mat-button color="primary" class="view-logs-btn">View</button>'
+    }
   ];
 
-  dataSource = new MatTableDataSource<CloudRouter>();
-  selection = new SelectionModel<CloudRouter>(true, []);
-  loading = false;
-  filterValue = '';
+  actions: TableAction[] = [
+    {
+      label: 'View details',
+      icon: 'visibility',
+      action: (row: CloudRouter) => this.onRouterClick(row)
+    },
+    {
+      label: 'Edit',
+      icon: 'edit',
+      action: (row: CloudRouter) => this.editRouter(row)
+    },
+    {
+      label: 'Delete',
+      icon: 'delete',
+      action: (row: CloudRouter) => this.deleteRouter(row)
+    }
+  ];
+
+  tableConfig: TableConfig = {
+    showColumnSelector: true,
+    emptyStateIcon: 'router',
+    emptyStateTitle: 'No routers found',
+    emptyStateMessage: 'Create your first Cloud Router to enable dynamic routing for your VPC network.',
+    emptyStateAction: {
+      label: 'Create router',
+      action: () => this.createRouter()
+    }
+  };
 
   constructor(
     private cloudRouterService: CloudRouterService,
@@ -46,46 +152,27 @@ export class CloudRouterComponent implements OnInit, AfterViewInit {
     this.loadRouters();
   }
 
-  ngAfterViewInit(): void {
-    this.dataSource.paginator = this.paginator;
-    this.dataSource.sort = this.sort;
-  }
-
   loadRouters(): void {
     this.loading = true;
     this.cloudRouterService.getCloudRouters().subscribe({
       next: (routers) => {
-        this.dataSource.data = routers;
+        this.routers = routers;
         this.loading = false;
       },
       error: (error) => {
         console.error('Error loading routers:', error);
+        this.loading = false;
         this.snackBar.open('Error loading routers', 'Close', {
           duration: 3000,
           panelClass: ['error-snackbar']
         });
-        this.loading = false;
       }
     });
   }
 
-  applyFilter(): void {
-    this.dataSource.filter = this.filterValue.trim().toLowerCase();
-    if (this.dataSource.paginator) {
-      this.dataSource.paginator.firstPage();
-    }
-  }
-
-  clearFilter(): void {
-    this.filterValue = '';
-    this.applyFilter();
-  }
-
-  refreshRouters(): void {
-    this.selection.clear();
-    this.loadRouters();
-    this.snackBar.open('Routers refreshed', 'Close', {
-      duration: 2000
+  onRouterClick(router: CloudRouter): void {
+    this.router.navigate(['/cloud-router', router.name], {
+      queryParams: { region: router.region }
     });
   }
 
@@ -93,65 +180,30 @@ export class CloudRouterComponent implements OnInit, AfterViewInit {
     this.router.navigate(['/cloud-router/create']);
   }
 
-  deleteSelectedRouters(): void {
-    const selected = this.selection.selected;
-    if (selected.length === 0) {
-      this.snackBar.open('No routers selected', 'Close', {
-        duration: 2000
+  refreshRouters(): void {
+    this.loadRouters();
+  }
+
+  editRouter(router: CloudRouter): void {
+    this.snackBar.open('Edit router functionality would be implemented here', 'Close', {
+      duration: 3000
+    });
+  }
+
+  deleteRouter(router: CloudRouter): void {
+    if (confirm(`Are you sure you want to delete router "${router.name}"?`)) {
+      this.snackBar.open('Delete router functionality would be implemented here', 'Close', {
+        duration: 3000
       });
-      return;
     }
-
-    this.snackBar.open(
-      `Delete functionality for ${selected.length} router(s) would be implemented here`, 
-      'Close', 
-      { duration: 3000 }
-    );
   }
 
-  onRouterClick(router: CloudRouter): void {
-    // Navigate to router details page
-    this.router.navigate(['/cloud-router', router.name], {
-      queryParams: { region: router.region }
-    });
+  getBgpSessionsColor(sessionCount: number): string {
+    return sessionCount > 0 ? '#34a853' : '#9aa0a6';
   }
 
-  viewLogs(router: CloudRouter): void {
-    this.snackBar.open(`View logs for ${router.name}`, 'Close', {
-      duration: 2000
-    });
-  }
-
-  isAllSelected(): boolean {
-    const numSelected = this.selection.selected.length;
-    const numRows = this.dataSource.data.length;
-    return numSelected === numRows;
-  }
-
-  masterToggle(): void {
-    this.isAllSelected() ?
-      this.selection.clear() :
-      this.dataSource.data.forEach(row => this.selection.select(row));
-  }
-
-  getBgpSessionsColor(sessions: number): string {
-    return sessions > 0 ? '#34a853' : '#9aa0a6';
-  }
-
-  getBgpSessionsIcon(sessions: number): string {
-    return sessions > 0 ? 'radio_button_checked' : 'radio_button_unchecked';
-  }
-
-  getStatusColor(status: string): string {
-    switch (status) {
-      case 'ACTIVE':
-        return '#34a853';
-      case 'INACTIVE':
-        return '#ea4335';
-      case 'PENDING':
-        return '#fbbc04';
-      default:
-        return '#9aa0a6';
-    }
+  getBgpSessionsIcon(sessionCount: number): string {
+    return sessionCount > 0 ? 'check_circle' : 'radio_button_unchecked';
   }
 }
+

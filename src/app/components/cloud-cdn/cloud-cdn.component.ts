@@ -3,170 +3,25 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { SelectionModel } from '@angular/cdk/collections';
 import { Router } from '@angular/router';
 import { CloudCdnService, CdnOrigin } from '../../services/cloud-cdn.service';
+import { TableColumn, TableAction, TableConfig } from '../../shared/gcp-data-table/gcp-data-table.component';
 
 @Component({
   selector: 'app-cloud-cdn',
   template: `
-    <div class="cloud-cdn-container">
-      <div class="header">
-        <h1 class="page-title">Cloud CDN</h1>
-        <div class="header-actions">
-          <button mat-raised-button color="primary" class="add-origin-btn" (click)="addOrigin()">
-            <mat-icon>add</mat-icon>
-            Add origin
-          </button>
-          <button mat-icon-button (click)="refresh()" matTooltip="Refresh">
-            <mat-icon>refresh</mat-icon>
-          </button>
-          <button mat-button class="remove-btn" [disabled]="selection.selected.length === 0" (click)="removeSelected()">
-            <mat-icon>delete</mat-icon>
-            Remove
-          </button>
-          <button mat-icon-button class="learn-btn" matTooltip="Learn">
-            <mat-icon>school</mat-icon>
-            Learn
-          </button>
-        </div>
-      </div>
-
-      <div class="filters-section">
-        <mat-form-field appearance="outline" class="filter-field">
-          <mat-label>Filter</mat-label>
-          <input matInput 
-                 placeholder="Enter property name or value" 
-                 [(ngModel)]="filterValue"
-                 (input)="applyFilter()">
-          <mat-icon matPrefix>filter_list</mat-icon>
-        </mat-form-field>
-        <div class="filter-info" *ngIf="filteredOrigins.length !== origins.length">
-          Showing {{ filteredOrigins.length }} of {{ origins.length }} origins
-        </div>
-      </div>
-
-      <!-- Loading State -->
-      <div *ngIf="loading" class="loading-container">
-        <mat-spinner></mat-spinner>
-        <p>Loading CDN origins...</p>
-      </div>
-
-      <div class="table-container" *ngIf="!loading">
-        <table mat-table [dataSource]="filteredOrigins" class="origins-table" multiTemplateDataRows>
-          
-          <!-- Checkbox Column -->
-          <ng-container matColumnDef="select">
-            <th mat-header-cell *matHeaderCellDef>
-              <mat-checkbox (change)="$event ? masterToggle() : null"
-                           [checked]="selection.hasValue() && isAllSelected()"
-                           [indeterminate]="selection.hasValue() && !isAllSelected()">
-              </mat-checkbox>
-            </th>
-            <td mat-cell *matCellDef="let row">
-              <mat-checkbox (click)="$event.stopPropagation()"
-                           (change)="$event ? selection.toggle(row) : null"
-                           [checked]="selection.isSelected(row)">
-              </mat-checkbox>
-            </td>
-          </ng-container>
-
-          <!-- Origin Name Column -->
-          <ng-container matColumnDef="originName">
-            <th mat-header-cell *matHeaderCellDef>
-              <div class="header-cell">
-                Origin name
-                <mat-icon class="sort-icon">arrow_upward</mat-icon>
-              </div>
-            </th>
-            <td mat-cell *matCellDef="let origin">
-              <a class="origin-link" (click)="viewOriginDetails(origin)">{{ origin.name }}</a>
-            </td>
-          </ng-container>
-
-          <!-- Cache Mode Column -->
-          <ng-container matColumnDef="cacheMode">
-            <th mat-header-cell *matHeaderCellDef>Cache mode</th>
-            <td mat-cell *matCellDef="let origin">
-              <span class="cache-mode">{{ origin.cacheMode }}</span>
-            </td>
-          </ng-container>
-
-          <!-- Associated Load Balancers Column -->
-          <ng-container matColumnDef="loadBalancers">
-            <th mat-header-cell *matHeaderCellDef>Associated load balancers</th>
-            <td mat-cell *matCellDef="let origin">
-              <div class="load-balancers">
-                <a *ngFor="let lb of origin.associatedLoadBalancers; let last = last" 
-                   class="load-balancer-link" 
-                   (click)="viewLoadBalancer(lb)">
-                  {{ lb }}
-                  <span *ngIf="!last">, </span>
-                </a>
-              </div>
-            </td>
-          </ng-container>
-
-          <!-- Cache Hit Ratio Column -->
-          <ng-container matColumnDef="cacheHitRatio">
-            <th mat-header-cell *matHeaderCellDef>Cache hit ratio</th>
-            <td mat-cell *matCellDef="let origin">
-              <span class="cache-hit-ratio" 
-                    [class.no-data]="origin.cacheHitRatio === 'No data'">
-                {{ origin.cacheHitRatio }}
-              </span>
-            </td>
-          </ng-container>
-
-          <!-- Actions Column -->
-          <ng-container matColumnDef="actions">
-            <th mat-header-cell *matHeaderCellDef></th>
-            <td mat-cell *matCellDef="let origin">
-              <button mat-icon-button [matMenuTriggerFor]="actionMenu" (click)="$event.stopPropagation()">
-                <mat-icon>more_vert</mat-icon>
-              </button>
-              <mat-menu #actionMenu="matMenu">
-                <button mat-menu-item (click)="editOrigin(origin)">
-                  <mat-icon>edit</mat-icon>
-                  <span>Edit</span>
-                </button>
-                <button mat-menu-item (click)="deleteOrigin(origin)">
-                  <mat-icon>delete</mat-icon>
-                  <span>Delete</span>
-                </button>
-                <button mat-menu-item (click)="viewOriginDetails(origin)">
-                  <mat-icon>info</mat-icon>
-                  <span>View details</span>
-                </button>
-              </mat-menu>
-            </td>
-          </ng-container>
-
-          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-          <tr mat-row *matRowDef="let row; columns: displayedColumns;"
-              [class.selected]="selection.isSelected(row)"
-              (click)="selection.toggle(row)">
-          </tr>
-        </table>
-
-        <div class="no-data" *ngIf="filteredOrigins.length === 0 && !loading">
-          <mat-icon class="no-data-icon">cloud_off</mat-icon>
-          <h3>No CDN origins found</h3>
-          <p>Get started by adding your first CDN origin.</p>
-          <button mat-raised-button color="primary" (click)="addOrigin()">
-            <mat-icon>add</mat-icon>
-            Add origin
-          </button>
-        </div>
-      </div>
-
-      <div class="table-footer" *ngIf="filteredOrigins.length > 0 && !loading">
-        <div class="selection-info">
-          {{ selection.selected.length }} of {{ filteredOrigins.length }} selected
-        </div>
-        <mat-paginator [pageSizeOptions]="[5, 10, 20, 50]" 
-                       [pageSize]="10"
-                       [showFirstLastButtons]="true">
-        </mat-paginator>
-      </div>
-    </div>
+    <app-gcp-data-table
+      [data]="origins"
+      [columns]="columns"
+      [actions]="actions"
+      [config]="tableConfig"
+      [loading]="loading"
+      [title]="'Cloud CDN'"
+      [subtitle]="'Accelerate content delivery for websites and applications served from Google Cloud'"
+      [createButtonLabel]="'Add origin'"
+      [createButtonIcon]="'add'"
+      (create)="addOrigin()"
+      (refresh)="refresh()"
+      (rowClick)="viewOriginDetails($event)">
+    </app-gcp-data-table>
 
     <!-- Add Origin Dialog -->
     <div class="modal-overlay" *ngIf="showAddOriginDialog" (click)="closeAddOriginDialog()">
@@ -219,229 +74,9 @@ import { CloudCdnService, CdnOrigin } from '../../services/cloud-cdn.service';
     </div>
   `,
   styles: [`
-    .cloud-cdn-container {
-      padding: 24px;
-      background: #f8f9fa;
-      min-height: calc(100vh - 64px);
-    }
-
-    .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 24px;
-      background: white;
-      padding: 16px 24px;
-      border-radius: 8px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    }
-
-    .page-title {
-      margin: 0;
-      font-size: 24px;
-      font-weight: 400;
-      color: #202124;
-    }
-
-    .header-actions {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-    }
-
-    .add-origin-btn {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .remove-btn {
-      color: #ea4335;
-    }
-
-    .remove-btn:disabled {
-      color: #ccc;
-    }
-
-    .learn-btn {
-      color: #1976d2;
-    }
-
-    .filters-section {
-      background: white;
-      padding: 16px 24px;
-      border-radius: 8px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-      margin-bottom: 16px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .filter-field {
-      flex: 1;
-      max-width: 400px;
-    }
-
-    .filter-info {
-      color: #5f6368;
-      font-size: 14px;
-    }
-
-    .loading-container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 48px 24px;
-      text-align: center;
-      background: white;
-      border-radius: 8px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    }
-
-    .loading-container p {
-      margin-top: 16px;
-      color: #5f6368;
-    }
-
-    .table-container {
-      background: white;
-      border-radius: 8px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-      overflow: hidden;
-    }
-
-    .origins-table {
-      width: 100%;
-    }
-
-    .mat-header-cell {
-      background: #f8f9fa;
-      color: #5f6368;
-      font-weight: 500;
-      font-size: 12px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      padding: 16px;
-    }
-
-    .mat-cell {
-      padding: 16px;
-      border-bottom: 1px solid #f1f3f4;
-    }
-
-    .header-cell {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-
-    .sort-icon {
-      font-size: 16px;
-      width: 16px;
-      height: 16px;
-      color: #1976d2;
-    }
-
-    .origin-link {
-      color: #1976d2;
-      text-decoration: none;
-      cursor: pointer;
-      font-weight: 500;
-    }
-
-    .origin-link:hover {
-      text-decoration: underline;
-    }
-
-    .cache-mode {
-      color: #202124;
-      font-size: 14px;
-    }
-
-    .load-balancers {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 4px;
-    }
-
-    .load-balancer-link {
-      color: #1976d2;
-      text-decoration: none;
-      cursor: pointer;
-      font-size: 14px;
-    }
-
-    .load-balancer-link:hover {
-      text-decoration: underline;
-    }
-
-    .cache-hit-ratio {
-      color: #202124;
-      font-size: 14px;
-    }
-
-    .cache-hit-ratio.no-data {
-      color: #5f6368;
-      font-style: italic;
-    }
-
-    .mat-row {
-      cursor: pointer;
-      transition: background-color 0.2s ease;
-    }
-
-    .mat-row:hover {
-      background-color: #f8f9fa;
-    }
-
-    .mat-row.selected {
-      background-color: #e8f0fe;
-    }
-
-    .no-data {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 48px 24px;
-      text-align: center;
-    }
-
-    .no-data-icon {
-      font-size: 48px;
-      width: 48px;
-      height: 48px;
-      color: #5f6368;
-      margin-bottom: 16px;
-    }
-
-    .no-data h3 {
-      margin: 0 0 8px 0;
-      color: #202124;
-      font-size: 20px;
-      font-weight: 400;
-    }
-
-    .no-data p {
-      margin: 0 0 24px 0;
-      color: #5f6368;
-      font-size: 14px;
-    }
-
-    .table-footer {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 16px 24px;
-      background: white;
-      border-top: 1px solid #f1f3f4;
-    }
-
-    .selection-info {
-      color: #5f6368;
-      font-size: 14px;
+    :host {
+      display: block;
+      font-family: 'Google Sans', 'Helvetica Neue', sans-serif;
     }
 
     /* Add Origin Dialog */
@@ -506,70 +141,80 @@ import { CloudCdnService, CdnOrigin } from '../../services/cloud-cdn.service';
 
     /* Responsive Design */
     @media (max-width: 768px) {
-      .cloud-cdn-container {
-        padding: 16px;
-      }
-
-      .header {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 16px;
-      }
-
-      .header-actions {
-        justify-content: space-between;
-      }
-
-      .filters-section {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 16px;
-      }
-
-      .filter-info {
-        text-align: center;
-      }
-
-      .table-footer {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 16px;
-      }
-
       .add-origin-dialog {
         width: 95%;
         margin: 16px;
       }
     }
-
-    /* Material Design Overrides */
-    .mat-form-field-appearance-outline .mat-form-field-outline-thick {
-      color: #1976d2;
-    }
-
-    .mat-focused .mat-form-field-label {
-      color: #1976d2;
-    }
-
-    .mat-checkbox-checked .mat-checkbox-background {
-      background-color: #1976d2;
-    }
-
-    .mat-paginator {
-      background: transparent;
-    }
   `]
 })
 export class CloudCdnComponent implements OnInit {
-  displayedColumns: string[] = ['select', 'originName', 'cacheMode', 'loadBalancers', 'cacheHitRatio', 'actions'];
-  
   origins: CdnOrigin[] = [];
-  filteredOrigins: CdnOrigin[] = [];
-  selection = new SelectionModel<CdnOrigin>(true, []);
-  filterValue = '';
+  loading = true;
   showAddOriginDialog = false;
   originForm: FormGroup;
-  loading = true;
+
+  columns: TableColumn[] = [
+    {
+      key: 'name',
+      label: 'Origin name',
+      type: 'link',
+      sortable: true
+    },
+    {
+      key: 'cacheMode',
+      label: 'Cache mode',
+      type: 'text',
+      sortable: false,
+      format: (value: string) => `<span class="cache-mode">${value}</span>`
+    },
+    {
+      key: 'associatedLoadBalancers',
+      label: 'Associated load balancers',
+      type: 'custom',
+      sortable: false,
+      format: (value: string[]) => {
+        if (!value || value.length === 0) return '-';
+        return value.map(lb => `<a class="load-balancer-link" href="#">${lb}</a>`).join(', ');
+      }
+    },
+    {
+      key: 'cacheHitRatio',
+      label: 'Cache hit ratio',
+      type: 'text',
+      sortable: false,
+      format: (value: string) => `<span class="cache-hit-ratio ${value === 'No data' ? 'no-data' : ''}">${value}</span>`
+    }
+  ];
+
+  actions: TableAction[] = [
+    {
+      label: 'View details',
+      icon: 'info',
+      action: (row: CdnOrigin) => this.viewOriginDetails(row)
+    },
+    {
+      label: 'Edit',
+      icon: 'edit',
+      action: (row: CdnOrigin) => this.editOrigin(row)
+    },
+    {
+      label: 'Delete',
+      icon: 'delete',
+      action: (row: CdnOrigin) => this.deleteOrigin(row)
+    }
+  ];
+
+  tableConfig: TableConfig = {
+    showColumnSelector: true,
+    emptyStateIcon: 'cloud_off',
+    emptyStateTitle: 'No CDN origins found',
+    emptyStateMessage: 'Get started by adding your first CDN origin.',
+    emptyStateAction: {
+      label: 'Add origin',
+      action: () => this.addOrigin()
+    }
+  };
 
   constructor(
     private fb: FormBuilder,
@@ -593,7 +238,6 @@ export class CloudCdnComponent implements OnInit {
     this.cdnService.getCdnOrigins().subscribe({
       next: (origins) => {
         this.origins = origins;
-        this.filteredOrigins = [...origins];
         this.loading = false;
       },
       error: (error) => {
@@ -603,22 +247,24 @@ export class CloudCdnComponent implements OnInit {
     });
   }
 
-  applyFilter() {
-    if (!this.filterValue) {
-      this.filteredOrigins = [...this.origins];
-    } else {
-      this.filteredOrigins = this.origins.filter(origin =>
-        origin.name.toLowerCase().includes(this.filterValue.toLowerCase()) ||
-        origin.cacheMode.toLowerCase().includes(this.filterValue.toLowerCase()) ||
-        origin.associatedLoadBalancers.some(lb => 
-          lb.toLowerCase().includes(this.filterValue.toLowerCase())
-        )
-      );
-    }
+  refresh() {
+    this.loadOrigins();
   }
 
   addOrigin() {
     this.showAddOriginDialog = true;
+  }
+
+  viewOriginDetails(origin: CdnOrigin) {
+    this.router.navigate(['/cloud-cdn', origin.name]);
+  }
+
+  editOrigin(origin: CdnOrigin) {
+    console.log('Edit origin:', origin);
+  }
+
+  deleteOrigin(origin: CdnOrigin) {
+    this.origins = this.origins.filter(o => o.id !== origin.id);
   }
 
   closeAddOriginDialog() {
@@ -645,50 +291,7 @@ export class CloudCdnComponent implements OnInit {
       };
       
       this.origins.push(newOrigin);
-      this.applyFilter();
       this.closeAddOriginDialog();
     }
-  }
-
-  refresh() {
-    this.loadOrigins();
-  }
-
-  removeSelected() {
-    const selectedOrigins = this.selection.selected;
-    this.origins = this.origins.filter(origin => !selectedOrigins.includes(origin));
-    this.selection.clear();
-    this.applyFilter();
-  }
-
-  viewOriginDetails(origin: CdnOrigin) {
-    this.router.navigate(['/cloud-cdn', origin.name]);
-  }
-
-  viewLoadBalancer(loadBalancer: string) {
-    this.router.navigate(['/load-balancing', loadBalancer]);
-  }
-
-  editOrigin(origin: CdnOrigin) {
-    console.log('Editing origin:', origin);
-  }
-
-  deleteOrigin(origin: CdnOrigin) {
-    this.origins = this.origins.filter(o => o.id !== origin.id);
-    this.applyFilter();
-  }
-
-  masterToggle() {
-    if (this.isAllSelected()) {
-      this.selection.clear();
-    } else {
-      this.filteredOrigins.forEach(row => this.selection.select(row));
-    }
-  }
-
-  isAllSelected() {
-    const numSelected = this.selection.selected.length;
-    const numRows = this.filteredOrigins.length;
-    return numSelected === numRows;
   }
 }
