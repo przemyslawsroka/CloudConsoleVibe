@@ -1,6 +1,7 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { Router, NavigationEnd } from '@angular/router';
 import { AuthService } from './services/auth.service';
+import { ThemeService, Theme } from './services/theme.service';
 import { Observable } from 'rxjs';
 import { filter, map } from 'rxjs/operators';
 import { MatDialog } from '@angular/material/dialog';
@@ -42,6 +43,15 @@ interface NavItem {
           {{ (currentProject$ | async)?.name || 'Select project' }}
         </button>
         <span class="toolbar-spacer"></span>
+        
+        <!-- Theme Toggle Button -->
+        <button mat-icon-button 
+                (click)="toggleTheme()" 
+                [matTooltip]="(currentTheme$ | async) === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'"
+                class="theme-toggle-btn">
+          <mat-icon>{{ (currentTheme$ | async) === 'dark' ? 'light_mode' : 'dark_mode' }}</mat-icon>
+        </button>
+        
         <button mat-icon-button 
                 routerLink="/documentation" 
                 matTooltip="Documentation"
@@ -145,6 +155,15 @@ interface NavItem {
     }
     
     .doc-button:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+    
+    .theme-toggle-btn {
+      margin-right: 8px;
+      color: white;
+    }
+    
+    .theme-toggle-btn:hover {
       background-color: rgba(255, 255, 255, 0.1);
     }
     
@@ -291,6 +310,7 @@ export class AppComponent implements OnInit {
   isDemoMode$: Observable<boolean>;
   currentProject$: Observable<Project | null>;
   isDocumentationRoute = false;
+  currentTheme$: Observable<Theme>;
 
   navCategories: NavCategory[] = [
     {
@@ -354,11 +374,13 @@ export class AppComponent implements OnInit {
     private authService: AuthService,
     private router: Router,
     private dialog: MatDialog,
-    private projectService: ProjectService
+    private projectService: ProjectService,
+    private themeService: ThemeService
   ) {
     this.isAuthenticated$ = this.authService.isAuthenticated$;
     this.isDemoMode$ = this.authService.isDemoMode$;
     this.currentProject$ = this.projectService.currentProject$;
+    this.currentTheme$ = this.themeService.theme$;
   }
 
   ngOnInit() {
@@ -471,5 +493,9 @@ export class AppComponent implements OnInit {
 
   toggleCategory(category: NavCategory) {
     category.expanded = !category.expanded;
+  }
+
+  toggleTheme() {
+    this.themeService.toggleTheme();
   }
 } 

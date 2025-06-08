@@ -1,8 +1,198 @@
 /* You can add global styles to this file, and also import other style files */
+
+/* CSS Custom Properties for theming */
+:root {
+  --background-color: #ffffff;
+  --surface-color: #f8f9fa;
+  --text-color: #202124;
+  --text-secondary-color: #5f6368;
+  --primary-color: #4285f4;
+  --accent-color: #34a853;
+  --warn-color: #ea4335;
+  --border-color: #dadce0;
+  --hover-color: rgba(32, 33, 36, 0.04);
+  --selected-color: rgba(66, 133, 244, 0.12);
+  --disabled-color: rgba(32, 33, 36, 0.38);
+  --divider-color: rgba(32, 33, 36, 0.12);
+}
+
 html, body {
   height: 100%;
   margin: 0;
   font-family: Roboto, "Helvetica Neue", sans-serif;
+  background-color: var(--background-color);
+  color: var(--text-color);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Light Theme */
+body.light-theme {
+  --background-color: #ffffff;
+  --surface-color: #f8f9fa;
+  --text-color: #202124;
+  --text-secondary-color: #5f6368;
+  --border-color: #dadce0;
+  --hover-color: rgba(32, 33, 36, 0.04);
+  --selected-color: rgba(66, 133, 244, 0.12);
+  --disabled-color: rgba(32, 33, 36, 0.38);
+  --divider-color: rgba(32, 33, 36, 0.12);
+}
+
+/* Dark Theme */
+body.dark-theme {
+  --background-color: #121212;
+  --surface-color: #1e1e1e;
+  --text-color: #ffffff;
+  --text-secondary-color: #b3b3b3;
+  --border-color: #3c3c3c;
+  --hover-color: rgba(255, 255, 255, 0.08);
+  --selected-color: rgba(66, 133, 244, 0.12);
+  --disabled-color: rgba(255, 255, 255, 0.38);
+  --divider-color: rgba(255, 255, 255, 0.12);
+}
+
+/* Angular Material Theme Overrides */
+.dark-theme {
+  /* Material Cards */
+  .mat-mdc-card {
+    background-color: var(--surface-color);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+  }
+
+  /* Material Toolbar */
+  .mat-toolbar {
+    background-color: #1f1f1f !important;
+    color: var(--text-color) !important;
+  }
+
+  /* Material Sidenav */
+  .mat-sidenav {
+    background-color: #1e1e1e !important;
+    color: var(--text-color) !important;
+  }
+
+  .mat-sidenav-container {
+    background-color: var(--background-color) !important;
+  }
+
+  /* Material List Items */
+  .mat-list-item, .mat-mdc-list-item {
+    color: var(--text-color) !important;
+  }
+
+  .mat-list-item:hover, .mat-mdc-list-item:hover {
+    background-color: var(--hover-color) !important;
+  }
+
+  /* Material Tables */
+  .mat-mdc-table {
+    background-color: var(--surface-color);
+    color: var(--text-color);
+  }
+
+  .mat-mdc-header-row {
+    background-color: var(--surface-color);
+  }
+
+  .mat-mdc-row {
+    background-color: var(--surface-color);
+    border-bottom-color: var(--divider-color);
+  }
+
+  .mat-mdc-row:hover {
+    background-color: var(--hover-color) !important;
+  }
+
+  /* Material Form Fields */
+  .mat-mdc-form-field {
+    .mat-mdc-text-field-wrapper {
+      background-color: var(--surface-color);
+    }
+    
+    .mat-mdc-form-field-input-control {
+      color: var(--text-color);
+    }
+  }
+
+  /* Material Select */
+  .mat-mdc-select-value {
+    color: var(--text-color);
+  }
+
+  /* Material Menu */
+  .mat-mdc-menu-panel {
+    background-color: var(--surface-color) !important;
+  }
+
+  .mat-mdc-menu-item {
+    color: var(--text-color) !important;
+  }
+
+  .mat-mdc-menu-item:hover {
+    background-color: var(--hover-color) !important;
+  }
+
+  /* Material Dialog */
+  .mat-mdc-dialog-container {
+    background-color: var(--surface-color) !important;
+    color: var(--text-color) !important;
+  }
+
+  /* Material Snackbar */
+  .mat-mdc-snack-bar-container {
+    background-color: var(--surface-color) !important;
+    color: var(--text-color) !important;
+  }
+
+  /* Material Tabs */
+  .mat-mdc-tab-group {
+    background-color: var(--surface-color);
+  }
+
+  .mat-mdc-tab {
+    color: var(--text-secondary-color);
+  }
+
+  .mat-mdc-tab.mdc-tab--active {
+    color: var(--primary-color);
+  }
+
+  /* Material Progress Bar */
+  .mat-mdc-progress-bar {
+    --mdc-linear-progress-track-color: var(--border-color);
+  }
+
+  /* Material Expansion Panel */
+  .mat-expansion-panel {
+    background-color: var(--surface-color);
+    color: var(--text-color);
+  }
+
+  /* Material Button Toggle */
+  .mat-button-toggle-group {
+    background-color: var(--surface-color);
+    border-color: var(--border-color);
+  }
+
+  .mat-button-toggle {
+    color: var(--text-color);
+    background-color: var(--surface-color);
+  }
+
+  /* Material Checkbox and Radio */
+  .mat-mdc-checkbox, .mat-mdc-radio-button {
+    .mdc-checkbox, .mdc-radio {
+      --mdc-checkbox-unselected-icon-color: var(--text-secondary-color);
+      --mdc-radio-unselected-icon-color: var(--text-secondary-color);
+    }
+  }
+
+  /* Material Paginator */
+  .mat-mdc-paginator {
+    background-color: var(--surface-color);
+    color: var(--text-color);
+  }
 }
 
 .mat-typography {
@@ -10,27 +200,38 @@ html, body {
     font-size: 24px;
     font-weight: 400;
     margin: 0;
+    color: var(--text-color);
   }
 
   h2 {
     font-size: 20px;
     font-weight: 400;
     margin: 0;
+    color: var(--text-color);
   }
 
   h3 {
     font-size: 16px;
     font-weight: 400;
     margin: 0;
+    color: var(--text-color);
+  }
+
+  p {
+    color: var(--text-color);
   }
 }
 
 .mat-mdc-card {
   margin-bottom: 20px;
+  background-color: var(--surface-color);
+  color: var(--text-color);
 }
 
 .mat-mdc-table {
   width: 100%;
+  background-color: var(--surface-color);
+  color: var(--text-color);
 }
 
 .mat-column-actions {
@@ -39,7 +240,7 @@ html, body {
 }
 
 .mat-mdc-row:hover {
-  background-color: rgba(0, 0, 0, 0.04);
+  background-color: var(--hover-color);
 }
 
 .mat-mdc-menu-item {
@@ -73,4 +274,33 @@ html, body {
     background-color: #f44336;
     color: white;
   }
+}
+
+/* Custom scrollbar for dark theme */
+.dark-theme {
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--surface-color);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--text-secondary-color);
+  }
+}
+
+/* Theme transition animations */
+* {
+  transition: background-color 0.3s ease, 
+              color 0.3s ease, 
+              border-color 0.3s ease,
+              box-shadow 0.3s ease;
 } 
