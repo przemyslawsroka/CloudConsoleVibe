@@ -80,8 +80,9 @@ import { AuthService } from '../../services/auth.service';
       display: flex;
       justify-content: center;
       align-items: center;
-      background-color: #f5f5f5;
+      background-color: var(--background-color);
       padding: 20px;
+      transition: background-color 0.3s ease;
     }
     .login-card {
       max-width: 550px;
@@ -90,11 +91,14 @@ import { AuthService } from '../../services/auth.service';
       padding: 32px;
       border-radius: 16px;
       box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+      background-color: var(--surface-color);
+      color: var(--text-color);
+      border: 1px solid var(--border-color);
     }
     
     .welcome-text {
       font-size: 18px;
-      color: #5f6368;
+      color: var(--text-secondary-color);
       margin-bottom: 32px;
     }
     
@@ -139,7 +143,7 @@ import { AuthService } from '../../services/auth.service';
     
     .auth-description {
       font-size: 14px;
-      color: #5f6368;
+      color: var(--text-secondary-color);
       margin: 0;
       text-align: center;
       max-width: 300px;
@@ -155,7 +159,7 @@ import { AuthService } from '../../services/auth.service';
     
     .divider-text {
       font-size: 12px;
-      color: #9aa0a6;
+      color: var(--text-secondary-color);
       font-weight: 500;
       white-space: nowrap;
     }
@@ -176,7 +180,7 @@ import { AuthService } from '../../services/auth.service';
       margin-top: 16px;
     }
     .info-icon {
-      color: #1976d2;
+      color: var(--primary-color);
       font-size: 24px;
       width: 24px;
       height: 24px;
@@ -185,10 +189,11 @@ import { AuthService } from '../../services/auth.service';
     }
     .info-text {
       flex: 1;
+      color: var(--text-color);
     }
     .info-text h4 {
       margin: 0 0 12px 0;
-      color: #333;
+      color: var(--text-color);
       font-size: 16px;
     }
     .info-text ul {
@@ -198,40 +203,108 @@ import { AuthService } from '../../services/auth.service';
     .info-text li {
       margin-bottom: 8px;
       line-height: 1.5;
-      color: #555;
+      color: var(--text-color);
     }
-    .info-text code {
-      background: #f5f5f5;
-      padding: 2px 6px;
-      border-radius: 3px;
-      font-family: 'Courier New', monospace;
-      font-size: 12px;
+    .info-text p {
+      margin: 8px 0;
+      color: var(--text-color);
     }
     .contact-info {
       display: flex;
       align-items: center;
       gap: 8px;
-      margin: 0;
+      margin-top: 16px;
       padding: 12px;
-      background: #e3f2fd;
+      background-color: var(--hover-color);
       border-radius: 8px;
-      color: #1976d2;
+      border-left: 4px solid var(--primary-color);
     }
     .contact-icon {
+      color: var(--primary-color);
       font-size: 18px;
       width: 18px;
       height: 18px;
     }
     
-    @media (max-width: 600px) {
+    code {
+      background-color: var(--hover-color);
+      color: var(--primary-color);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+    }
+
+    strong {
+      color: var(--text-color);
+      font-weight: 600;
+    }
+
+    /* Dark theme specific adjustments */
+    :host-context(.dark-theme) .login-container {
+      background-color: var(--background-color);
+    }
+
+    :host-context(.dark-theme) .login-card {
+      background-color: var(--surface-color);
+      color: var(--text-color);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+      border: 1px solid var(--border-color);
+    }
+
+    :host-context(.dark-theme) .auth-button {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    :host-context(.dark-theme) .auth-button:hover {
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+    }
+
+    /* Material component overrides for dark theme in login */
+    :host-context(.dark-theme) ::ng-deep .mat-mdc-card {
+      background-color: var(--surface-color) !important;
+      color: var(--text-color) !important;
+    }
+
+    :host-context(.dark-theme) ::ng-deep .mat-mdc-card-header {
+      color: var(--text-color) !important;
+    }
+
+    :host-context(.dark-theme) ::ng-deep .mat-mdc-card-title {
+      color: var(--text-color) !important;
+    }
+
+    :host-context(.dark-theme) ::ng-deep .mat-divider {
+      border-top-color: var(--divider-color) !important;
+    }
+
+    :host-context(.dark-theme) ::ng-deep .mat-mdc-raised-button {
+      color: var(--text-color) !important;
+    }
+
+    /* Responsive design */
+    @media (max-width: 768px) {
+      .login-container {
+        padding: 16px;
+      }
+      
       .login-card {
         padding: 24px;
-        margin: 16px;
+        max-width: 100%;
       }
       
       .auth-button {
         width: 100%;
         max-width: 280px;
+      }
+      
+      .info-message {
+        flex-direction: column;
+        gap: 8px;
+      }
+      
+      .info-icon {
+        align-self: flex-start;
       }
     }
   `]

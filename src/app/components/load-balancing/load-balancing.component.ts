@@ -19,7 +19,7 @@ import { TableColumn, TableAction, TableConfig } from '../../shared/gcp-data-tab
       [createButtonIcon]="'add'"
       (create)="createLoadBalancer()"
       (refresh)="refresh()"
-      (rowClick)="viewLoadBalancerDetails($event)">
+      (rowClick)="onRowClick($event)">
     </app-gcp-data-table>
   `,
   styles: [`
@@ -169,9 +169,17 @@ export class LoadBalancingComponent implements OnInit {
     this.router.navigate(['/load-balancing/create']);
   }
 
-  viewLoadBalancerDetails(loadBalancer: LoadBalancer) {
+  viewLoadBalancerDetails(loadBalancer: LoadBalancer | Event) {
+    // Handle the case where this is called from table row click
+    if (loadBalancer instanceof Event) {
+      return; // Ignore click events, only handle direct LoadBalancer object calls
+    }
     console.log('View load balancer details:', loadBalancer);
     // TODO: Navigate to details view
+  }
+
+  onRowClick(loadBalancer: LoadBalancer) {
+    this.viewLoadBalancerDetails(loadBalancer);
   }
 
   editLoadBalancer(loadBalancer: LoadBalancer) {

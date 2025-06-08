@@ -20,7 +20,7 @@ import { TableColumn, TableAction, TableConfig } from '../../shared/gcp-data-tab
       [createButtonIcon]="'add'"
       (create)="openCreateDialog()"
       (refresh)="loadVpcNetworks()"
-      (rowClick)="viewVpcDetails($event)">
+      (rowClick)="onRowClick($event)">
     </app-gcp-data-table>
   `,
   styles: [`
@@ -153,8 +153,15 @@ export class VpcListComponent implements OnInit {
     });
   }
 
-  viewVpcDetails(vpc: VpcNetwork) {
+  viewVpcDetails(vpc: VpcNetwork | Event) {
+    if (vpc instanceof Event) {
+      return;
+    }
     this.router.navigate(['/vpc', vpc.name]);
+  }
+
+  onRowClick(vpc: VpcNetwork) {
+    this.viewVpcDetails(vpc);
   }
 
   editVpc(vpc: VpcNetwork) {

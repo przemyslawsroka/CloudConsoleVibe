@@ -397,45 +397,80 @@
 // Remove default table styling
 ::ng-deep .mat-table {
   background: transparent;
+  color: var(--text-color);
 }
 
 ::ng-deep .mat-header-row {
-  background-color: #f8f9fa;
+  background-color: var(--surface-color);
+}
+
+::ng-deep .mat-row {
+  background-color: var(--surface-color);
+  color: var(--text-color);
 }
 
 // Pagination styling
 ::ng-deep mat-paginator {
-  background: transparent;
-  border-top: 1px solid #e0e0e0;
+  background: var(--surface-color);
+  border-top: 1px solid var(--divider-color);
+  color: var(--text-color);
+
+  .mat-paginator-range-label {
+    color: var(--text-secondary-color);
+  }
+
+  .mat-icon-button {
+    color: var(--text-secondary-color);
+  }
+
+  .mat-select-value {
+    color: var(--text-color);
+  }
 }
 
 // Form field customization
 ::ng-deep .filter-field {
   .mat-form-field-outline {
-    color: #dadce0;
+    color: var(--border-color);
   }
 
   .mat-form-field-outline-thick {
-    color: #1976d2;
+    color: var(--primary-color);
   }
 
   .mat-form-field-label {
-    color: #5f6368;
+    color: var(--text-secondary-color);
   }
 
   &.mat-focused .mat-form-field-label {
-    color: #1976d2;
+    color: var(--primary-color);
+  }
+
+  .mat-input-element {
+    color: var(--text-color);
+  }
+
+  .mat-form-field-suffix .mat-icon {
+    color: var(--text-secondary-color);
   }
 }
 
 // Checkbox customization
 ::ng-deep .mat-checkbox {
   .mat-checkbox-frame {
-    border-color: #5f6368;
+    border-color: var(--text-secondary-color);
+  }
+
+  .mat-checkbox-label {
+    color: var(--text-color);
   }
 
   &.mat-checkbox-checked .mat-checkbox-background {
-    background-color: #1976d2;
+    background-color: var(--primary-color);
+  }
+
+  .mat-checkbox-checkmark-path {
+    stroke: white;
   }
 }
 
@@ -443,19 +478,180 @@
 ::ng-deep .mat-menu-panel {
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
   border-radius: 8px;
+  background-color: var(--surface-color);
+  color: var(--text-color);
 }
 
 ::ng-deep .mat-menu-item {
   font-size: 14px;
+  color: var(--text-color);
   
   .mat-icon {
     margin-right: 12px;
-    color: #5f6368;
+    color: var(--text-secondary-color);
+  }
+
+  &:hover {
+    background-color: var(--hover-color);
   }
 }
 
 // Tooltip customization
 ::ng-deep .mat-tooltip {
   font-size: 12px;
-  background: rgba(97, 97, 97, 0.9);
+  background: var(--tooltip-background);
+  color: var(--tooltip-text);
+}
+
+// Button styling in table
+::ng-deep .mat-icon-button {
+  color: var(--text-secondary-color);
+
+  &:hover {
+    background-color: var(--hover-color);
+  }
+}
+
+// Progress spinner
+::ng-deep .mat-progress-spinner circle {
+  stroke: var(--primary-color);
+}
+
+// Dark theme specific adjustments
+:host-context(.dark-theme) {
+  .table-wrapper {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  }
+  
+  .column-selector .column-selector-card {
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  }
+
+  // Force text colors in dark mode - aggressive overrides
+  .gcp-data-table {
+    .mat-header-cell {
+      color: var(--text-secondary-color) !important;
+      background-color: var(--surface-color) !important;
+    }
+
+    .mat-cell {
+      color: var(--text-color) !important;
+      background-color: var(--surface-color) !important;
+    }
+
+    .data-row {
+      background-color: var(--surface-color) !important;
+      color: var(--text-color) !important;
+
+      .mat-cell {
+        color: var(--text-color) !important;
+      }
+
+      &:hover {
+        background-color: var(--hover-color) !important;
+        
+        .mat-cell {
+          color: var(--text-color) !important;
+        }
+      }
+    }
+
+    // Links in dark mode
+    .table-link {
+      color: var(--primary-color) !important;
+    }
+  }
+
+  // Additional aggressive overrides for Angular Material table elements
+  ::ng-deep .mat-table {
+    background: var(--surface-color) !important;
+    color: var(--text-color) !important;
+
+    .mat-header-row {
+      background-color: var(--surface-color) !important;
+    }
+
+    .mat-row {
+      background-color: var(--surface-color) !important;
+      color: var(--text-color) !important;
+    }
+
+    .mat-header-cell {
+      color: var(--text-secondary-color) !important;
+      background-color: var(--surface-color) !important;
+    }
+
+    .mat-cell {
+      color: var(--text-color) !important;
+      background-color: var(--surface-color) !important;
+    }
+
+    tr.mat-row:hover {
+      background-color: var(--hover-color) !important;
+    }
+
+    tr.mat-row:hover .mat-cell {
+      color: var(--text-color) !important;
+    }
+  }
+
+  // Form field overrides
+  ::ng-deep .filter-field {
+    .mat-mdc-form-field {
+      color: var(--text-color) !important;
+    }
+
+    .mat-mdc-text-field-wrapper {
+      background-color: var(--surface-color) !important;
+    }
+
+    .mat-mdc-form-field-input-control {
+      color: var(--text-color) !important;
+    }
+
+    .mat-mdc-floating-label {
+      color: var(--text-secondary-color) !important;
+    }
+
+    input {
+      color: var(--text-color) !important;
+    }
+  }
+
+  // Action buttons
+  ::ng-deep .mat-mdc-icon-button {
+    color: var(--text-secondary-color) !important;
+  }
+
+  // Menu items
+  ::ng-deep .mat-mdc-menu-item {
+    color: var(--text-color) !important;
+    background-color: var(--surface-color) !important;
+  }
+
+  // Checkboxes
+  ::ng-deep .mat-mdc-checkbox {
+    .mdc-checkbox {
+      --mdc-checkbox-unselected-icon-color: var(--text-secondary-color) !important;
+    }
+
+    .mdc-form-field {
+      color: var(--text-color) !important;
+    }
+  }
+
+  // All text elements
+  h1, h2, h3, h4, h5, h6, p, span, div {
+    color: var(--text-color) !important;
+  }
+
+  // Action section text
+  .action-section h2 {
+    color: var(--text-color) !important;
+  }
+
+  // Description text
+  .description-text {
+    color: var(--text-secondary-color) !important;
+  }
 }
