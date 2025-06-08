@@ -49,16 +49,20 @@ import { TableColumn, TableAction, TableConfig } from '../../shared/gcp-data-tab
       display: block;
       font-family: 'Google Sans', 'Helvetica Neue', sans-serif;
       padding: 20px;
+      background: var(--background-color);
+      color: var(--text-color);
+      transition: background-color 0.3s ease, color 0.3s ease;
     }
 
     .info-banner {
       display: flex;
       align-items: center;
-      background-color: #e3f2fd;
-      border: 1px solid #bbdefb;
+      background-color: rgba(66, 133, 244, 0.08);
+      border: 1px solid rgba(66, 133, 244, 0.2);
       border-radius: 8px;
       padding: 12px 16px;
       margin-bottom: 16px;
+      transition: background-color 0.3s ease;
     }
 
     .info-icon {
@@ -69,16 +73,16 @@ import { TableColumn, TableAction, TableConfig } from '../../shared/gcp-data-tab
     .info-content {
       flex: 1;
       font-size: 14px;
-      color: #202124;
+      color: var(--text-color);
     }
 
     .dismiss-btn {
-      color: #5f6368;
+      color: var(--text-secondary-color);
     }
 
     .description-text {
       margin: 16px 0;
-      color: #5f6368;
+      color: var(--text-secondary-color);
       font-size: 14px;
       line-height: 1.4;
     }
@@ -94,6 +98,34 @@ import { TableColumn, TableAction, TableConfig } from '../../shared/gcp-data-tab
 
     .learn-more:hover {
       text-decoration: underline;
+    }
+
+    /* Dark theme specific adjustments */
+    :host-context(.dark-theme) {
+      .info-banner {
+        background-color: rgba(66, 133, 244, 0.12);
+        border: 1px solid rgba(66, 133, 244, 0.25);
+      }
+    }
+
+    /* Material component overrides for dark theme */
+    :host-context(.dark-theme) ::ng-deep {
+      .mat-mdc-icon-button {
+        color: var(--text-secondary-color) !important;
+      }
+
+      .mat-mdc-icon-button:hover {
+        background-color: var(--hover-color) !important;
+      }
+    }
+
+    /* Standard overrides (for light theme compatibility) */
+    ::ng-deep .mat-mdc-icon-button {
+      color: var(--text-secondary-color);
+    }
+
+    ::ng-deep .mat-mdc-icon-button:hover {
+      background-color: var(--hover-color);
     }
   `]
 })
