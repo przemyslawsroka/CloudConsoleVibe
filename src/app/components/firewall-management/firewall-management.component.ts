@@ -447,8 +447,10 @@ import { switchMap, map } from 'rxjs/operators';
     .firewall-management-container {
       padding: 24px;
       max-width: 100%;
-      background-color: #f8f9fa;
+      background-color: var(--background-color);
       min-height: 100vh;
+      color: var(--text-color);
+      transition: background-color 0.3s ease, color 0.3s ease;
     }
 
     .header {
@@ -456,24 +458,25 @@ import { switchMap, map } from 'rxjs/operators';
       justify-content: space-between;
       align-items: flex-start;
       margin-bottom: 24px;
-      background: white;
+      background: var(--surface-color);
       padding: 24px;
       border-radius: 8px;
       box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      border: 1px solid var(--border-color);
     }
 
     .header-content h1 {
       margin: 0 0 8px 0;
       font-size: 28px;
       font-weight: 400;
-      color: #202124;
+      color: var(--text-color);
       display: flex;
       align-items: center;
       gap: 12px;
     }
 
     .header-icon {
-      color: #1976d2;
+      color: var(--primary-color);
       font-size: 32px;
       width: 32px;
       height: 32px;
@@ -481,7 +484,7 @@ import { switchMap, map } from 'rxjs/operators';
 
     .header-description {
       margin: 0;
-      color: #5f6368;
+      color: var(--text-secondary-color);
       font-size: 14px;
     }
 
@@ -498,9 +501,10 @@ import { switchMap, map } from 'rxjs/operators';
     }
 
     .stat-card {
-      background: white;
+      background: var(--surface-color);
       border-radius: 8px;
       box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      border: 1px solid var(--border-color);
     }
 
     .stat-card mat-card-content {
@@ -514,7 +518,7 @@ import { switchMap, map } from 'rxjs/operators';
     }
 
     .stat-icon {
-      background: #f1f3f4;
+      background: var(--hover-color);
       border-radius: 50%;
       width: 48px;
       height: 48px;
@@ -524,27 +528,28 @@ import { switchMap, map } from 'rxjs/operators';
     }
 
     .stat-icon mat-icon {
-      color: #1976d2;
+      color: var(--primary-color);
       font-size: 24px;
     }
 
     .stat-number {
       font-size: 24px;
       font-weight: 500;
-      color: #202124;
+      color: var(--text-color);
       line-height: 1;
     }
 
     .stat-label {
       font-size: 14px;
-      color: #5f6368;
+      color: var(--text-secondary-color);
       margin-top: 4px;
     }
 
     .main-content {
-      background: white;
+      background: var(--surface-color);
       border-radius: 8px;
       box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      border: 1px solid var(--border-color);
     }
 
     .tab-content {
@@ -583,7 +588,7 @@ import { switchMap, map } from 'rxjs/operators';
 
     .rules-table, .policies-table {
       width: 100%;
-      background: white;
+      background: var(--surface-color);
     }
 
     .rule-name, .policy-name {
@@ -595,7 +600,7 @@ import { switchMap, map } from 'rxjs/operators';
 
     .name-text {
       font-weight: 500;
-      color: #1976d2;
+      color: var(--primary-color);
       cursor: pointer;
     }
 
@@ -612,30 +617,31 @@ import { switchMap, map } from 'rxjs/operators';
     }
 
     .type-chip.ingress {
-      background-color: #e8f5e8;
-      color: #2e7d32;
+      background-color: rgba(52, 168, 83, 0.12);
+      color: #34a853;
     }
 
     .type-chip.egress {
-      background-color: #fff3e0;
-      color: #f57c00;
+      background-color: rgba(251, 188, 5, 0.12);
+      color: #fbbc05;
     }
 
     .type-chip.global {
-      background-color: #e3f2fd;
-      color: #1976d2;
+      background-color: rgba(66, 133, 244, 0.12);
+      color: var(--primary-color);
     }
 
     .type-chip.regional {
-      background-color: #f3e5f5;
-      color: #7b1fa2;
+      background-color: rgba(156, 39, 176, 0.12);
+      color: #9c27b0;
     }
 
     .protocol-chip {
-      background-color: #f1f3f4;
-      color: #5f6368;
+      background-color: var(--hover-color);
+      color: var(--text-secondary-color);
       font-size: 12px;
       height: 24px;
+      border: 1px solid var(--border-color);
     }
 
     .action-chip {
@@ -647,50 +653,53 @@ import { switchMap, map } from 'rxjs/operators';
     }
 
     .action-chip.allow {
-      background-color: #e8f5e8;
-      color: #2e7d32;
+      background-color: rgba(52, 168, 83, 0.12);
+      color: #34a853;
     }
 
     .action-chip.deny {
-      background-color: #ffebee;
-      color: #d32f2f;
+      background-color: rgba(234, 67, 53, 0.12);
+      color: #ea4335;
     }
 
     .status-chip.disabled {
-      background-color: #fafafa;
-      color: #9e9e9e;
+      background-color: var(--hover-color);
+      color: var(--text-secondary-color);
       font-size: 11px;
       height: 20px;
+      border: 1px solid var(--border-color);
     }
 
     .count-chip {
-      background-color: #e3f2fd;
-      color: #1976d2;
+      background-color: rgba(66, 133, 244, 0.12);
+      color: var(--primary-color);
       font-size: 11px;
       height: 20px;
       margin-left: 8px;
     }
 
     .rules-count-chip {
-      background-color: #f1f3f4;
-      color: #5f6368;
+      background-color: var(--hover-color);
+      color: var(--text-secondary-color);
       font-size: 12px;
       height: 24px;
+      border: 1px solid var(--border-color);
     }
 
     .scope-chip {
-      background-color: #e8eaf6;
-      color: #3f51b5;
+      background-color: rgba(103, 58, 183, 0.12);
+      color: #673ab7;
       font-size: 12px;
       height: 24px;
     }
 
     .association-chip {
-      background-color: #f1f3f4;
-      color: #5f6368;
+      background-color: var(--hover-color);
+      color: var(--text-secondary-color);
       font-size: 11px;
       height: 20px;
       margin: 2px;
+      border: 1px solid var(--border-color);
     }
 
     .associated-items {
@@ -702,29 +711,29 @@ import { switchMap, map } from 'rxjs/operators';
 
     .more-items {
       font-size: 12px;
-      color: #5f6368;
+      color: var(--text-secondary-color);
     }
 
     .no-associations {
       font-size: 12px;
-      color: #9e9e9e;
+      color: var(--text-secondary-color);
       font-style: italic;
     }
 
     .priority-text {
       font-family: 'Roboto Mono', monospace;
       font-size: 13px;
-      color: #5f6368;
+      color: var(--text-secondary-color);
     }
 
     .targets-text {
       font-size: 13px;
-      color: #5f6368;
+      color: var(--text-secondary-color);
     }
 
     .description-text {
       font-size: 13px;
-      color: #5f6368;
+      color: var(--text-secondary-color);
       max-width: 200px;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -732,7 +741,7 @@ import { switchMap, map } from 'rxjs/operators';
     }
 
     .network-link {
-      color: #1976d2;
+      color: var(--primary-color);
       cursor: pointer;
       text-decoration: none;
       font-size: 13px;
@@ -743,13 +752,13 @@ import { switchMap, map } from 'rxjs/operators';
     }
 
     .delete-action {
-      color: #d32f2f;
+      color: #ea4335;
     }
 
     .no-data {
       text-align: center;
       padding: 48px;
-      color: #5f6368;
+      color: var(--text-secondary-color);
     }
 
     .no-data mat-icon {
@@ -757,7 +766,8 @@ import { switchMap, map } from 'rxjs/operators';
       width: 48px;
       height: 48px;
       margin-bottom: 16px;
-      color: #dadce0;
+      color: var(--text-secondary-color);
+      opacity: 0.5;
     }
 
     .no-data-content {
@@ -769,26 +779,29 @@ import { switchMap, map } from 'rxjs/operators';
       font-size: 18px;
       font-weight: 500;
       margin: 0 0 16px 0;
-      color: #202124;
+      color: var(--text-color);
     }
 
     .no-data-explanation {
       text-align: left;
-      background: #f8f9fa;
+      background: var(--hover-color);
       border-radius: 8px;
       padding: 16px;
       margin: 16px 0 24px 0;
-      border-left: 4px solid #1976d2;
+      border-left: 4px solid var(--primary-color);
+      border: 1px solid var(--border-color);
     }
 
     .no-data-explanation p {
       margin: 0 0 12px 0;
       line-height: 1.5;
+      color: var(--text-color);
     }
 
     .no-data-explanation ul {
       margin: 8px 0 12px 16px;
       line-height: 1.5;
+      color: var(--text-color);
     }
 
     .no-data-explanation li {
@@ -817,16 +830,107 @@ import { switchMap, map } from 'rxjs/operators';
 
     .loading-container p {
       margin: 0;
-      color: #5f6368;
+      color: var(--text-secondary-color);
     }
 
+    /* Dark theme specific adjustments */
+    :host-context(.dark-theme) {
+      .stat-card, .main-content, .header {
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+      }
+    }
+
+    /* Material component overrides for dark theme */
+    :host-context(.dark-theme) ::ng-deep {
+      .mat-mdc-card {
+        background-color: var(--surface-color) !important;
+        color: var(--text-color) !important;
+      }
+
+      .mat-mdc-form-field {
+        color: var(--text-color) !important;
+      }
+
+      .mat-mdc-form-field .mat-mdc-form-field-input-control {
+        color: var(--text-color) !important;
+      }
+
+      .mat-mdc-menu-panel {
+        background-color: var(--surface-color) !important;
+      }
+
+      .mat-mdc-menu-item {
+        color: var(--text-color) !important;
+      }
+
+      .mat-tab-group {
+        background: transparent;
+      }
+
+      .mat-tab-header {
+        border-bottom: 1px solid var(--divider-color);
+        background: var(--surface-color);
+      }
+
+      .mat-tab-label {
+        height: 64px;
+        padding: 0 24px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        opacity: 1;
+        color: var(--text-secondary-color);
+      }
+
+      .mat-tab-label-active {
+        color: var(--primary-color);
+      }
+
+      .mat-tab-label mat-icon {
+        margin-right: 4px;
+      }
+
+      .mat-ink-bar {
+        background-color: var(--primary-color) !important;
+      }
+
+      .mat-table {
+        background: var(--surface-color) !important;
+        color: var(--text-color) !important;
+      }
+
+      .mat-header-row {
+        background-color: var(--surface-color) !important;
+      }
+
+      .mat-header-cell {
+        color: var(--text-secondary-color) !important;
+        border-bottom-color: var(--divider-color) !important;
+      }
+
+      .mat-row {
+        background-color: var(--surface-color) !important;
+        color: var(--text-color) !important;
+      }
+
+      .mat-cell {
+        color: var(--text-color) !important;
+        border-bottom-color: var(--divider-color) !important;
+      }
+
+      .mat-row:hover {
+        background-color: var(--hover-color) !important;
+      }
+    }
+
+    /* Standard overrides (for light theme compatibility) */
     ::ng-deep .mat-tab-group {
       background: transparent;
     }
 
     ::ng-deep .mat-tab-header {
-      border-bottom: 1px solid #e0e0e0;
-      background: white;
+      border-bottom: 1px solid var(--divider-color);
+      background: var(--surface-color);
     }
 
     ::ng-deep .mat-tab-label {
@@ -836,11 +940,11 @@ import { switchMap, map } from 'rxjs/operators';
       align-items: center;
       gap: 8px;
       opacity: 1;
-      color: #5f6368;
+      color: var(--text-secondary-color);
     }
 
     ::ng-deep .mat-tab-label-active {
-      color: #1976d2;
+      color: var(--primary-color);
     }
 
     ::ng-deep .mat-tab-label mat-icon {
