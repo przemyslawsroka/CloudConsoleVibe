@@ -479,7 +479,7 @@ export interface LoadBalancerConfig {
   styles: [`
     .create-load-balancer-page {
       padding: 20px 24px;
-      background-color: #fafafa;
+      background-color: var(--background-color);
       min-height: calc(100vh - 120px);
       overflow-y: auto;
     }
@@ -498,7 +498,7 @@ export interface LoadBalancerConfig {
     .breadcrumb-link {
       display: flex;
       align-items: center;
-      color: #1a73e8;
+      color: var(--primary-color);
       text-decoration: none;
       cursor: pointer;
       gap: 4px;
@@ -510,25 +510,26 @@ export interface LoadBalancerConfig {
 
     .breadcrumb-separator {
       margin: 0 8px;
-      color: #5f6368;
+      color: var(--text-secondary-color);
     }
 
     .breadcrumb-current {
-      color: #5f6368;
+      color: var(--text-secondary-color);
     }
 
     .page-header h1 {
       margin: 0;
       font-size: 28px;
       font-weight: 400;
-      color: #202124;
+      color: var(--text-color);
     }
 
     .page-content {
-      background: white;
+      background: var(--surface-color);
       border-radius: 8px;
       box-shadow: 0 1px 3px rgba(0,0,0,0.1);
       padding: 24px;
+      border: 1px solid var(--border-color);
     }
 
     .stepper {
@@ -548,45 +549,45 @@ export interface LoadBalancerConfig {
     }
 
     .option-card {
-      border: 2px solid #e0e0e0;
+      border: 2px solid var(--border-color);
       border-radius: 12px;
       padding: 24px;
       cursor: pointer;
       transition: all 0.2s ease;
-      background: white;
+      background: var(--surface-color);
       box-shadow: 0 1px 3px rgba(0,0,0,0.1);
       flex: 1;
       min-width: 0;
     }
 
     .option-card:hover {
-      border-color: #1a73e8;
+      border-color: var(--primary-color);
       box-shadow: 0 4px 12px rgba(26, 115, 232, 0.15);
       transform: translateY(-2px);
     }
 
     .option-card.selected {
-      border-color: #1a73e8;
-      background-color: #f8f9ff;
+      border-color: var(--primary-color);
+      background-color: var(--selected-color);
       box-shadow: 0 4px 12px rgba(26, 115, 232, 0.15);
     }
 
     .option-card mat-radio-button {
       font-weight: 500;
       font-size: 18px;
-      color: #202124;
+      color: var(--text-color);
     }
 
     .option-description {
       margin: 12px 0 20px 32px;
-      color: #5f6368;
+      color: var(--text-secondary-color);
       font-size: 14px;
       line-height: 1.5;
     }
 
     .learn-more {
       margin-left: 32px;
-      color: #1a73e8;
+      color: var(--primary-color);
       text-decoration: none;
       font-size: 14px;
     }
@@ -598,9 +599,9 @@ export interface LoadBalancerConfig {
     .architecture-diagram {
       margin: 20px 0 0 32px;
       padding: 16px;
-      background: #f8f9fa;
+      background: var(--hover-color);
       border-radius: 12px;
-      border: 1px solid #e8eaed;
+      border: 1px solid var(--border-color);
     }
 
     .diagram-row {
@@ -620,8 +621,8 @@ export interface LoadBalancerConfig {
       flex-direction: column;
       align-items: center;
       padding: 12px;
-      background: white;
-      border: 1px solid #dadce0;
+      background: var(--surface-color);
+      border: 1px solid var(--border-color);
       border-radius: 8px;
       min-width: 80px;
       text-align: center;
@@ -644,16 +645,16 @@ export interface LoadBalancerConfig {
     .diagram-box span, .client-box span, .workload-box span, .region-box span {
       font-size: 10px;
       font-weight: 500;
-      color: #5f6368;
+      color: var(--text-secondary-color);
     }
 
     .diagram-box.internet {
-      background: #e3f2fd;
+      background: rgba(25, 118, 210, 0.1);
       border-color: #1976d2;
     }
 
     .diagram-box.vpc {
-      background: #f3e5f5;
+      background: rgba(123, 31, 162, 0.1);
       border-color: #7b1fa2;
     }
 
@@ -662,14 +663,15 @@ export interface LoadBalancerConfig {
       flex-direction: column;
       align-items: center;
       padding: 16px;
-      background: #e8f0fe;
-      border: 2px solid #1a73e8;
+      background: rgba(26, 115, 232, 0.1);
+      border: 2px solid var(--primary-color);
       border-radius: 12px;
       min-width: 180px;
       text-align: center;
       font-weight: 500;
       box-shadow: 0 4px 8px rgba(26, 115, 232, 0.2);
       font-size: 12px;
+      color: var(--text-color);
     }
 
     .protocols {
@@ -681,7 +683,7 @@ export interface LoadBalancerConfig {
     }
 
     .protocol {
-      background: #1a73e8;
+      background: var(--primary-color);
       color: white;
       padding: 2px 6px;
       border-radius: 6px;
@@ -690,7 +692,7 @@ export interface LoadBalancerConfig {
     }
 
     .feature-badge {
-      background: #34a853;
+      background: var(--accent-color);
       color: white;
       padding: 6px 12px;
       border-radius: 6px;
@@ -715,7 +717,7 @@ export interface LoadBalancerConfig {
 
     .region-box {
       border: 2px solid #4caf50;
-      background: #e8f5e8;
+      background: rgba(76, 175, 80, 0.1);
     }
 
     .step-actions {
@@ -724,7 +726,7 @@ export interface LoadBalancerConfig {
       gap: 16px;
       margin-top: auto;
       padding-top: 32px;
-      border-top: 1px solid #e0e0e0;
+      border-top: 1px solid var(--divider-color);
     }
 
     .type-radio-group,
@@ -748,36 +750,36 @@ export interface LoadBalancerConfig {
       align-items: flex-start;
       margin-bottom: 48px;
       padding: 24px;
-      background: #f8f9fa;
+      background: var(--hover-color);
       border-radius: 12px;
-      border: 1px solid #e8eaed;
+      border: 1px solid var(--border-color);
     }
 
     .summary-icon mat-icon {
       font-size: 64px;
       width: 64px;
       height: 64px;
-      color: #1a73e8;
+      color: var(--primary-color);
     }
 
     .summary-content h3 {
       margin: 0 0 20px 0;
       font-size: 24px;
       font-weight: 400;
-      color: #202124;
+      color: var(--text-color);
     }
 
     .summary-features h4 {
       margin: 0 0 12px 0;
       font-size: 16px;
       font-weight: 500;
-      color: #5f6368;
+      color: var(--text-secondary-color);
     }
 
     .summary-features ul {
       margin: 0;
       padding-left: 24px;
-      color: #202124;
+      color: var(--text-color);
     }
 
     .summary-features li {
@@ -794,9 +796,9 @@ export interface LoadBalancerConfig {
       justify-content: space-around;
       align-items: center;
       padding: 24px;
-      background: white;
+      background: var(--surface-color);
       border-radius: 12px;
-      border: 1px solid #e8eaed;
+      border: 1px solid var(--border-color);
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
 
@@ -806,44 +808,107 @@ export interface LoadBalancerConfig {
       align-items: center;
       gap: 12px;
       padding: 20px;
-      background: white;
-      border: 1px solid #dadce0;
+      background: var(--surface-color);
+      border: 1px solid var(--border-color);
       border-radius: 8px;
       min-width: 100px;
     }
 
     .diagram-element.main {
-      border: 2px solid #1a73e8;
-      background: #e8f0fe;
+      border: 2px solid var(--primary-color);
+      background: rgba(26, 115, 232, 0.1);
     }
 
     .diagram-element mat-icon {
       font-size: 40px;
       width: 40px;
       height: 40px;
+      color: var(--text-secondary-color);
     }
 
     .diagram-element span {
       font-size: 14px;
       font-weight: 500;
       text-align: center;
+      color: var(--text-color);
     }
 
     ::ng-deep .mat-stepper-vertical-line::before {
-      border-left-color: #e0e0e0;
+      border-left-color: var(--divider-color);
     }
 
     ::ng-deep .mat-step-header .mat-step-icon {
-      background-color: #1a73e8;
+      background-color: var(--primary-color);
     }
 
     ::ng-deep .mat-step-header .mat-step-icon-selected {
-      background-color: #1a73e8;
+      background-color: var(--primary-color);
     }
 
     ::ng-deep .mat-step-header .mat-step-label {
       font-size: 16px;
       font-weight: 500;
+      color: var(--text-color);
+    }
+
+    /* Dark theme specific adjustments */
+    :host-context(.dark-theme) {
+      .page-content,
+      .option-card,
+      .architecture-diagram,
+      .summary-container,
+      .load-balancer-diagram,
+      .diagram-element {
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+      }
+
+      .option-card:hover,
+      .option-card.selected {
+        box-shadow: 0 4px 16px rgba(26, 115, 232, 0.25);
+      }
+
+      .diagram-box:hover,
+      .client-box:hover,
+      .workload-box:hover,
+      .region-box:hover {
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+      }
+    }
+
+    /* Angular Material overrides for dark theme */
+    :host-context(.dark-theme) ::ng-deep {
+      .mat-stepper-horizontal,
+      .mat-stepper-vertical {
+        background-color: var(--surface-color);
+      }
+
+      .mat-step-header {
+        background-color: var(--surface-color);
+      }
+
+      .mat-step-label {
+        color: var(--text-color) !important;
+      }
+
+      .mat-step-optional {
+        color: var(--text-secondary-color) !important;
+      }
+
+      .mat-radio-button .mat-radio-label {
+        color: var(--text-color) !important;
+      }
+
+      .mat-radio-button.mat-radio-checked .mat-radio-outer-circle {
+        border-color: var(--primary-color) !important;
+      }
+
+      .mat-radio-button.mat-radio-checked .mat-radio-inner-circle {
+        background-color: var(--primary-color) !important;
+      }
+
+      .mat-radio-button .mat-radio-outer-circle {
+        border-color: var(--text-secondary-color) !important;
+      }
     }
 
     @media (max-width: 1200px) {
