@@ -480,6 +480,9 @@ import { CreateConnectivityTestDialogComponent, CreateConnectivityTestDialogData
       padding: 20px;
       max-width: 100%;
       font-family: 'Google Sans', 'Helvetica Neue', sans-serif;
+      background: var(--background-color);
+      color: var(--text-color);
+      transition: background-color 0.3s ease, color 0.3s ease;
     }
 
     .header {
@@ -493,7 +496,7 @@ import { CreateConnectivityTestDialogComponent, CreateConnectivityTestDialogData
       margin: 0;
       font-size: 24px;
       font-weight: 400;
-      color: #202124;
+      color: var(--text-color);
     }
 
     .header-actions {
@@ -504,7 +507,7 @@ import { CreateConnectivityTestDialogComponent, CreateConnectivityTestDialogData
 
     .description-text {
       margin: 16px 0;
-      color: #5f6368;
+      color: var(--text-secondary-color);
       font-size: 14px;
       line-height: 1.4;
     }
@@ -523,7 +526,7 @@ import { CreateConnectivityTestDialogComponent, CreateConnectivityTestDialogData
       align-items: center;
       margin: 16px 0;
       padding: 8px 0;
-      border-bottom: 1px solid #e0e0e0;
+      border-bottom: 1px solid var(--border-color);
     }
 
     .filter-btn {
@@ -531,7 +534,7 @@ import { CreateConnectivityTestDialogComponent, CreateConnectivityTestDialogData
     }
 
     .filter-text {
-      color: #5f6368;
+      color: var(--text-secondary-color);
       font-size: 14px;
     }
 
@@ -547,10 +550,11 @@ import { CreateConnectivityTestDialogComponent, CreateConnectivityTestDialogData
     }
 
     .table-wrapper {
-      background: white;
+      background: var(--surface-color);
       border-radius: 8px;
       overflow: hidden;
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+      border: 1px solid var(--border-color);
     }
 
     .connectivity-table {
@@ -610,13 +614,15 @@ import { CreateConnectivityTestDialogComponent, CreateConnectivityTestDialogData
     }
 
     .protocol-badge {
-      background-color: #e8f0fe;
+      background-color: rgba(25, 118, 210, 0.1);
       color: #1976d2;
       padding: 2px 8px;
       border-radius: 4px;
       font-size: 12px;
       font-weight: 500;
       text-transform: uppercase;
+      border: 1px solid rgba(25, 118, 210, 0.2);
+      transition: background-color 0.3s ease, border-color 0.3s ease;
     }
 
     .result-text {
@@ -672,37 +678,39 @@ import { CreateConnectivityTestDialogComponent, CreateConnectivityTestDialogData
     .no-data {
       text-align: center;
       padding: 40px;
-      color: #5f6368;
+      color: var(--text-secondary-color);
     }
 
     /* Header styling */
     ::ng-deep .mat-header-cell {
-      color: #5f6368;
+      color: var(--text-secondary-color);
       font-weight: 500;
       font-size: 12px;
       text-transform: uppercase;
       letter-spacing: 0.5px;
-      border-bottom: 1px solid #e0e0e0;
+      border-bottom: 1px solid var(--border-color);
       padding: 12px 16px;
+      background-color: var(--hover-color);
     }
 
     ::ng-deep .mat-cell {
       padding: 12px 16px;
       font-size: 13px;
-      border-bottom: 1px solid #f1f3f4;
+      border-bottom: 1px solid var(--border-color);
+      color: var(--text-color);
     }
 
     ::ng-deep .mat-row:hover {
-      background-color: #f8f9fa;
+      background-color: var(--hover-color);
     }
 
     /* Remove default table styling */
     ::ng-deep .mat-table {
-      background: transparent;
+      background: var(--surface-color);
     }
 
     ::ng-deep .mat-header-row {
-      background-color: #f8f9fa;
+      background-color: var(--hover-color);
     }
 
     /* Main content layout */
@@ -722,10 +730,11 @@ import { CreateConnectivityTestDialogComponent, CreateConnectivityTestDialogData
       right: 0;
       width: 480px;
       height: calc(100vh - 64px);
-      background: white;
+      background: var(--surface-color);
       box-shadow: -2px 0 8px rgba(0, 0, 0, 0.1);
       z-index: 10;
       overflow-y: auto;
+      border-left: 1px solid var(--border-color);
     }
 
     .side-panel-header {
@@ -733,19 +742,19 @@ import { CreateConnectivityTestDialogComponent, CreateConnectivityTestDialogData
       justify-content: space-between;
       align-items: center;
       padding: 20px;
-      border-bottom: 1px solid #e0e0e0;
-      background: #f8f9fa;
+      border-bottom: 1px solid var(--border-color);
+      background: var(--hover-color);
     }
 
     .side-panel-header h2 {
       margin: 0;
       font-size: 18px;
       font-weight: 500;
-      color: #202124;
+      color: var(--text-color);
     }
 
     .close-btn {
-      color: #5f6368;
+      color: var(--text-secondary-color);
     }
 
     .side-panel-content {
@@ -1127,6 +1136,117 @@ import { CreateConnectivityTestDialogComponent, CreateConnectivityTestDialogData
 
     ::ng-deep .mat-expansion-panel-content {
       font-size: 14px !important;
+    }
+
+    /* Dark theme specific adjustments */
+    :host-context(.dark-theme) {
+      .protocol-badge {
+        background-color: rgba(25, 118, 210, 0.15);
+        border: 1px solid rgba(25, 118, 210, 0.3);
+        color: #4fc3f7;
+      }
+
+      .table-wrapper,
+      .side-panel {
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+      }
+    }
+
+    /* Material component overrides for dark theme */
+    :host-context(.dark-theme) ::ng-deep {
+      .mat-mdc-button {
+        color: var(--text-color) !important;
+      }
+
+      .mat-mdc-raised-button {
+        background-color: var(--primary-color) !important;
+        color: white !important;
+      }
+
+      .mat-mdc-stroked-button {
+        color: var(--text-color) !important;
+        border-color: var(--border-color) !important;
+      }
+
+      .mat-mdc-icon-button {
+        color: var(--text-secondary-color) !important;
+      }
+
+      .mat-mdc-checkbox {
+        .mat-mdc-checkbox-frame {
+          border-color: var(--border-color) !important;
+        }
+      }
+
+      .mat-mdc-form-field {
+        .mat-mdc-text-field-wrapper {
+          background-color: var(--surface-color) !important;
+        }
+
+        .mat-mdc-form-field-input-control {
+          color: var(--text-color) !important;
+        }
+
+        .mat-mdc-form-field-label {
+          color: var(--text-secondary-color) !important;
+        }
+
+        .mat-mdc-form-field-outline {
+          color: var(--border-color) !important;
+        }
+      }
+
+      .mat-mdc-select {
+        color: var(--text-color) !important;
+      }
+
+      .mat-mdc-select-panel {
+        background-color: var(--surface-color) !important;
+      }
+
+      .mat-mdc-option {
+        color: var(--text-color) !important;
+      }
+
+      .mat-mdc-option:hover {
+        background-color: var(--hover-color) !important;
+      }
+
+      .mat-expansion-panel {
+        background-color: var(--surface-color) !important;
+        color: var(--text-color) !important;
+      }
+
+      .mat-expansion-panel-header {
+        color: var(--text-color) !important;
+      }
+
+      .mat-expansion-panel-body {
+        background-color: var(--surface-color) !important;
+      }
+    }
+
+    /* Standard overrides (for light theme compatibility) */
+    ::ng-deep .mat-mdc-button {
+      color: var(--text-color);
+    }
+
+    ::ng-deep .mat-mdc-stroked-button {
+      color: var(--text-color);
+      border-color: var(--border-color);
+    }
+
+    ::ng-deep .mat-mdc-icon-button {
+      color: var(--text-secondary-color);
+    }
+
+    ::ng-deep .mat-expansion-panel {
+      background-color: var(--surface-color);
+      color: var(--text-color);
+    }
+
+    ::ng-deep .mat-expansion-panel-header {
+      color: var(--text-color);
     }
   `]
 })
