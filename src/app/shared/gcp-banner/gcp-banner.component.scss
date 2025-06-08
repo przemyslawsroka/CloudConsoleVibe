@@ -1,0 +1,213 @@
+.gcp-banner {
+  display: flex;
+  align-items: flex-start;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  font-family: 'Google Sans', 'Helvetica Neue', sans-serif;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+
+  .banner-content {
+    display: flex;
+    align-items: flex-start;
+    width: 100%;
+    padding: 16px;
+    gap: 12px;
+  }
+
+  .banner-icon {
+    flex-shrink: 0;
+    margin-top: 2px;
+
+    mat-icon {
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+    }
+  }
+
+  .banner-text {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .banner-title {
+    font-size: 16px;
+    font-weight: 500;
+    margin-bottom: 4px;
+    line-height: 1.4;
+  }
+
+  .banner-message {
+    font-size: 14px;
+    line-height: 1.4;
+    
+    ::ng-deep p {
+      margin: 0 0 8px 0;
+      
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+
+    ::ng-deep a {
+      text-decoration: none;
+      font-weight: 500;
+      
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+
+  .banner-actions {
+    flex-shrink: 0;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-left: 12px;
+  }
+
+  .banner-dismiss {
+    flex-shrink: 0;
+    margin: -8px -8px -8px 8px;
+    color: inherit;
+    opacity: 0.7;
+
+    &:hover {
+      opacity: 1;
+    }
+
+    mat-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+    }
+  }
+
+  // Banner types
+  &.banner-info {
+    background-color: rgba(66, 133, 244, 0.08);
+    border: 1px solid rgba(66, 133, 244, 0.2);
+    color: var(--text-color);
+
+    .banner-icon mat-icon {
+      color: #4285f4;
+    }
+
+    .banner-message ::ng-deep a {
+      color: #4285f4;
+    }
+  }
+
+  &.banner-warning {
+    background-color: rgba(251, 188, 5, 0.08);
+    border: 1px solid rgba(251, 188, 5, 0.2);
+    color: var(--text-color);
+
+    .banner-icon mat-icon {
+      color: #fbbc05;
+    }
+
+    .banner-message ::ng-deep a {
+      color: #ea8600;
+    }
+  }
+
+  &.banner-error {
+    background-color: rgba(234, 67, 53, 0.08);
+    border: 1px solid rgba(234, 67, 53, 0.2);
+    color: var(--text-color);
+
+    .banner-icon mat-icon {
+      color: #ea4335;
+    }
+
+    .banner-message ::ng-deep a {
+      color: #ea4335;
+    }
+  }
+
+  &.banner-success {
+    background-color: rgba(52, 168, 83, 0.08);
+    border: 1px solid rgba(52, 168, 83, 0.2);
+    color: var(--text-color);
+
+    .banner-icon mat-icon {
+      color: #34a853;
+    }
+
+    .banner-message ::ng-deep a {
+      color: #34a853;
+    }
+  }
+}
+
+// Dark theme adjustments
+:host-context(.dark-theme) .gcp-banner {
+  &.banner-info {
+    background-color: rgba(66, 133, 244, 0.12);
+    border-color: rgba(66, 133, 244, 0.3);
+  }
+
+  &.banner-warning {
+    background-color: rgba(251, 188, 5, 0.12);
+    border-color: rgba(251, 188, 5, 0.3);
+  }
+
+  &.banner-error {
+    background-color: rgba(234, 67, 53, 0.12);
+    border-color: rgba(234, 67, 53, 0.3);
+  }
+
+  &.banner-success {
+    background-color: rgba(52, 168, 83, 0.12);
+    border-color: rgba(52, 168, 83, 0.3);
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .gcp-banner {
+    .banner-content {
+      padding: 12px;
+      gap: 10px;
+    }
+
+    .banner-actions {
+      flex-direction: column;
+      gap: 6px;
+      margin-left: 8px;
+    }
+
+    .banner-dismiss {
+      margin: -6px -6px -6px 6px;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .gcp-banner {
+    .banner-content {
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .banner-icon {
+      align-self: flex-start;
+      margin-top: 0;
+    }
+
+    .banner-actions {
+      flex-direction: row;
+      margin-left: 0;
+      margin-top: 8px;
+    }
+
+    .banner-dismiss {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      margin: 0;
+    }
+  }
+} 

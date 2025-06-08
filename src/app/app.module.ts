@@ -35,6 +35,7 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatPaginatorModule } from '@angular/material/paginator';
 
 import { AppRoutingModule } from './app-routing.module';
+import { SharedModule } from './shared/shared.module';
 import { AppComponent } from './app.component';
 import { VpcListComponent } from './components/vpc-list/vpc-list.component';
 import { VpcDetailsComponent } from './components/vpc-details/vpc-details.component';
@@ -94,7 +95,6 @@ import { CloudCdnDetailsComponent } from './components/cloud-cdn-details/cloud-c
 import { CloudRouterComponent } from './components/cloud-router/cloud-router.component';
 import { CloudRouterDetailsComponent } from './components/cloud-router-details/cloud-router-details.component';
 import { CreateCloudRouterComponent } from './components/create-cloud-router/create-cloud-router.component';
-import { GcpDataTableComponent } from './shared/gcp-data-table/gcp-data-table.component';
 
 @NgModule({
   declarations: [
@@ -150,45 +150,32 @@ import { GcpDataTableComponent } from './shared/gcp-data-table/gcp-data-table.co
     CloudCdnDetailsComponent,
     CloudRouterComponent,
     CloudRouterDetailsComponent,
-    CreateCloudRouterComponent,
-    GcpDataTableComponent
+    CreateCloudRouterComponent
   ],
   imports: [
     BrowserModule,
-    CommonModule,
     AppRoutingModule,
     BrowserAnimationsModule,
     HttpClientModule,
+    ReactiveFormsModule,
+    FormsModule,
+    SharedModule,
+    // App-specific Material modules not in SharedModule
     MatToolbarModule,
     MatSidenavModule,
     MatListModule,
-    MatIconModule,
-    MatButtonModule,
-    MatCardModule,
-    MatTableModule,
     MatDialogModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatMenuModule,
-    MatProgressSpinnerModule,
-    ReactiveFormsModule,
-    MatSelectModule,
     MatSnackBarModule,
     MatChipsModule,
     MatRadioModule,
-    FormsModule,
     MatTabsModule,
-    MatCheckboxModule,
-    MatTooltipModule,
     MatStepperModule,
     MatExpansionModule,
     MatSlideToggleModule,
     MatButtonToggleModule,
-    TextFieldModule,
-    MatSortModule,
     MatProgressBarModule,
     MatDividerModule,
-    MatPaginatorModule
+    TextFieldModule
   ],
   providers: [AuthService, VpcService, TPPIService, PacketMirroringService, NetworkHealthMonitorService, AppNetaService],
   bootstrap: [AppComponent]

@@ -176,8 +176,9 @@ interface NavItem {
     
     .sidenav { 
       width: 300px; 
-      background-color: #fafafa;
+      background-color: var(--surface-color);
       height: 100%;
+      color: var(--text-color);
     }
     
     .content { 
@@ -185,6 +186,7 @@ interface NavItem {
       height: 100%;
       overflow-y: auto;
       overflow-x: hidden;
+      background-color: var(--background-color);
     }
 
     .content.full-width {
@@ -195,25 +197,26 @@ interface NavItem {
     
     .nav-header {
       padding: 24px 20px 16px;
-      border-bottom: 1px solid #e0e0e0;
-      background: white;
+      border-bottom: 1px solid var(--divider-color);
+      background: var(--surface-color);
     }
     
     .nav-header h3 {
       margin: 0 0 4px 0;
       font-size: 20px;
       font-weight: 400;
-      color: #202124;
+      color: var(--text-color);
     }
     
     .nav-header p {
       margin: 0;
       font-size: 14px;
-      color: #5f6368;
+      color: var(--text-secondary-color);
     }
     
     .nav-content {
       padding: 8px 0;
+      background-color: var(--surface-color);
     }
     
     .nav-category {
@@ -226,13 +229,13 @@ interface NavItem {
       justify-content: space-between;
       padding: 12px 20px;
       cursor: pointer;
-      background: white;
-      border-bottom: 1px solid #e8eaed;
+      background: var(--surface-color);
+      border-bottom: 1px solid var(--divider-color);
       transition: background-color 0.2s;
     }
     
     .category-header:hover {
-      background-color: #f8f9fa;
+      background-color: var(--hover-color);
     }
     
     .category-info {
@@ -242,19 +245,19 @@ interface NavItem {
     }
     
     .category-icon {
-      color: #1a73e8;
+      color: var(--primary-color);
       margin-right: 12px;
       font-size: 20px;
     }
     
     .category-name {
       font-weight: 500;
-      color: #1a73e8;
+      color: var(--primary-color);
       font-size: 14px;
     }
     
     .expand-icon {
-      color: #5f6368;
+      color: var(--text-secondary-color);
       font-size: 18px;
       transition: transform 0.2s;
     }
@@ -267,7 +270,7 @@ interface NavItem {
       max-height: 0;
       overflow: hidden;
       transition: max-height 0.3s ease-out;
-      background: #f8f9fa;
+      background: var(--surface-color);
     }
     
     .category-items.expanded {
@@ -279,20 +282,20 @@ interface NavItem {
       align-items: center !important;
       padding: 8px 20px 8px 52px !important;
       text-decoration: none;
-      color: #5f6368;
+      color: var(--text-secondary-color);
       font-size: 14px;
       min-height: 36px !important;
       transition: background-color 0.2s;
     }
     
     .nav-item:hover {
-      background-color: #e8f0fe !important;
-      color: #1a73e8;
+      background-color: var(--hover-color) !important;
+      color: var(--primary-color);
     }
     
     .nav-item.active {
-      background-color: #e8f0fe !important;
-      color: #1a73e8;
+      background-color: var(--selected-color) !important;
+      color: var(--primary-color);
       font-weight: 500;
     }
     
