@@ -92,6 +92,7 @@ import { CNRComponent } from './components/cnr/cnr.component';
 import { CloudCdnComponent } from './components/cloud-cdn/cloud-cdn.component';
 import { CloudCdnDetailsComponent } from './components/cloud-cdn-details/cloud-cdn-details.component';
 import { CloudRouterComponent } from './components/cloud-router/cloud-router.component';
+import { CloudRouterDetailsComponent } from './components/cloud-router-details/cloud-router-details.component';
 import { CreateCloudRouterComponent } from './components/create-cloud-router/create-cloud-router.component';
 
 @NgModule({
@@ -147,6 +148,7 @@ import { CreateCloudRouterComponent } from './components/create-cloud-router/cre
     CloudCdnComponent,
     CloudCdnDetailsComponent,
     CloudRouterComponent,
+    CloudRouterDetailsComponent,
     CreateCloudRouterComponent
   ],
   imports: [

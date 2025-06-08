@@ -423,38 +423,74 @@ export class CloudRouterService {
   }
 
   private getMockRouterDetails(routerName: string, region: string): CloudRouterDetails {
-    const baseRouter = this.getMockRouters().find(r => r.name === routerName) || this.getMockRouters()[0];
+    const baseRouter = this.getMockRouters().find(r => r.name === routerName);
     
+    if (!baseRouter) {
+      // Return default if router not found
+      return {
+        id: '7506832236912495280',
+        name: routerName,
+        network: 'default',
+        region: region,
+        interconnectEncryption: 'Unencrypted',
+        cloudRouterASN: 64512,
+        interconnectVpnGateway: 'None',
+        connection: '',
+        bgpSessions: 0,
+        status: 'ACTIVE',
+        project: 'demo-project',
+        creationTimestamp: '2018-06-27T04:26:23.174-07:00',
+        description: 'Cloud Router details',
+        bgpPeers: [],
+        natGateways: [],
+        interfaces: []
+      };
+    }
+    
+    // Enhanced BGP peer data based on router
+    const bgpPeers: BgpPeer[] = [];
+    const natGateways: NatGateway[] = [];
+    const interfaces: RouterInterface[] = [];
+
+    if (routerName === 'shopping-cr') {
+      bgpPeers.push({
+        name: 'bgp-shopping',
+        interfaceName: 'if-tunnel-1',
+        ipAddress: '169.254.1.1',
+        peerAsn: 64513,
+        peerIpAddress: '169.254.1.2',
+        advertiseMode: 'DEFAULT',
+        advertisedGroups: ['ALL_SUBNETS'],
+        status: 'ESTABLISHED'
+      });
+
+      interfaces.push({
+        name: 'if-tunnel-1',
+        ipRange: '169.254.1.0/30',
+        vpnTunnel: 'shopping-vpn-tunnel'
+      });
+
+      natGateways.push({
+        name: 'kamil-remove',
+        natIpAllocateOption: 'AUTO_ONLY',
+        sourceSubnetworkIpRangesToNat: 'ALL_SUBNETWORKS_ALL_IP_RANGES',
+        status: 'Running'
+      });
+
+      natGateways.push({
+        name: 'us-nat',
+        natIpAllocateOption: 'AUTO_ONLY',
+        sourceSubnetworkIpRangesToNat: 'ALL_SUBNETWORKS_ALL_IP_RANGES',
+        status: 'Running'
+      });
+    }
+
     return {
       ...baseRouter,
       region,
-      bgpPeers: [
-        {
-          name: 'bgp-peer-1',
-          interfaceName: 'if-tunnel-1',
-          ipAddress: '169.254.1.1',
-          peerAsn: 65002,
-          peerIpAddress: '169.254.1.2',
-          advertiseMode: 'DEFAULT',
-          advertisedGroups: ['ALL_SUBNETS'],
-          status: 'ESTABLISHED'
-        }
-      ],
-      natGateways: [
-        {
-          name: 'nat-gateway-1',
-          natIpAllocateOption: 'AUTO_ONLY',
-          sourceSubnetworkIpRangesToNat: 'ALL_SUBNETWORKS_ALL_IP_RANGES',
-          status: 'ACTIVE'
-        }
-      ],
-      interfaces: [
-        {
-          name: 'if-tunnel-1',
-          ipRange: '169.254.1.0/30',
-          vpnTunnel: 'shopping-vpn-tunnel'
-        }
-      ]
+      bgpPeers,
+      natGateways,
+      interfaces
     };
   }
 

@@ -33,6 +33,7 @@ import { CloudCdnComponent } from './components/cloud-cdn/cloud-cdn.component';
 import { CloudCdnDetailsComponent } from './components/cloud-cdn-details/cloud-cdn-details.component';
 import { CloudRouterComponent } from './components/cloud-router/cloud-router.component';
 import { CreateCloudRouterComponent } from './components/create-cloud-router/create-cloud-router.component';
+import { CloudRouterDetailsComponent } from './components/cloud-router-details/cloud-router-details.component';
 
 const routes: Routes = [
   { path: '', redirectTo: '/vpc', pathMatch: 'full' },
@@ -80,6 +81,7 @@ const routes: Routes = [
   { path: 'cloud-cdn/:name', component: CloudCdnDetailsComponent, canActivate: [AuthGuard] },
   { path: 'cloud-router', component: CloudRouterComponent, canActivate: [AuthGuard] },
   { path: 'cloud-router/create', component: CreateCloudRouterComponent, canActivate: [AuthGuard] },
+  { path: 'cloud-router/:name', component: CloudRouterDetailsComponent, canActivate: [AuthGuard] },
   { path: 'cloud-network-insights', component: CloudNetworkInsightsComponent, canActivate: [AuthGuard] },
   { path: 'cnr', component: CNRComponent, canActivate: [AuthGuard] },
   {

@@ -1,0 +1,610 @@
+// Breadcrumb Styles
+.breadcrumb-container {
+  background: white;
+  border-bottom: 1px solid #e8eaed;
+  padding: 12px 32px;
+}
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #5f6368;
+
+  .breadcrumb-link {
+    color: #1a73e8;
+    text-decoration: none;
+    
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  .breadcrumb-separator {
+    font-size: 16px;
+    color: #9aa0a6;
+  }
+
+  .breadcrumb-current {
+    color: #202124;
+  }
+}
+
+// Loading Container
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px;
+  color: #5f6368;
+
+  mat-spinner {
+    margin-bottom: 16px;
+  }
+
+  p {
+    margin: 0;
+    font-size: 14px;
+  }
+}
+
+// Content Container
+.content-container {
+  background: #f8f9fa;
+  min-height: calc(100vh - 64px);
+}
+
+// Header Styles
+.header-container {
+  background: white;
+  border-bottom: 1px solid #e8eaed;
+  padding: 24px 32px;
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  max-width: 1200px;
+
+  .back-button {
+    color: #5f6368;
+    
+    &:hover {
+      background-color: #f8f9fa;
+    }
+  }
+
+  .header-text {
+    flex: 1;
+
+    h1 {
+      font-size: 24px;
+      font-weight: 400;
+      color: #202124;
+      margin: 0;
+      line-height: 1.25;
+    }
+  }
+
+  .header-actions {
+    display: flex;
+    gap: 12px;
+
+    .edit-button, .delete-button {
+      color: #5f6368;
+      border-color: #dadce0;
+      
+      &:hover {
+        background-color: #f8f9fa;
+      }
+
+      mat-icon {
+        margin-right: 8px;
+        font-size: 18px;
+      }
+    }
+
+    .delete-button:hover {
+      color: #ea4335;
+      border-color: #ea4335;
+    }
+  }
+}
+
+// Router Name Section
+.router-name-section {
+  background: white;
+  padding: 24px 32px;
+  border-bottom: 1px solid #e8eaed;
+
+  h2 {
+    font-size: 32px;
+    font-weight: 400;
+    color: #202124;
+    margin: 0;
+  }
+}
+
+// Tabs Styling
+.router-tabs {
+  background: white;
+
+  ::ng-deep {
+    .mat-mdc-tab-header {
+      border-bottom: 1px solid #e8eaed;
+      background: white;
+    }
+
+    .mat-mdc-tab-label {
+      color: #5f6368;
+      font-weight: 500;
+      text-transform: none;
+      
+      &.mdc-tab--active {
+        color: #1a73e8;
+      }
+    }
+
+    .mat-mdc-tab-header-pagination {
+      display: none;
+    }
+
+    .mdc-tab-indicator__content--underline {
+      background-color: #1a73e8;
+    }
+  }
+}
+
+// Tab Content
+.tab-content {
+  padding: 32px;
+  max-width: 1200px;
+}
+
+// Overview Section
+.overview-section {
+  margin-bottom: 40px;
+
+  h3 {
+    font-size: 18px;
+    font-weight: 500;
+    color: #202124;
+    margin: 0 0 24px 0;
+  }
+
+  .overview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 24px;
+  }
+
+  .overview-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+
+    label {
+      font-size: 12px;
+      font-weight: 500;
+      color: #5f6368;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    span {
+      font-size: 14px;
+      color: #202124;
+    }
+
+    .network-link {
+      color: #1a73e8;
+      cursor: pointer;
+      
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+
+    .tags-container {
+      .no-tags {
+        color: #9aa0a6;
+        font-style: italic;
+      }
+
+      .demo-tag {
+        background-color: #e8f0fe;
+        color: #1a73e8;
+
+        .tag-icon {
+          font-size: 16px;
+          margin-right: 4px;
+        }
+      }
+    }
+  }
+}
+
+// Advertised Routes Section
+.advertised-routes-section {
+  margin-bottom: 40px;
+
+  h3 {
+    font-size: 18px;
+    font-weight: 500;
+    color: #202124;
+    margin: 0 0 8px 0;
+  }
+
+  .section-description {
+    font-size: 14px;
+    color: #5f6368;
+    margin: 0 0 24px 0;
+  }
+
+  .advertisement-mode {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    max-width: 300px;
+
+    label {
+      font-size: 12px;
+      font-weight: 500;
+      color: #5f6368;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    span {
+      font-size: 14px;
+      color: #202124;
+    }
+  }
+}
+
+// BGP Sessions Section
+.bgp-sessions-section {
+  margin-bottom: 40px;
+
+  h3 {
+    font-size: 18px;
+    font-weight: 500;
+    color: #202124;
+    margin: 0 0 8px 0;
+  }
+
+  .section-description {
+    font-size: 14px;
+    color: #5f6368;
+    margin: 0 0 24px 0;
+  }
+
+  .table-container {
+    background: white;
+    border: 1px solid #e8eaed;
+    border-radius: 8px;
+    overflow: hidden;
+
+    .bgp-sessions-table {
+      width: 100%;
+
+      th {
+        background: #f8f9fa;
+        color: #5f6368;
+        font-weight: 500;
+        font-size: 12px;
+        padding: 16px 12px;
+        border-bottom: 1px solid #e8eaed;
+      }
+
+      td {
+        padding: 16px 12px;
+        border-bottom: 1px solid #f1f3f4;
+        font-size: 14px;
+        color: #202124;
+      }
+
+      .session-name {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+
+        .status-icon {
+          font-size: 16px;
+        }
+
+        .name-link {
+          color: #1a73e8;
+          cursor: pointer;
+          
+          &:hover {
+            text-decoration: underline;
+          }
+        }
+      }
+
+      .gateway-link, .tunnel-link {
+        color: #1a73e8;
+        cursor: pointer;
+        
+        &:hover {
+          text-decoration: underline;
+        }
+      }
+
+      .session-row:hover {
+        background-color: #f8f9fa;
+      }
+    }
+  }
+}
+
+// BGP Policies Section
+.bgp-policies-section {
+  margin-bottom: 40px;
+
+  h3 {
+    font-size: 18px;
+    font-weight: 500;
+    color: #202124;
+    margin: 0 0 24px 0;
+  }
+
+  .filter-container {
+    margin-bottom: 16px;
+
+    .filter-field {
+      max-width: 300px;
+
+      mat-icon {
+        color: #5f6368;
+      }
+    }
+  }
+
+  .table-container {
+    background: white;
+    border: 1px solid #e8eaed;
+    border-radius: 8px;
+    overflow: hidden;
+
+    .bgp-policies-table {
+      width: 100%;
+
+      th {
+        background: #f8f9fa;
+        color: #5f6368;
+        font-weight: 500;
+        font-size: 12px;
+        padding: 16px 12px;
+        border-bottom: 1px solid #e8eaed;
+      }
+
+      td {
+        padding: 16px 12px;
+        border-bottom: 1px solid #f1f3f4;
+        font-size: 14px;
+        color: #202124;
+      }
+    }
+  }
+}
+
+// NAT Gateways Section
+.nat-gateways-section {
+  margin-bottom: 40px;
+
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+
+    h3 {
+      font-size: 18px;
+      font-weight: 500;
+      color: #202124;
+      margin: 0;
+    }
+
+    .add-gateway-btn {
+      background-color: #1a73e8;
+      color: white;
+      font-weight: 500;
+      
+      &:hover {
+        background-color: #1557b0;
+      }
+
+      mat-icon {
+        margin-right: 8px;
+        font-size: 18px;
+      }
+    }
+  }
+
+  .table-container {
+    background: white;
+    border: 1px solid #e8eaed;
+    border-radius: 8px;
+    overflow: hidden;
+
+    .nat-gateways-table {
+      width: 100%;
+
+      th {
+        background: #f8f9fa;
+        color: #5f6368;
+        font-weight: 500;
+        font-size: 12px;
+        padding: 16px 12px;
+        border-bottom: 1px solid #e8eaed;
+      }
+
+      td {
+        padding: 16px 12px;
+        border-bottom: 1px solid #f1f3f4;
+        font-size: 14px;
+        color: #202124;
+      }
+
+      .gateway-name-link {
+        color: #1a73e8;
+        cursor: pointer;
+        
+        &:hover {
+          text-decoration: underline;
+        }
+      }
+
+      .status-indicator {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+
+        mat-icon {
+          font-size: 16px;
+        }
+      }
+    }
+  }
+}
+
+// No Data Messages
+.no-data {
+  padding: 40px;
+  text-align: center;
+  color: #5f6368;
+  font-size: 14px;
+
+  p {
+    margin: 0;
+  }
+}
+
+// Coming Soon Placeholder
+.coming-soon {
+  padding: 40px;
+  text-align: center;
+  color: #5f6368;
+
+  h3 {
+    color: #202124;
+    margin-bottom: 16px;
+  }
+
+  p {
+    margin: 0;
+    font-size: 14px;
+  }
+}
+
+// Equivalent Section
+.equivalent-section {
+  padding: 32px;
+  border-top: 1px solid #e8eaed;
+  background: white;
+
+  .equivalent-button {
+    color: #1a73e8;
+    font-weight: 500;
+    text-transform: none;
+
+    &:hover {
+      background-color: #f8f9fa;
+    }
+  }
+}
+
+// Responsive Design
+@media (max-width: 768px) {
+  .breadcrumb-container {
+    padding: 12px 16px;
+  }
+
+  .header-container {
+    padding: 16px;
+  }
+
+  .header-content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+
+    .header-actions {
+      width: 100%;
+      
+      button {
+        flex: 1;
+      }
+    }
+  }
+
+  .router-name-section {
+    padding: 16px;
+
+    h2 {
+      font-size: 24px;
+    }
+  }
+
+  .tab-content {
+    padding: 16px;
+  }
+
+  .overview-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .nat-gateways-section .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+
+    .add-gateway-btn {
+      width: 100%;
+    }
+  }
+
+  .table-container {
+    overflow-x: auto;
+
+    table {
+      min-width: 800px;
+    }
+  }
+
+  .equivalent-section {
+    padding: 16px;
+  }
+}
+
+// Material Design Overrides
+::ng-deep {
+  .mat-mdc-form-field {
+    .mat-mdc-form-field-outline {
+      color: #dadce0;
+    }
+
+    .mat-mdc-form-field-outline-thick {
+      color: #1a73e8;
+    }
+
+    .mat-mdc-form-field-label {
+      color: #5f6368;
+    }
+
+    .mat-mdc-input-element {
+      color: #202124;
+    }
+  }
+
+  .mat-mdc-chip {
+    .mat-mdc-chip-action-label {
+      font-size: 12px;
+    }
+  }
+}

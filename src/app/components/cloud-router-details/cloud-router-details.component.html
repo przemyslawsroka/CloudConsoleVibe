@@ -1,0 +1,335 @@
+<p>cloud-router-details works!</p>
+
+<!-- Breadcrumb Navigation -->
+<div class="breadcrumb-container">
+  <nav class="breadcrumb">
+    <a routerLink="/cloud-router" class="breadcrumb-link">Routers</a>
+    <mat-icon class="breadcrumb-separator">chevron_right</mat-icon>
+    <span class="breadcrumb-current">{{ routerName }}</span>
+  </nav>
+</div>
+
+<!-- Loading Spinner -->
+<div *ngIf="loading" class="loading-container">
+  <mat-spinner diameter="40"></mat-spinner>
+  <p>Loading router details...</p>
+</div>
+
+<!-- Content Container -->
+<div *ngIf="!loading && routerDetails" class="content-container">
+  
+  <!-- Header -->
+  <div class="header-container">
+    <div class="header-content">
+      <button mat-icon-button (click)="goBack()" class="back-button">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <div class="header-text">
+        <h1>Router details</h1>
+      </div>
+      <div class="header-actions">
+        <button mat-stroked-button (click)="editRouter()" class="edit-button">
+          <mat-icon>edit</mat-icon>
+          Edit
+        </button>
+        <button mat-stroked-button (click)="deleteRouter()" class="delete-button">
+          <mat-icon>delete</mat-icon>
+          Delete
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Router Name -->
+  <div class="router-name-section">
+    <h2>{{ routerDetails.name }}</h2>
+  </div>
+
+  <!-- Tabs -->
+  <mat-tab-group [selectedIndex]="selectedTabIndex" (selectedTabChange)="onTabChange($event.index)" class="router-tabs">
+    
+    <!-- Overview Tab -->
+    <mat-tab label="Overview">
+      <div class="tab-content">
+        
+        <!-- Router Overview -->
+        <div class="overview-section">
+          <h3>Router overview</h3>
+          <div class="overview-grid">
+            <div class="overview-item">
+              <label>Network</label>
+              <span class="network-link">{{ routerDetails.network }}</span>
+            </div>
+            <div class="overview-item">
+              <label>Region</label>
+              <span>{{ routerDetails.region }}</span>
+            </div>
+            <div class="overview-item">
+              <label>Interconnect encryption</label>
+              <span>{{ routerDetails.interconnectEncryption }}</span>
+            </div>
+            <div class="overview-item">
+              <label>Cloud Router ASN</label>
+              <span>{{ routerDetails.cloudRouterASN }}</span>
+            </div>
+            <div class="overview-item">
+              <label>BGP identifier</label>
+              <span>Automatic</span>
+            </div>
+            <div class="overview-item">
+              <label>Tags</label>
+              <div class="tags-container">
+                <span *ngIf="!formatTags(routerDetails.project)" class="no-tags">No tags</span>
+                <span *ngIf="formatTags(routerDetails.project)" class="tags">
+                  <mat-chip-set>
+                    <mat-chip class="demo-tag">
+                      <mat-icon class="tag-icon">local_offer</mat-icon>
+                      test-tag : foo
+                      <button matChipRemove><mat-icon>cancel</mat-icon></button>
+                    </mat-chip>
+                  </mat-chip-set>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Advertised Route Configuration -->
+        <div class="advertised-routes-section">
+          <h3>Advertised route configuration</h3>
+          <p class="section-description">
+            BGP sessions will advertise these routes if no other configuration is specified
+          </p>
+          <div class="advertisement-mode">
+            <label>Advertisement mode</label>
+            <span>Default</span>
+          </div>
+        </div>
+
+        <!-- BGP Sessions -->
+        <div class="bgp-sessions-section">
+          <h3>BGP sessions</h3>
+          <p class="section-description">VPN/BGP sessions</p>
+          
+          <div class="table-container">
+            <table mat-table [dataSource]="bgpSessionsDataSource" class="bgp-sessions-table">
+              
+              <!-- Name Column -->
+              <ng-container matColumnDef="name">
+                <th mat-header-cell *matHeaderCellDef>Name</th>
+                <td mat-cell *matCellDef="let session">
+                  <div class="session-name">
+                    <mat-icon class="status-icon" [style.color]="'#34a853'">radio_button_checked</mat-icon>
+                    <span class="name-link">{{ session.name }}</span>
+                  </div>
+                </td>
+              </ng-container>
+
+              <!-- Peer ASN Column -->
+              <ng-container matColumnDef="peerAsn">
+                <th mat-header-cell *matHeaderCellDef>Peer ASN</th>
+                <td mat-cell *matCellDef="let session">{{ session.peerAsn }}</td>
+              </ng-container>
+
+              <!-- Type Column -->
+              <ng-container matColumnDef="type">
+                <th mat-header-cell *matHeaderCellDef>Type</th>
+                <td mat-cell *matCellDef="let session">{{ session.type }}</td>
+              </ng-container>
+
+              <!-- Multiprotocol BGP Column -->
+              <ng-container matColumnDef="multiprotocolBgp">
+                <th mat-header-cell *matHeaderCellDef>Multiprotocol BGP</th>
+                <td mat-cell *matCellDef="let session">{{ session.multiprotocolBgp }}</td>
+              </ng-container>
+
+              <!-- BGP Route Policies Column -->
+              <ng-container matColumnDef="bgpRoutePolicies">
+                <th mat-header-cell *matHeaderCellDef>BGP Route policies</th>
+                <td mat-cell *matCellDef="let session">{{ session.bgpRoutePolicies }}</td>
+              </ng-container>
+
+              <!-- Cloud Router BGP IP Column -->
+              <ng-container matColumnDef="cloudRouterBgpIp">
+                <th mat-header-cell *matHeaderCellDef>Cloud Router BGP IP</th>
+                <td mat-cell *matCellDef="let session">{{ session.cloudRouterBgpIp }}</td>
+              </ng-container>
+
+              <!-- BGP peer IP Column -->
+              <ng-container matColumnDef="bgpPeerIp">
+                <th mat-header-cell *matHeaderCellDef>BGP peer IP</th>
+                <td mat-cell *matCellDef="let session">{{ session.bgpPeerIp }}</td>
+              </ng-container>
+
+              <!-- VPN gateway Column -->
+              <ng-container matColumnDef="vpnGateway">
+                <th mat-header-cell *matHeaderCellDef>VPN gateway</th>
+                <td mat-cell *matCellDef="let session">
+                  <span class="gateway-link">{{ session.vpnGateway }}</span>
+                </td>
+              </ng-container>
+
+              <!-- VPN tunnel Column -->
+              <ng-container matColumnDef="vpnTunnel">
+                <th mat-header-cell *matHeaderCellDef>VPN tunnel</th>
+                <td mat-cell *matCellDef="let session">
+                  <span class="tunnel-link">{{ session.vpnTunnel }}</span>
+                </td>
+              </ng-container>
+
+              <!-- Advertised route priority Column -->
+              <ng-container matColumnDef="advertisedRoutePriority">
+                <th mat-header-cell *matHeaderCellDef>Advertised route priority</th>
+                <td mat-cell *matCellDef="let session">{{ session.advertisedRoutePriority }}</td>
+              </ng-container>
+
+              <!-- Advertisement mode Column -->
+              <ng-container matColumnDef="advertisementMode">
+                <th mat-header-cell *matHeaderCellDef>Advertisement mode</th>
+                <td mat-cell *matCellDef="let session">{{ session.advertisementMode }}</td>
+              </ng-container>
+
+              <!-- MD5 Authentication Column -->
+              <ng-container matColumnDef="md5Authentication">
+                <th mat-header-cell *matHeaderCellDef>MD5 Authentication</th>
+                <td mat-cell *matCellDef="let session">{{ session.md5Authentication }}</td>
+              </ng-container>
+
+              <tr mat-header-row *matHeaderRowDef="bgpSessionsDisplayedColumns"></tr>
+              <tr mat-row *matRowDef="let session; columns: bgpSessionsDisplayedColumns;" class="session-row"></tr>
+            </table>
+
+            <!-- No BGP Sessions Message -->
+            <div *ngIf="bgpSessionsDataSource.data.length === 0" class="no-data">
+              <p>No rows to display</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- BGP Route Policies -->
+        <div class="bgp-policies-section">
+          <h3>BGP route policies</h3>
+          <div class="filter-container">
+            <mat-form-field appearance="outline" class="filter-field">
+              <mat-label>Filter</mat-label>
+              <input matInput placeholder="Enter property name or value">
+              <mat-icon matSuffix>search</mat-icon>
+            </mat-form-field>
+          </div>
+          
+          <div class="table-container">
+            <table mat-table [dataSource]="bgpPoliciesDataSource" class="bgp-policies-table">
+              
+              <!-- Name Column -->
+              <ng-container matColumnDef="name">
+                <th mat-header-cell *matHeaderCellDef>Name</th>
+                <td mat-cell *matCellDef="let policy">{{ policy.name }}</td>
+              </ng-container>
+
+              <!-- Type Column -->
+              <ng-container matColumnDef="type">
+                <th mat-header-cell *matHeaderCellDef>Type</th>
+                <td mat-cell *matCellDef="let policy">{{ policy.type }}</td>
+              </ng-container>
+
+              <!-- Term count Column -->
+              <ng-container matColumnDef="termCount">
+                <th mat-header-cell *matHeaderCellDef>Term count</th>
+                <td mat-cell *matCellDef="let policy">{{ policy.termCount }}</td>
+              </ng-container>
+
+              <!-- BGP sessions Column -->
+              <ng-container matColumnDef="bgpSessions">
+                <th mat-header-cell *matHeaderCellDef>BGP sessions</th>
+                <td mat-cell *matCellDef="let policy">{{ policy.bgpSessions }}</td>
+              </ng-container>
+
+              <tr mat-header-row *matHeaderRowDef="bgpPoliciesDisplayedColumns"></tr>
+              <tr mat-row *matRowDef="let policy; columns: bgpPoliciesDisplayedColumns;"></tr>
+            </table>
+
+            <!-- No Policies Message -->
+            <div *ngIf="bgpPoliciesDataSource.data.length === 0" class="no-data">
+              <p>No rows to display</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cloud NAT Gateways -->
+        <div class="nat-gateways-section">
+          <div class="section-header">
+            <h3>Cloud NAT gateways</h3>
+            <button mat-raised-button color="primary" (click)="addCloudNatGateway()" class="add-gateway-btn">
+              <mat-icon>add</mat-icon>
+              Add Cloud NAT gateway
+            </button>
+          </div>
+          
+          <div class="table-container">
+            <table mat-table [dataSource]="natGatewaysDataSource" class="nat-gateways-table">
+              
+              <!-- Gateway name Column -->
+              <ng-container matColumnDef="gatewayName">
+                <th mat-header-cell *matHeaderCellDef>Gateway name</th>
+                <td mat-cell *matCellDef="let gateway">
+                  <span class="gateway-name-link">{{ gateway.name }}</span>
+                </td>
+              </ng-container>
+
+              <!-- Status Column -->
+              <ng-container matColumnDef="status">
+                <th mat-header-cell *matHeaderCellDef>Status</th>
+                <td mat-cell *matCellDef="let gateway">
+                  <div class="status-indicator">
+                    <mat-icon [style.color]="getStatusColor(gateway.status)">
+                      {{ getStatusIcon(gateway.status) }}
+                    </mat-icon>
+                    <span>{{ gateway.status }}</span>
+                  </div>
+                </td>
+              </ng-container>
+
+              <tr mat-header-row *matHeaderRowDef="natGatewaysDisplayedColumns"></tr>
+              <tr mat-row *matRowDef="let gateway; columns: natGatewaysDisplayedColumns;"></tr>
+            </table>
+
+            <!-- No NAT Gateways Message -->
+            <div *ngIf="natGatewaysDataSource.data.length === 0" class="no-data">
+              <p>No NAT gateways configured</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </mat-tab>
+
+    <!-- Advertised and learned routes Tab -->
+    <mat-tab label="Advertised and learned routes">
+      <div class="tab-content">
+        <div class="coming-soon">
+          <h3>Advertised and learned routes</h3>
+          <p>This section will show detailed route information.</p>
+        </div>
+      </div>
+    </mat-tab>
+
+    <!-- Best routes Tab -->
+    <mat-tab label="Best routes">
+      <div class="tab-content">
+        <div class="coming-soon">
+          <h3>Best routes</h3>
+          <p>This section will show the best route information.</p>
+        </div>
+      </div>
+    </mat-tab>
+
+  </mat-tab-group>
+
+  <!-- Equivalent REST -->
+  <div class="equivalent-section">
+    <button mat-button (click)="viewEquivalentRest()" class="equivalent-button">
+      Equivalent REST
+    </button>
+  </div>
+
+</div>
