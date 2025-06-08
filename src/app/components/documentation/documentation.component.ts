@@ -445,6 +445,15 @@ gcloud services enable monitoring.googleapis.com</code></pre>
       text-align: center;
     }
     
+    /* Ensure title is white in light mode */
+    .documentation-header h1 {
+      color: white !important;
+    }
+    
+    .documentation-header p {
+      color: rgba(255, 255, 255, 0.9) !important;
+    }
+    
     .header-content {
       display: flex;
       align-items: center;
@@ -457,13 +466,18 @@ gcloud services enable monitoring.googleapis.com</code></pre>
     .back-button {
       position: absolute;
       left: 0;
-      color: white;
+      color: white !important;
       background: rgba(255, 255, 255, 0.1);
       transition: background-color 0.3s ease;
     }
     
     .back-button:hover {
       background: rgba(255, 255, 255, 0.2);
+    }
+    
+    /* Ensure back button is white in both themes */
+    :host-context(.dark-theme) .back-button {
+      color: white !important;
     }
     
     .back-button mat-icon {
@@ -848,6 +862,18 @@ gcloud services enable monitoring.googleapis.com</code></pre>
 
     /* Dark theme specific adjustments */
     :host-context(.dark-theme) {
+      .documentation-header {
+        background: linear-gradient(135deg, #1565c0, #0d47a1);
+      }
+      
+      .documentation-header h1 {
+        color: white !important;
+      }
+      
+      .documentation-header p {
+        color: rgba(255, 255, 255, 0.9) !important;
+      }
+      
       .doc-section {
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
       }
@@ -858,6 +884,29 @@ gcloud services enable monitoring.googleapis.com</code></pre>
 
       .doc-nav {
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+      }
+      
+      .demo-notice {
+        background: rgba(76, 175, 80, 0.2);
+        border-color: #4caf50;
+      }
+      
+      .demo-notice h4 {
+        color: #81c784;
+      }
+      
+      .demo-notice p {
+        color: #a5d6a7;
+      }
+      
+      pre {
+        background: #1e1e1e;
+        color: #f0f0f0;
+      }
+      
+      code {
+        background: var(--hover-color);
+        color: #ff7043;
       }
     }
 
