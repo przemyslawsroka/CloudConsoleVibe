@@ -124,13 +124,15 @@ export class CloudRouterService {
         const routers: CloudRouter[] = [];
         const errors: string[] = [];
         
-        // Handle partial success
+        // Handle partial success - only log actual errors, not "no results" warnings
         if (response.warning) {
-          // Handle both single warning object and array of warnings
           const warnings = Array.isArray(response.warning) ? response.warning : [response.warning];
           warnings.forEach((warning: any) => {
-            console.warn(`Warning for ${warning.code}:`, warning.message);
-            errors.push(`${warning.code}: ${warning.message}`);
+            // Only log warnings that are not "no results" messages
+            if (warning.message && !warning.message.includes('No results for the scope')) {
+              console.warn(`Warning for ${warning.code}:`, warning.message);
+              errors.push(`${warning.code}: ${warning.message}`);
+            }
           });
         }
 
@@ -139,13 +141,15 @@ export class CloudRouterService {
           Object.keys(response.items).forEach(regionKey => {
             const regionData = response.items[regionKey];
             
-            // Skip regions with warnings/errors that have no routers
+            // Handle region-specific warnings - only log actual errors, not "no results" warnings
             if (regionData.warning) {
-              // Handle both single warning object and array of warnings
               const warnings = Array.isArray(regionData.warning) ? regionData.warning : [regionData.warning];
               warnings.forEach((warning: any) => {
-                console.warn(`Warning for region ${regionKey}:`, warning.message);
-                errors.push(`${regionKey}: ${warning.message}`);
+                // Only log warnings that are not "no results" messages
+                if (warning.message && !warning.message.includes('No results for the scope')) {
+                  console.warn(`Warning for region ${regionKey}:`, warning.message);
+                  errors.push(`${regionKey}: ${warning.message}`);
+                }
               });
             }
             
@@ -158,7 +162,7 @@ export class CloudRouterService {
           });
         }
         
-        // Log any errors but don't fail the request
+        // Log any actual errors (excluding normal "no results" responses)
         if (errors.length > 0) {
           console.warn('Some regions had errors:', errors);
         }
