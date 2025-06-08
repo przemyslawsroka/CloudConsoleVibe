@@ -1,0 +1,277 @@
+<div class="gcp-data-table-container">
+  <!-- Header with title and description -->
+  <div class="header" *ngIf="title">
+    <h1>{{ title }}</h1>
+  </div>
+
+  <!-- Description text -->
+  <div class="description-text" *ngIf="subtitle">
+    <p [innerHTML]="subtitle"></p>
+  </div>
+
+  <!-- Action buttons -->
+  <div class="action-section">
+    <h2 *ngIf="title">{{ title }}</h2>
+    <div class="action-buttons">
+      <button 
+        *ngIf="createButtonLabel" 
+        mat-raised-button 
+        color="primary" 
+        (click)="onCreateClick()"
+        [disabled]="loading">
+        <mat-icon>{{ createButtonIcon || 'add' }}</mat-icon>
+        {{ createButtonLabel }}
+      </button>
+      <button 
+        mat-icon-button 
+        (click)="onRefreshClick()" 
+        matTooltip="Refresh"
+        [disabled]="loading">
+        <mat-icon>refresh</mat-icon>
+      </button>
+      <button 
+        *ngIf="selection.hasValue()" 
+        mat-icon-button 
+        matTooltip="Delete selected"
+        [disabled]="loading">
+        <mat-icon>delete</mat-icon>
+      </button>
+    </div>
+  </div>
+
+  <!-- Filter and column selector section -->
+  <div class="filter-section">
+    <!-- Filter input -->
+    <div class="filter-input" *ngIf="config.showFilter">
+      <mat-form-field appearance="outline" class="filter-field">
+        <mat-label>Filter</mat-label>
+        <input 
+          matInput 
+          placeholder="Enter property name or value" 
+          [value]="filterValue"
+          (input)="applyFilter($event)"
+          [disabled]="loading">
+        <mat-icon matSuffix>filter_list</mat-icon>
+      </mat-form-field>
+      <button 
+        *ngIf="filterValue" 
+        mat-icon-button 
+        (click)="clearFilter()"
+        matTooltip="Clear filter">
+        <mat-icon>clear</mat-icon>
+      </button>
+    </div>
+
+    <div class="spacer"></div>
+
+    <!-- Column selector and help -->
+    <div class="table-controls">
+      <button mat-icon-button matTooltip="Show filter options">
+        <mat-icon>help_outline</mat-icon>
+      </button>
+      <button 
+        *ngIf="config.showColumnSelector"
+        mat-icon-button 
+        matTooltip="Column display options"
+        (click)="toggleColumnSelector()">
+        <mat-icon>view_column</mat-icon>
+      </button>
+    </div>
+  </div>
+
+  <!-- Column selector panel -->
+  <div class="column-selector" *ngIf="showColumnSelector && config.showColumnSelector">
+    <mat-card class="column-selector-card">
+      <mat-card-header>
+        <mat-card-title>Displayed columns</mat-card-title>
+        <div class="spacer"></div>
+        <button mat-icon-button (click)="toggleColumnSelector()">
+          <mat-icon>close</mat-icon>
+        </button>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="column-list">
+          <div class="column-item" *ngFor="let column of columns; trackBy: trackByColumn">
+            <mat-checkbox 
+              [checked]="column.visible !== false"
+              (change)="toggleColumnVisibility(column)">
+              {{ column.label }}
+            </mat-checkbox>
+          </div>
+        </div>
+        <div class="column-actions">
+          <button mat-button (click)="toggleColumnSelector()">Cancel</button>
+          <button mat-button color="primary" (click)="toggleColumnSelector()">OK</button>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- Loading spinner -->
+  <div *ngIf="loading" class="loading-container">
+    <mat-spinner diameter="50"></mat-spinner>
+  </div>
+
+  <!-- Empty state -->
+  <div *ngIf="!loading && dataSource.data.length === 0" class="empty-state">
+    <div class="empty-state-icon">
+      <mat-icon>{{ config.emptyStateIcon || 'inbox' }}</mat-icon>
+    </div>
+    <p class="empty-state-title">{{ config.emptyStateTitle || 'No data found' }}</p>
+    <p class="empty-state-text">{{ config.emptyStateMessage || 'There are no items to display.' }}</p>
+    <button 
+      *ngIf="config.emptyStateAction" 
+      mat-raised-button 
+      color="primary" 
+      (click)="config.emptyStateAction!.action()">
+      <mat-icon>{{ createButtonIcon || 'add' }}</mat-icon>
+      {{ config.emptyStateAction.label }}
+    </button>
+  </div>
+
+  <!-- Data table -->
+  <div class="table-wrapper" [style.display]="loading || dataSource.data.length === 0 ? 'none' : 'block'">
+    <table mat-table [dataSource]="dataSource" class="gcp-data-table" matSort>
+      
+      <!-- Checkbox column -->
+      <ng-container matColumnDef="select" *ngIf="config.showSelection">
+        <th mat-header-cell *matHeaderCellDef class="select-column">
+          <mat-checkbox 
+            (change)="masterToggle()"
+            [checked]="isAllSelected()"
+            [indeterminate]="isIndeterminate()">
+          </mat-checkbox>
+        </th>
+        <td mat-cell *matCellDef="let row" class="select-column">
+          <mat-checkbox 
+            (click)="$event.stopPropagation()"
+            (change)="$event ? selection.toggle(row) : null"
+            [checked]="selection.isSelected(row)">
+          </mat-checkbox>
+        </td>
+      </ng-container>
+
+      <!-- Dynamic data columns -->
+      <ng-container 
+        *ngFor="let column of visibleColumns; trackBy: trackByColumn" 
+        [matColumnDef]="column.key">
+        
+        <ng-container *ngIf="column.sortable; else nonSortableHeader">
+          <!-- Sortable header -->
+          <th 
+            mat-header-cell 
+            *matHeaderCellDef 
+            mat-sort-header="{{ column.key }}"
+            [class]="getColumnClass(column)"
+            [matTooltip]="column.tooltip || ''"
+            [style.width]="column.width">
+            {{ column.label }}
+          </th>
+        </ng-container>
+        
+        <ng-template #nonSortableHeader>
+          <!-- Non-sortable header -->
+          <th 
+            mat-header-cell 
+            *matHeaderCellDef 
+            [class]="getColumnClass(column)"
+            [matTooltip]="column.tooltip || ''"
+            [style.width]="column.width">
+            {{ column.label }}
+          </th>
+        </ng-template>
+        
+        <td 
+          mat-cell 
+          *matCellDef="let element" 
+          [class]="getColumnClass(column)"
+          [style.width]="column.width">
+          
+          <!-- Text type -->
+          <span *ngIf="!column.type || column.type === 'text'">
+            {{ getColumnValue(element, column) || '—' }}
+          </span>
+          
+          <!-- Link type -->
+          <a 
+            *ngIf="column.type === 'link'" 
+            class="table-link" 
+            (click)="column.link ? column.link(element) : rowClick.emit(element)">
+            {{ getColumnValue(element, column) }}
+          </a>
+          
+          <!-- Badge type -->
+          <span 
+            *ngIf="column.type === 'badge'" 
+            class="table-badge"
+            [ngClass]="'badge-' + getColumnValue(element, column)?.toLowerCase()">
+            {{ getColumnValue(element, column) }}
+          </span>
+          
+          <!-- Status type -->
+          <div *ngIf="column.type === 'status'" class="status-container">
+            <mat-icon 
+              class="status-icon"
+              [ngClass]="'status-' + getColumnValue(element, column)?.toLowerCase()">
+              {{ getColumnValue(element, column) === 'healthy' ? 'check_circle' : 
+                 getColumnValue(element, column) === 'warning' ? 'warning' : 'error' }}
+            </mat-icon>
+            <span>{{ getColumnValue(element, column) }}</span>
+          </div>
+          
+          <!-- Date type -->
+          <span *ngIf="column.type === 'date'">
+            {{ formatDate(getColumnValue(element, column)) }}
+          </span>
+          
+          <!-- Number type -->
+          <span *ngIf="column.type === 'number'">
+            {{ formatNumber(getColumnValue(element, column)) }}
+          </span>
+          
+          <!-- Custom content -->
+          <ng-container *ngIf="column.type === 'custom'">
+            <ng-content [ngProjectAs]="'[slot=' + column.key + ']'"></ng-content>
+          </ng-container>
+        </td>
+      </ng-container>
+
+      <!-- Actions column -->
+      <ng-container matColumnDef="actions" *ngIf="actions.length > 0">
+        <th mat-header-cell *matHeaderCellDef class="actions-column"></th>
+        <td mat-cell *matCellDef="let element" class="actions-column action-cell">
+          <button mat-icon-button [matMenuTriggerFor]="actionMenu">
+            <mat-icon>more_vert</mat-icon>
+          </button>
+          <mat-menu #actionMenu="matMenu">
+            <button 
+              *ngFor="let action of actions"
+              mat-menu-item 
+              (click)="executeAction(action, element, $event)"
+              [disabled]="isActionDisabled(action, element)"
+              [style.display]="isActionVisible(action, element) ? 'flex' : 'none'">
+              <mat-icon>{{ action.icon }}</mat-icon>
+              <span>{{ action.label }}</span>
+            </button>
+          </mat-menu>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: config.stickyHeader"></tr>
+      <tr 
+        mat-row 
+        *matRowDef="let row; columns: displayedColumns; trackBy: trackByRow"
+        (click)="onRowClick(row, $event)"
+        class="data-row">
+      </tr>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  <mat-paginator 
+    *ngIf="config.showPagination && !loading && dataSource.data.length > 0"
+    [pageSize]="config.pageSize || 25"
+    [pageSizeOptions]="[10, 25, 50, 100]"
+    showFirstLastButtons>
+  </mat-paginator>
+</div>

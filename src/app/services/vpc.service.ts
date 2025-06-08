@@ -80,8 +80,10 @@ export class VpcService {
     return this.http.get<{ items: VpcNetwork[] }>(url, { headers: this.getHeaders() }).pipe(
       map(response => response.items || []),
       catchError(error => {
-        console.warn('Failed to load VPC networks, using mock data:', error);
-        return this.getMockVpcNetworks();
+        console.error('Failed to load VPC networks:', error);
+        // Don't fall back to mock data when authenticated with real Google account
+        // Return empty array to show "No VPC networks found" message
+        return of([]);
       })
     );
   }
@@ -110,8 +112,9 @@ export class VpcService {
         return of(vpc);
       }),
       catchError(error => {
-        console.warn('Failed to load VPC network, using mock data:', error);
-        return this.getMockVpcNetwork(networkName);
+        console.error('Failed to load VPC network:', error);
+        // Don't fall back to mock data when authenticated with real Google account
+        throw error;
       })
     );
   }
@@ -126,8 +129,9 @@ export class VpcService {
     return this.http.get<{ items: Route[] }>(url, { headers: this.getHeaders() }).pipe(
       map(response => response.items || []),
       catchError(error => {
-        console.warn('Failed to load routes, using mock data:', error);
-        return this.getMockRoutes();
+        console.error('Failed to load routes:', error);
+        // Don't fall back to mock data when authenticated with real Google account
+        return of([]);
       })
     );
   }
@@ -142,8 +146,9 @@ export class VpcService {
     return this.http.get<{ vpcFlowLogsConfigs: any[] }>(url, { headers: this.getHeaders() }).pipe(
       map(response => response.vpcFlowLogsConfigs || []),
       catchError(error => {
-        console.warn('Failed to load flow logs, using mock data:', error);
-        return this.getMockFlowLogs();
+        console.error('Failed to load flow logs:', error);
+        // Don't fall back to mock data when authenticated with real Google account
+        return of([]);
       })
     );
   }

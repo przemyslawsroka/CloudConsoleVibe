@@ -145,7 +145,7 @@ export class CloudRouterService {
       }),
       catchError(error => {
         console.error('Error fetching Cloud Routers:', error);
-        return of(this.getMockRouters());
+        return of([]);
       })
     );
   }
@@ -166,7 +166,7 @@ export class CloudRouterService {
       map(response => this.transformRouterToDetails(response, region)),
       catchError(error => {
         console.error('Error fetching Cloud Router details:', error);
-        return of(this.getMockRouterDetails(routerName, region));
+        throw error;
       })
     );
   }
@@ -240,7 +240,7 @@ export class CloudRouterService {
       map(response => this.transformNetworksResponse(response.items || [])),
       catchError(error => {
         console.error('Error fetching networks:', error);
-        return of(this.getMockNetworks());
+        return of([]);
       })
     );
   }
@@ -260,7 +260,7 @@ export class CloudRouterService {
       map(response => this.transformRegionsResponse(response.items || [])),
       catchError(error => {
         console.error('Error fetching regions:', error);
-        return of(this.getMockRegions());
+        return of([]);
       })
     );
   }

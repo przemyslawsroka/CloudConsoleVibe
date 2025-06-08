@@ -105,6 +105,12 @@ export class LoadBalancerService {
   }
 
   getLoadBalancers(): Observable<LoadBalancer[]> {
+    // Return mock data in demo mode
+    if (this.authService.isDemoMode()) {
+      console.log('🎭 Demo mode: Using mock load balancers');
+      return this.getMockLoadBalancers();
+    }
+
     const currentProject = this.projectService.getCurrentProject();
     if (!currentProject?.id) {
       console.warn('No project selected, returning mock data');
@@ -554,12 +560,72 @@ export class LoadBalancerService {
         type: 'APPLICATION_CLASSIC',
         typeDisplay: 'Application (Classic)',
         accessType: 'External',
-        protocols: ['HTTP'],
+        protocols: ['HTTP', 'HTTPS'],
         region: undefined,
         backendSummary: '5 backend services (13 instance groups, 0 network endpoint groups)',
         backendStatus: 'healthy',
         creationTime: new Date('2023-12-01T10:00:00Z'),
-        description: 'Load balancer for shopping site'
+        description: 'Main load balancer for shopping site',
+        frontendConfig: {
+          ipAddress: '34.102.136.180',
+          port: 80
+        },
+        healthChecks: ['shopping-health-check', 'cart-health-check'],
+        instances: 13
+      },
+      {
+        name: 'api-gateway-lb',
+        type: 'APPLICATION_GLOBAL',
+        typeDisplay: 'Application (Global)',
+        accessType: 'External',
+        protocols: ['HTTPS'],
+        region: undefined,
+        backendSummary: '3 backend services (8 instance groups, 2 network endpoint groups)',
+        backendStatus: 'healthy',
+        creationTime: new Date('2023-11-20T09:15:00Z'),
+        description: 'Global API gateway load balancer',
+        frontendConfig: {
+          ipAddress: '34.102.136.181',
+          port: 443
+        },
+        healthChecks: ['api-health-check'],
+        instances: 8
+      },
+      {
+        name: 'internal-services-lb',
+        type: 'NETWORK_PROXY',
+        typeDisplay: 'Network (Proxy classic)',
+        accessType: 'Internal',
+        protocols: ['TCP'],
+        region: 'us-central1',
+        backendSummary: '2 backend services (4 instance groups, 0 network endpoint groups)',
+        backendStatus: 'warning',
+        creationTime: new Date('2023-11-15T14:30:00Z'),
+        description: 'Internal services load balancer',
+        frontendConfig: {
+          ipAddress: '10.128.0.100',
+          port: 8080
+        },
+        healthChecks: ['internal-health-check'],
+        instances: 4
+      },
+      {
+        name: 'database-proxy-lb',
+        type: 'NETWORK_PASSTHROUGH',
+        typeDisplay: 'Network (Passthrough target pool)',
+        accessType: 'Internal',
+        protocols: ['TCP'],
+        region: 'us-east1',
+        backendSummary: '1 target pool (3 instances)',
+        backendStatus: 'healthy',
+        creationTime: new Date('2023-10-10T16:45:00Z'),
+        description: 'Database proxy load balancer',
+        frontendConfig: {
+          ipAddress: '10.128.1.50',
+          port: 5432
+        },
+        targetPools: ['database-pool'],
+        instances: 3
       },
       {
         name: 'testing-std-tier',
@@ -569,12 +635,19 @@ export class LoadBalancerService {
         protocols: ['HTTP'],
         region: 'us-central1',
         backendSummary: '1 backend service (1 instance group, 0 network endpoint groups)',
-        backendStatus: 'healthy',
+        backendStatus: 'error',
         creationTime: new Date('2023-11-15T14:30:00Z'),
-        description: 'Testing standard tier load balancer'
+        description: 'Testing standard tier load balancer',
+        frontendConfig: {
+          ipAddress: '34.102.136.182',
+          port: 80
+        },
+        healthChecks: ['test-health-check'],
+        instances: 1
       }
     ];
 
+    console.log('🎭 Serving mock load balancers for demo');
     return of(mockLoadBalancers);
   }
 

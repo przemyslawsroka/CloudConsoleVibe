@@ -43,6 +43,8 @@ export class AuthService {
   }
 
   loginDemo() {
+    console.log('🎭 Starting demo mode login...');
+    
     // Set demo mode and authenticate with mock data
     this.accessToken = 'demo-mode-token';
     localStorage.setItem('demo_mode', 'true');
@@ -50,7 +52,7 @@ export class AuthService {
     this.isAuthenticatedSubject.next(true);
     this.isDemoModeSubject.next(true);
     
-    console.log('🎭 Demo mode activated with mock data');
+    console.log('✅ Demo mode activated with mock data');
   }
 
   handleAuthCallback(token: string) {
@@ -64,13 +66,18 @@ export class AuthService {
   }
 
   logout() {
+    console.log('🚪 Logging out user...');
+    
     this.accessToken = null;
     localStorage.removeItem('access_token');
     localStorage.removeItem('demo_mode');
     localStorage.removeItem('currentProject');
     localStorage.removeItem('starredProjects');
+    
     this.isAuthenticatedSubject.next(false);
     this.isDemoModeSubject.next(false);
+    
+    console.log('✅ Logout complete - all user data cleared');
   }
 
   getAccessToken(): string | null {

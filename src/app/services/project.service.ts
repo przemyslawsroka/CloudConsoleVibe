@@ -61,13 +61,30 @@ export class ProjectService {
   }
 
   setCurrentProject(project: Project) {
-    this.currentProjectSubject.next(project);
-    localStorage.setItem('currentProject', JSON.stringify(project));
-    console.log('🎯 Current project set to:', project.id);
+    try {
+      if (!project || !project.id) {
+        console.error('❌ Invalid project data provided to setCurrentProject');
+        return;
+      }
+
+      this.currentProjectSubject.next(project);
+      localStorage.setItem('currentProject', JSON.stringify(project));
+      console.log('💾 Current project saved to localStorage:', project.name, `(${project.id})`);
+    } catch (error) {
+      console.error('❌ Error saving project to localStorage:', error);
+      // Still update the subject even if localStorage fails
+      this.currentProjectSubject.next(project);
+    }
   }
 
   getCurrentProject(): Project | null {
     return this.currentProjectSubject.value;
+  }
+
+  clearCurrentProject() {
+    this.currentProjectSubject.next(null);
+    localStorage.removeItem('currentProject');
+    console.log('🗑️  Current project cleared from memory and localStorage');
   }
 
   loadProjects(): Observable<Project[]> {
@@ -125,20 +142,30 @@ export class ProjectService {
   private autoSelectFirstProject(projects: Project[]) {
     const currentProject = this.getCurrentProject();
     
-    // Auto-select if no project is currently selected and we have projects
-    if (!currentProject && projects.length > 0) {
-      console.log('🎯 Auto-selecting first project on initial login:', projects[0].name);
-      this.setCurrentProject(projects[0]);
-      return;
+    // If we have a saved project from localStorage, try to find it in the loaded projects
+    if (currentProject) {
+      const savedProjectExists = projects.find(p => p.id === currentProject.id);
+      if (savedProjectExists) {
+        console.log('✅ Previously selected project found in loaded projects:', currentProject.name);
+        // Update the current project with fresh data from the server
+        this.setCurrentProject(savedProjectExists);
+        return;
+      } else {
+        console.log('⚠️  Previously selected project no longer exists or is not accessible:', currentProject.name);
+        // Clear the invalid saved project
+        localStorage.removeItem('currentProject');
+      }
     }
     
-    // Verify current project still exists in the list
-    if (currentProject && projects.length > 0) {
-      const projectExists = projects.find(p => p.id === currentProject.id);
-      if (!projectExists) {
-        console.log('⚠️  Previously selected project no longer exists, selecting first available:', projects[0].name);
-        this.setCurrentProject(projects[0]);
-      }
+    // Only auto-select first project if no project was previously saved or the saved project is invalid
+    if (projects.length > 0) {
+      console.log('🎯 Auto-selecting first project:', projects[0].name);
+      this.setCurrentProject(projects[0]);
+    } else {
+      console.log('⚠️  No projects available for selection');
+      // Clear any invalid saved project
+      this.currentProjectSubject.next(null);
+      localStorage.removeItem('currentProject');
     }
   }
 
@@ -254,7 +281,21 @@ export class ProjectService {
   }
 
   private loadInitialProject(): Project | null {
-    const saved = localStorage.getItem('currentProject');
-    return saved ? JSON.parse(saved) : null;
+    try {
+      const saved = localStorage.getItem('currentProject');
+      if (saved) {
+        const project = JSON.parse(saved);
+        console.log('📂 Loaded saved project from localStorage:', project.name);
+        return project;
+      } else {
+        console.log('📂 No saved project found in localStorage');
+        return null;
+      }
+    } catch (error) {
+      console.error('❌ Error loading saved project from localStorage:', error);
+      // Clean up corrupted data
+      localStorage.removeItem('currentProject');
+      return null;
+    }
   }
 } 

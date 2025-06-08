@@ -94,6 +94,7 @@ import { CloudCdnDetailsComponent } from './components/cloud-cdn-details/cloud-c
 import { CloudRouterComponent } from './components/cloud-router/cloud-router.component';
 import { CloudRouterDetailsComponent } from './components/cloud-router-details/cloud-router-details.component';
 import { CreateCloudRouterComponent } from './components/create-cloud-router/create-cloud-router.component';
+import { GcpDataTableComponent } from './shared/gcp-data-table/gcp-data-table.component';
 
 @NgModule({
   declarations: [
@@ -149,7 +150,8 @@ import { CreateCloudRouterComponent } from './components/create-cloud-router/cre
     CloudCdnDetailsComponent,
     CloudRouterComponent,
     CloudRouterDetailsComponent,
-    CreateCloudRouterComponent
+    CreateCloudRouterComponent,
+    GcpDataTableComponent
   ],
   imports: [
     BrowserModule,

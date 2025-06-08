@@ -89,7 +89,7 @@ export class CloudCdnService {
       map(response => this.transformUrlMapsToOrigins(response.items || [])),
       catchError(error => {
         console.error('Error fetching CDN origins:', error);
-        return of(this.getMockOrigins());
+        return of([]);
       })
     );
   }
@@ -110,7 +110,7 @@ export class CloudCdnService {
       map(response => this.transformUrlMapToOriginDetails(response)),
       catchError(error => {
         console.error('Error fetching CDN origin details:', error);
-        return of(this.getMockOriginDetails(originName));
+        throw error;
       })
     );
   }

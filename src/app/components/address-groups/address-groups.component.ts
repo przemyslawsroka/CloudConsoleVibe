@@ -1,385 +1,137 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { MatTableDataSource } from '@angular/material/table';
 import { AddressGroupsService, AddressGroup, AddressGroupRequest } from '../../services/address-groups.service';
 import { ProjectService, Project } from '../../services/project.service';
-import { SelectionModel } from '@angular/cdk/collections';
 import { CreateAddressGroupDialogComponent } from './create-address-group-dialog.component';
 import { EditAddressGroupDialogComponent } from './edit-address-group-dialog.component';
+import { TableColumn, TableAction, TableConfig } from '../../shared/gcp-data-table/gcp-data-table.component';
 
 @Component({
   selector: 'app-address-groups',
   template: `
-    <div class="address-groups-container">
-      <!-- Header with title and description -->
-      <div class="header">
-        <h1>Address groups</h1>
-      </div>
-
-      <!-- Description text -->
-      <div class="description-text">
-        <p>Address groups are shared resources that allow you to separately maintain a large set of source IP ranges and easily apply them to any security configuration. <a href="#" class="learn-more">Learn more</a></p>
-      </div>
-
-      <!-- Action buttons -->
-      <div class="action-section">
-        <h2>Address groups</h2>
-        <div class="action-buttons">
-          <button mat-raised-button color="primary" (click)="createAddressGroup()">
-            <mat-icon>add</mat-icon>
-            Create address group
-          </button>
-          <button mat-icon-button (click)="refresh()" matTooltip="Refresh">
-            <mat-icon>refresh</mat-icon>
-          </button>
-        </div>
-      </div>
-
-      <!-- Filter section -->
-      <div class="filter-section">
-        <button mat-stroked-button class="filter-btn">
-          <mat-icon>filter_list</mat-icon>
-          Filter
-        </button>
-        <div class="spacer"></div>
-        <button mat-icon-button matTooltip="Show filter options">
-          <mat-icon>help_outline</mat-icon>
-        </button>
-        <button mat-icon-button matTooltip="Column display options">
-          <mat-icon>view_column</mat-icon>
-        </button>
-      </div>
-
-      <!-- Loading spinner -->
-      <div *ngIf="isLoading" class="loading-container">
-        <mat-spinner diameter="50"></mat-spinner>
-      </div>
-
-      <!-- Empty state -->
-      <div *ngIf="!isLoading && dataSource.data.length === 0" class="empty-state">
-        <div class="empty-state-icon">
-          <svg width="200" height="150" viewBox="0 0 200 150">
-            <ellipse cx="100" cy="75" rx="80" ry="40" fill="none" stroke="#dadce0" stroke-width="2" stroke-dasharray="10,5"/>
-          </svg>
-        </div>
-        <p class="empty-state-text">You do not have any address groups</p>
-      </div>
-
-      <!-- Data table -->
-      <div class="table-wrapper" [style.display]="isLoading || dataSource.data.length === 0 ? 'none' : 'block'">
-        <table mat-table [dataSource]="dataSource" class="address-groups-table">
-          
-          <!-- Checkbox column -->
-          <ng-container matColumnDef="select">
-            <th mat-header-cell *matHeaderCellDef>
-              <mat-checkbox (change)="$event ? masterToggle() : null"
-                            [checked]="selection.hasValue() && isAllSelected()"
-                            [indeterminate]="selection.hasValue() && !isAllSelected()">
-              </mat-checkbox>
-            </th>
-            <td mat-cell *matCellDef="let row">
-              <mat-checkbox (click)="$event.stopPropagation()"
-                            (change)="$event ? selection.toggle(row) : null"
-                            [checked]="selection.isSelected(row)">
-              </mat-checkbox>
-            </td>
-          </ng-container>
-
-          <!-- Name column -->
-          <ng-container matColumnDef="name">
-            <th mat-header-cell *matHeaderCellDef>Name</th>
-            <td mat-cell *matCellDef="let element">
-              <a class="group-link" (click)="viewGroupDetails(element)">{{ element.name }}</a>
-            </td>
-          </ng-container>
-
-          <!-- Description column -->
-          <ng-container matColumnDef="description">
-            <th mat-header-cell *matHeaderCellDef>Description</th>
-            <td mat-cell *matCellDef="let element">{{ element.description || '—' }}</td>
-          </ng-container>
-
-          <!-- Scope column -->
-          <ng-container matColumnDef="scope">
-            <th mat-header-cell *matHeaderCellDef>Scope</th>
-            <td mat-cell *matCellDef="let element">{{ element.scope }}</td>
-          </ng-container>
-
-          <!-- Type column -->
-          <ng-container matColumnDef="type">
-            <th mat-header-cell *matHeaderCellDef>Type</th>
-            <td mat-cell *matCellDef="let element">{{ element.type }}</td>
-          </ng-container>
-
-          <!-- Purpose column -->
-          <ng-container matColumnDef="purpose">
-            <th mat-header-cell *matHeaderCellDef>Purpose</th>
-            <td mat-cell *matCellDef="let element">{{ element.purpose }}</td>
-          </ng-container>
-
-          <!-- Number of IP addresses column -->
-          <ng-container matColumnDef="numberOfIpAddresses">
-            <th mat-header-cell *matHeaderCellDef>Number of IP addresses</th>
-            <td mat-cell *matCellDef="let element">{{ element.numberOfIpAddresses }}</td>
-          </ng-container>
-
-          <!-- Capacity column -->
-          <ng-container matColumnDef="capacity">
-            <th mat-header-cell *matHeaderCellDef>Capacity</th>
-            <td mat-cell *matCellDef="let element">{{ element.capacity }}</td>
-          </ng-container>
-
-          <!-- Date created column -->
-          <ng-container matColumnDef="dateCreated">
-            <th mat-header-cell *matHeaderCellDef>Date created</th>
-            <td mat-cell *matCellDef="let element">{{ formatDate(element.dateCreated) }}</td>
-          </ng-container>
-
-          <!-- Date modified column -->
-          <ng-container matColumnDef="dateModified">
-            <th mat-header-cell *matHeaderCellDef>Date modified</th>
-            <td mat-cell *matCellDef="let element">{{ formatDate(element.dateModified) }}</td>
-          </ng-container>
-
-          <!-- Actions column -->
-          <ng-container matColumnDef="actions">
-            <th mat-header-cell *matHeaderCellDef></th>
-            <td mat-cell *matCellDef="let element">
-              <button mat-icon-button [matMenuTriggerFor]="actionMenu">
-                <mat-icon>more_vert</mat-icon>
-              </button>
-              <mat-menu #actionMenu="matMenu">
-                <button mat-menu-item (click)="viewGroupDetails(element)">
-                  <mat-icon>visibility</mat-icon>
-                  View details
-                </button>
-                <button mat-menu-item (click)="editAddressGroup(element)">
-                  <mat-icon>edit</mat-icon>
-                  Edit
-                </button>
-                <button mat-menu-item (click)="deleteAddressGroup(element)">
-                  <mat-icon>delete</mat-icon>
-                  Delete
-                </button>
-              </mat-menu>
-            </td>
-          </ng-container>
-
-          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-          <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-        </table>
-      </div>
-    </div>
+    <app-gcp-data-table
+      [data]="addressGroups"
+      [columns]="columns"
+      [actions]="actions"
+      [config]="tableConfig"
+      [loading]="isLoading"
+      [title]="'Address groups'"
+      [subtitle]="'Address groups are shared resources that allow you to separately maintain a large set of source IP ranges and easily apply them to any security configuration. <a href=&quot;#&quot; class=&quot;learn-more&quot;>Learn more</a>'"
+      [createButtonLabel]="'Create address group'"
+      [createButtonIcon]="'add'"
+      (create)="createAddressGroup()"
+      (refresh)="refresh()"
+      (rowClick)="viewGroupDetails($event)"
+      (selectionChange)="onSelectionChange($event)">
+    </app-gcp-data-table>
   `,
   styles: [`
-    .address-groups-container {
-      padding: 20px;
-      max-width: 100%;
+    :host {
+      display: block;
       font-family: 'Google Sans', 'Helvetica Neue', sans-serif;
-    }
-
-    .header {
-      margin-bottom: 16px;
-    }
-
-    .header h1 {
-      margin: 0;
-      font-size: 24px;
-      font-weight: 400;
-      color: #202124;
-    }
-
-    .description-text {
-      margin: 16px 0 32px 0;
-      color: #5f6368;
-      font-size: 14px;
-      line-height: 1.4;
-    }
-
-    .description-text p {
-      margin: 0;
-    }
-
-    .learn-more {
-      color: #1976d2;
-      text-decoration: none;
-    }
-
-    .learn-more:hover {
-      text-decoration: underline;
-    }
-
-    .action-section {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 16px;
-    }
-
-    .action-section h2 {
-      margin: 0;
-      font-size: 18px;
-      font-weight: 400;
-      color: #202124;
-    }
-
-    .action-buttons {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-    }
-
-    .filter-section {
-      display: flex;
-      align-items: center;
-      margin: 16px 0;
-      padding: 8px 0;
-      border-bottom: 1px solid #e0e0e0;
-    }
-
-    .filter-btn {
-      margin-right: 16px;
-    }
-
-    .spacer {
-      flex: 1;
-    }
-
-    .loading-container {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 40px;
-    }
-
-    .empty-state {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 60px 20px;
-      text-align: center;
-    }
-
-    .empty-state-icon {
-      margin-bottom: 24px;
-      opacity: 0.6;
-    }
-
-    .empty-state-text {
-      font-size: 16px;
-      color: #5f6368;
-      margin: 0;
-    }
-
-    .table-wrapper {
-      background: white;
-      border-radius: 8px;
-      overflow: hidden;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
-    }
-
-    .address-groups-table {
-      width: 100%;
-    }
-
-    .mat-column-select {
-      width: 48px;
-    }
-
-    .mat-column-name {
-      width: 200px;
-    }
-
-    .mat-column-description {
-      width: 300px;
-    }
-
-    .mat-column-scope {
-      width: 100px;
-    }
-
-    .mat-column-type {
-      width: 80px;
-    }
-
-    .mat-column-purpose {
-      width: 150px;
-    }
-
-    .mat-column-numberOfIpAddresses {
-      width: 140px;
-    }
-
-    .mat-column-capacity {
-      width: 100px;
-    }
-
-    .mat-column-dateCreated {
-      width: 140px;
-    }
-
-    .mat-column-dateModified {
-      width: 140px;
-    }
-
-    .mat-column-actions {
-      width: 48px;
-    }
-
-    .group-link {
-      color: #1976d2;
-      cursor: pointer;
-      text-decoration: none;
-      font-weight: 500;
-    }
-
-    .group-link:hover {
-      text-decoration: underline;
-    }
-
-    /* Header styling */
-    ::ng-deep .mat-header-cell {
-      color: #5f6368;
-      font-weight: 500;
-      font-size: 12px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      border-bottom: 1px solid #e0e0e0;
-      padding: 12px 16px;
-    }
-
-    ::ng-deep .mat-cell {
-      padding: 12px 16px;
-      font-size: 13px;
-      border-bottom: 1px solid #f1f3f4;
-    }
-
-    ::ng-deep .mat-row:hover {
-      background-color: #f8f9fa;
-    }
-
-    /* Remove default table styling */
-    ::ng-deep .mat-table {
-      background: transparent;
-    }
-
-    ::ng-deep .mat-header-row {
-      background-color: #f8f9fa;
     }
   `]
 })
 export class AddressGroupsComponent implements OnInit {
   addressGroups: AddressGroup[] = [];
-  dataSource = new MatTableDataSource<AddressGroup>([]);
-  displayedColumns: string[] = [
-    'select', 'name', 'description', 'scope', 'type', 'purpose', 
-    'numberOfIpAddresses', 'capacity', 'dateCreated', 'dateModified', 'actions'
-  ];
-  selection = new SelectionModel<AddressGroup>(true, []);
   projectId: string | null = null;
   isLoading = true;
+
+  columns: TableColumn[] = [
+    {
+      key: 'name',
+      label: 'Name',
+      type: 'link',
+      sortable: true,
+      width: '200px'
+    },
+    {
+      key: 'description',
+      label: 'Description',
+      type: 'text',
+      width: '300px',
+      format: (value) => value || '—'
+    },
+    {
+      key: 'scope',
+      label: 'Scope',
+      type: 'text',
+      width: '100px'
+    },
+    {
+      key: 'type',
+      label: 'Type',
+      type: 'text',
+      width: '80px'
+    },
+    {
+      key: 'purpose',
+      label: 'Purpose',
+      type: 'text',
+      width: '150px'
+    },
+    {
+      key: 'numberOfIpAddresses',
+      label: 'Number of IP addresses',
+      type: 'number',
+      width: '140px'
+    },
+    {
+      key: 'capacity',
+      label: 'Capacity',
+      type: 'number',
+      width: '100px'
+    },
+    {
+      key: 'dateCreated',
+      label: 'Date created',
+      type: 'date',
+      width: '140px',
+      sortable: true
+    },
+    {
+      key: 'dateModified',
+      label: 'Date modified',
+      type: 'date',
+      width: '140px',
+      sortable: true
+    }
+  ];
+
+  actions: TableAction[] = [
+    {
+      label: 'View details',
+      icon: 'visibility',
+      action: (row) => this.viewGroupDetails(row)
+    },
+    {
+      label: 'Edit',
+      icon: 'edit',
+      action: (row) => this.editAddressGroup(row)
+    },
+    {
+      label: 'Delete',
+      icon: 'delete',
+      action: (row) => this.deleteAddressGroup(row)
+    }
+  ];
+
+  tableConfig: TableConfig = {
+    showFilter: true,
+    showColumnSelector: true,
+    showSelection: true,
+    showPagination: false,
+    multiSelect: true,
+    stickyHeader: true,
+    emptyStateIcon: 'group_work',
+    emptyStateTitle: 'You do not have any address groups',
+    emptyStateMessage: 'Create your first address group to get started.',
+    emptyStateAction: {
+      label: 'Create address group',
+      action: () => this.createAddressGroup()
+    }
+  };
 
   constructor(
     private addressGroupsService: AddressGroupsService,
@@ -392,17 +144,8 @@ export class AddressGroupsComponent implements OnInit {
   ngOnInit() {
     this.projectService.currentProject$.subscribe((project: Project | null) => {
       this.projectId = project?.id || null;
-      console.log('Project changed:', project);
       this.loadAddressGroups();
     });
-
-    // Fallback: load data immediately for testing
-    setTimeout(() => {
-      if (this.isLoading) {
-        console.log('Fallback: loading address groups without project');
-        this.loadAddressGroups();
-      }
-    }, 1000);
   }
 
   loadAddressGroups() {
@@ -414,18 +157,12 @@ export class AddressGroupsComponent implements OnInit {
         console.log('Address groups loaded:', response);
         console.log('Number of groups:', response?.length || 0);
         this.addressGroups = response || [];
-        
-        // Recreate the dataSource to force table refresh
-        this.dataSource = new MatTableDataSource<AddressGroup>([...this.addressGroups]);
-        
-        console.log('DataSource recreated:', this.dataSource.data);
         this.isLoading = false;
         this.cdr.detectChanges();
       },
       error: (error) => {
         console.error('Error loading address groups:', error);
         this.addressGroups = [];
-        this.dataSource = new MatTableDataSource<AddressGroup>([]);
         this.isLoading = false;
         this.cdr.detectChanges();
       }
@@ -434,6 +171,10 @@ export class AddressGroupsComponent implements OnInit {
 
   refresh() {
     this.loadAddressGroups();
+  }
+
+  onSelectionChange(selectedItems: AddressGroup[]) {
+    console.log('Selection changed:', selectedItems);
   }
 
   createAddressGroup() {
@@ -460,7 +201,6 @@ export class AddressGroupsComponent implements OnInit {
               panelClass: 'success-snackbar'
             });
             
-            // Refresh the address groups list
             this.loadAddressGroups();
           },
           error: (error) => {
@@ -479,7 +219,6 @@ export class AddressGroupsComponent implements OnInit {
   viewGroupDetails(group: AddressGroup) {
     console.log('View group details:', group);
     this.snackBar.open(`Viewing details for ${group.name}`, 'Close', { duration: 3000 });
-    // TODO: Navigate to group details or open details dialog
   }
 
   editAddressGroup(group: AddressGroup) {
@@ -510,7 +249,6 @@ export class AddressGroupsComponent implements OnInit {
               panelClass: 'success-snackbar'
             });
             
-            // Refresh the address groups list
             this.loadAddressGroups();
           },
           error: (error) => {
@@ -537,7 +275,7 @@ export class AddressGroupsComponent implements OnInit {
             duration: 3000,
             panelClass: 'success-snackbar'
           });
-          this.loadAddressGroups(); // Refresh the list
+          this.loadAddressGroups();
         },
         error: (error) => {
           console.error('Error deleting address group:', error);
@@ -548,33 +286,5 @@ export class AddressGroupsComponent implements OnInit {
         }
       });
     }
-  }
-
-  formatDate(dateString: string): string {
-    if (!dateString) return '—';
-    
-    try {
-      const date = new Date(dateString);
-      return date.toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric'
-      });
-    } catch (error) {
-      return '—';
-    }
-  }
-
-  // Selection methods
-  isAllSelected() {
-    const numSelected = this.selection.selected.length;
-    const numRows = this.dataSource.data.length;
-    return numSelected === numRows;
-  }
-
-  masterToggle() {
-    this.isAllSelected() ?
-      this.selection.clear() :
-      this.dataSource.data.forEach(row => this.selection.select(row));
   }
 } 

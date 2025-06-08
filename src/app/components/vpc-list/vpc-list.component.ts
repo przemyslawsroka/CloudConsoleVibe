@@ -3,121 +3,122 @@ import { MatDialog } from '@angular/material/dialog';
 import { VpcService, VpcNetwork } from '../../services/vpc.service';
 import { Router } from '@angular/router';
 import { ProjectService, Project } from '../../services/project.service';
+import { TableColumn, TableAction, TableConfig } from '../../shared/gcp-data-table/gcp-data-table.component';
 
 @Component({
   selector: 'app-vpc-list',
   template: `
-    <div class="vpc-container">
-      <div class="header">
-        <h1>VPC Networks</h1>
-        <button mat-raised-button color="primary" (click)="openCreateDialog()">
-          <mat-icon>add</mat-icon>
-          Create VPC Network
-        </button>
-      </div>
-
-      <mat-card>
-        <mat-card-content>
-          <div *ngIf="isLoading" class="loading-container">
-            <mat-spinner diameter="50"></mat-spinner>
-          </div>
-
-          <table *ngIf="!isLoading" mat-table [dataSource]="vpcNetworks" class="mat-elevation-z8">
-            <ng-container matColumnDef="name">
-              <th mat-header-cell *matHeaderCellDef>Name</th>
-              <td mat-cell *matCellDef="let vpc">
-                <a (click)="viewVpcDetails(vpc)">{{vpc.name}}</a>
-              </td>
-            </ng-container>
-
-            <ng-container matColumnDef="description">
-              <th mat-header-cell *matHeaderCellDef>Description</th>
-              <td mat-cell *matCellDef="let vpc">{{vpc.description || '-'}}</td>
-            </ng-container>
-
-            <ng-container matColumnDef="subnetworks">
-              <th mat-header-cell *matHeaderCellDef>Subnetworks</th>
-              <td mat-cell *matCellDef="let vpc">{{vpc.subnetworks.length}}</td>
-            </ng-container>
-
-            <ng-container matColumnDef="creationTimestamp">
-              <th mat-header-cell *matHeaderCellDef>Created</th>
-              <td mat-cell *matCellDef="let vpc">{{vpc.creationTimestamp | date}}</td>
-            </ng-container>
-
-            <ng-container matColumnDef="actions">
-              <th mat-header-cell *matHeaderCellDef>Actions</th>
-              <td mat-cell *matCellDef="let vpc">
-                <button mat-icon-button [matMenuTriggerFor]="menu">
-                  <mat-icon>more_vert</mat-icon>
-                </button>
-                <mat-menu #menu="matMenu">
-                  <button mat-menu-item (click)="viewVpcDetails(vpc)">
-                    <mat-icon>visibility</mat-icon>
-                    <span>View Details</span>
-                  </button>
-                  <button mat-menu-item (click)="deleteVpc(vpc)">
-                    <mat-icon>delete</mat-icon>
-                    <span>Delete</span>
-                  </button>
-                </mat-menu>
-              </td>
-            </ng-container>
-
-            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-          </table>
-
-          <div *ngIf="!isLoading && vpcNetworks.length === 0" class="no-networks">
-            <p>No VPC networks found</p>
-          </div>
-        </mat-card-content>
-      </mat-card>
-    </div>
+    <app-gcp-data-table
+      [data]="vpcNetworks"
+      [columns]="columns"
+      [actions]="actions"
+      [config]="tableConfig"
+      [loading]="isLoading"
+      [title]="'VPC Networks'"
+      [subtitle]="'VPC networks are global resources. Each VPC network is subdivided into subnets, and each subnet is contained within a single region. You can have more than one subnet in a region for a given VPC network. <a href=&quot;#&quot; class=&quot;learn-more&quot;>Learn more</a>'"
+      [createButtonLabel]="'Create VPC Network'"
+      [createButtonIcon]="'add'"
+      (create)="openCreateDialog()"
+      (refresh)="loadVpcNetworks()"
+      (rowClick)="viewVpcDetails($event)">
+    </app-gcp-data-table>
   `,
   styles: [`
-    .vpc-container {
-      padding: 20px;
-    }
-    .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20px;
-    }
-    table {
-      width: 100%;
-    }
-    .mat-column-actions {
-      width: 80px;
-      text-align: center;
-    }
-    a {
-      color: #1a73e8;
-      cursor: pointer;
-      text-decoration: none;
-    }
-    a:hover {
-      text-decoration: underline;
-    }
-    .loading-container {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 40px;
-    }
-    .no-networks {
-      text-align: center;
-      padding: 20px;
-      color: #5f6368;
+    :host {
+      display: block;
+      font-family: 'Google Sans', 'Helvetica Neue', sans-serif;
     }
   `]
 })
 export class VpcListComponent implements OnInit {
   vpcNetworks: VpcNetwork[] = [];
-  displayedColumns: string[] = ['name', 'description', 'subnetworks', 'creationTimestamp', 'actions'];
   projectId: string | null = null;
   isLoading = true;
+
+  columns: TableColumn[] = [
+    {
+      key: 'name',
+      label: 'Name',
+      type: 'link',
+      sortable: true,
+      width: '250px'
+    },
+    {
+      key: 'description',
+      label: 'Description',
+      type: 'text',
+      width: '300px',
+      format: (value) => value || '—'
+    },
+    {
+      key: 'subnetworks',
+      label: 'Subnets',
+      type: 'number',
+      width: '120px',
+      format: (value) => Array.isArray(value) ? value.length.toString() : (value || '0')
+    },
+    {
+      key: 'routingMode',
+      label: 'Mode',
+      type: 'text',
+      width: '120px',
+      format: (value) => value === 'GLOBAL' ? 'Global' : 'Regional'
+    },
+    {
+      key: 'ipv4Range',
+      label: 'IPv4 range',
+      type: 'text',
+      width: '150px',
+      format: (value) => value || 'Custom'
+    },
+    {
+      key: 'gatewayIPv4',
+      label: 'Gateway IPv4',
+      type: 'text',
+      width: '150px'
+    },
+    {
+      key: 'creationTimestamp',
+      label: 'Created',
+      type: 'date',
+      width: '140px',
+      sortable: true
+    }
+  ];
+
+  actions: TableAction[] = [
+    {
+      label: 'View Details',
+      icon: 'visibility',
+      action: (row) => this.viewVpcDetails(row)
+    },
+    {
+      label: 'Edit',
+      icon: 'edit',
+      action: (row) => this.editVpc(row)
+    },
+    {
+      label: 'Delete',
+      icon: 'delete',
+      action: (row) => this.deleteVpc(row)
+    }
+  ];
+
+  tableConfig: TableConfig = {
+    showFilter: true,
+    showColumnSelector: true,
+    showSelection: true,
+    showPagination: false,
+    multiSelect: true,
+    stickyHeader: true,
+    emptyStateIcon: 'cloud',
+    emptyStateTitle: 'No VPC networks found',
+    emptyStateMessage: 'Create your first VPC network to get started.',
+    emptyStateAction: {
+      label: 'Create VPC Network',
+      action: () => this.openCreateDialog()
+    }
+  };
 
   constructor(
     private vpcService: VpcService,
@@ -145,6 +146,7 @@ export class VpcListComponent implements OnInit {
       },
       error: (error) => {
         console.error('Error loading VPC networks:', error);
+        this.vpcNetworks = [];
         this.isLoading = false;
         this.cdr.detectChanges();
       }
@@ -153,6 +155,11 @@ export class VpcListComponent implements OnInit {
 
   viewVpcDetails(vpc: VpcNetwork) {
     this.router.navigate(['/vpc', vpc.name]);
+  }
+
+  editVpc(vpc: VpcNetwork) {
+    console.log('Edit VPC:', vpc);
+    // TODO: Implement edit functionality
   }
 
   openCreateDialog() {
