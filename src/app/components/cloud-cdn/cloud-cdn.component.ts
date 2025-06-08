@@ -165,8 +165,7 @@ export class CloudCdnComponent implements OnInit {
       key: 'cacheMode',
       label: 'Cache mode',
       type: 'text',
-      sortable: false,
-      format: (value: string) => `<span class="cache-mode">${value}</span>`
+      sortable: false
     },
     {
       key: 'associatedLoadBalancers',
@@ -175,7 +174,7 @@ export class CloudCdnComponent implements OnInit {
       sortable: false,
       format: (value: string[]) => {
         if (!value || value.length === 0) return '-';
-        return value.map(lb => `<a class="load-balancer-link" href="#">${lb}</a>`).join(', ');
+        return value.join(', ');
       }
     },
     {
@@ -183,7 +182,7 @@ export class CloudCdnComponent implements OnInit {
       label: 'Cache hit ratio',
       type: 'text',
       sortable: false,
-      format: (value: string) => `<span class="cache-hit-ratio ${value === 'No data' ? 'no-data' : ''}">${value}</span>`
+      format: (value: string) => value === 'No data' ? 'No data' : value
     }
   ];
 
