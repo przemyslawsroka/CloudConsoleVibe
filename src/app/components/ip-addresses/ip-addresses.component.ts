@@ -1,10 +1,9 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
-import { MatDialog } from '@angular/material/dialog';
+import { Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { IpAddressService, IpAddress } from '../../services/ip-address.service';
 import { ProjectService, Project } from '../../services/project.service';
 import { SelectionModel } from '@angular/cdk/collections';
-import { ReserveIpDialogComponent, ReserveIpDialogData } from './reserve-ip-dialog.component';
 import { forkJoin } from 'rxjs';
 
 @Component({
@@ -194,6 +193,9 @@ import { forkJoin } from 'rxjs';
     .ip-addresses-container {
       padding: 20px;
       max-width: 100%;
+      background: var(--background-color);
+      color: var(--text-color);
+      transition: background-color 0.3s ease, color 0.3s ease;
     }
 
     .header {
@@ -207,7 +209,7 @@ import { forkJoin } from 'rxjs';
       margin: 0;
       font-size: 24px;
       font-weight: 400;
-      color: #202124;
+      color: var(--text-color);
     }
 
     .header-actions {
@@ -248,65 +250,23 @@ import { forkJoin } from 'rxjs';
       min-width: 1200px;
     }
 
-    .mat-column-select {
-      width: 48px;
-    }
-
-    .mat-column-name {
-      width: 120px;
-    }
-
-    .mat-column-address {
-      width: 140px;
-    }
-
-    .mat-column-accessType {
-      width: 100px;
-    }
-
-    .mat-column-region {
-      width: 120px;
-    }
-
-    .mat-column-type {
-      width: 100px;
-    }
-
-    .mat-column-version {
-      width: 80px;
-    }
-
-    .mat-column-inUseBy {
-      width: 300px;
-    }
-
-    .mat-column-subnetwork {
-      width: 150px;
-    }
-
-    .mat-column-vpcNetwork {
-      width: 150px;
-    }
-
-    .mat-column-actions {
-      width: 80px;
-      text-align: center;
-    }
-
     .name-cell {
       font-weight: 500;
+      color: var(--text-color);
     }
 
     .type-static {
-      color: #1976d2;
+      color: #4caf50;
+      font-weight: 500;
     }
 
     .type-ephemeral {
-      color: #757575;
+      color: var(--text-secondary-color);
     }
 
     .in-use-link {
       color: #1976d2;
+      text-decoration: none;
       cursor: pointer;
     }
 
@@ -323,8 +283,8 @@ import { forkJoin } from 'rxjs';
 
     .link {
       color: #1976d2;
-      cursor: pointer;
       text-decoration: none;
+      cursor: pointer;
     }
 
     .link:hover {
@@ -334,24 +294,183 @@ import { forkJoin } from 'rxjs';
     .no-data {
       text-align: center;
       padding: 40px;
-      color: #5f6368;
+      color: var(--text-secondary-color);
     }
 
-    ::ng-deep .mat-tab-group {
-      margin-bottom: 0;
+    .no-data p {
+      margin: 0;
+      font-size: 16px;
     }
 
-    ::ng-deep .mat-tab-header {
-      border-bottom: 1px solid #e0e0e0;
+    /* Dark theme specific adjustments */
+    :host-context(.dark-theme) {
+      .table-container {
+        background: var(--surface-color);
+      }
     }
 
-    ::ng-deep .mat-tab-label {
-      color: #5f6368;
-      opacity: 1;
+    /* Material component overrides for dark theme */
+    :host-context(.dark-theme) ::ng-deep {
+      .mat-mdc-card {
+        background-color: var(--surface-color) !important;
+        color: var(--text-color) !important;
+      }
+
+      .mat-mdc-tab-group {
+        .mat-mdc-tab-header {
+          background-color: var(--surface-color) !important;
+        }
+
+        .mat-mdc-tab {
+          color: var(--text-secondary-color) !important;
+        }
+
+        .mat-mdc-tab.mdc-tab--active {
+          color: #1976d2 !important;
+        }
+
+        .mat-mdc-tab-body-content {
+          background-color: var(--background-color) !important;
+        }
+      }
+
+      .mat-mdc-form-field {
+        .mat-mdc-text-field-wrapper {
+          background-color: var(--surface-color) !important;
+        }
+
+        .mat-mdc-form-field-input-control {
+          color: var(--text-color) !important;
+        }
+
+        .mat-mdc-form-field-label {
+          color: var(--text-secondary-color) !important;
+        }
+
+        .mat-mdc-form-field-outline {
+          color: var(--border-color) !important;
+        }
+
+        .mat-mdc-form-field-outline-thick {
+          color: #1976d2 !important;
+        }
+      }
+
+      .mat-mdc-table {
+        background-color: var(--surface-color) !important;
+        color: var(--text-color) !important;
+      }
+
+      .mat-mdc-header-cell {
+        color: var(--text-color) !important;
+        border-bottom-color: var(--border-color) !important;
+      }
+
+      .mat-mdc-cell {
+        color: var(--text-color) !important;
+        border-bottom-color: var(--border-color) !important;
+      }
+
+      .mat-mdc-row:hover {
+        background-color: var(--hover-color) !important;
+      }
+
+      .mat-mdc-checkbox {
+        .mat-mdc-checkbox-frame {
+          border-color: var(--border-color) !important;
+        }
+
+        .mat-mdc-checkbox-checkmark {
+          color: white !important;
+        }
+      }
+
+      .mat-mdc-button {
+        color: var(--text-color) !important;
+      }
+
+      .mat-mdc-stroked-button {
+        border-color: var(--border-color) !important;
+      }
+
+      .mat-mdc-icon-button {
+        color: var(--text-secondary-color) !important;
+      }
+
+      .mat-mdc-menu-panel {
+        background-color: var(--surface-color) !important;
+      }
+
+      .mat-mdc-menu-item {
+        color: var(--text-color) !important;
+      }
+
+      .mat-mdc-menu-item:hover {
+        background-color: var(--hover-color) !important;
+      }
     }
 
-    ::ng-deep .mat-tab-label-active {
-      color: #1976d2;
+    /* Standard overrides (for light theme compatibility) */
+    ::ng-deep .mat-mdc-card {
+      background-color: var(--surface-color);
+      color: var(--text-color);
+    }
+
+    ::ng-deep .mat-mdc-form-field-input-control {
+      color: var(--text-color);
+    }
+
+    ::ng-deep .mat-mdc-form-field-label {
+      color: var(--text-secondary-color);
+    }
+
+    ::ng-deep .mat-mdc-button {
+      color: var(--text-color);
+    }
+
+    ::ng-deep .mat-mdc-icon-button {
+      color: var(--text-secondary-color);
+    }
+
+    ::ng-deep .mat-mdc-table {
+      background-color: var(--surface-color);
+      color: var(--text-color);
+    }
+
+    ::ng-deep .mat-mdc-header-cell {
+      color: var(--text-color);
+      border-bottom-color: var(--border-color);
+    }
+
+    ::ng-deep .mat-mdc-cell {
+      color: var(--text-color);
+      border-bottom-color: var(--border-color);
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .ip-addresses-container {
+        padding: 12px;
+      }
+
+      .header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+      }
+
+      .header-actions {
+        flex-wrap: wrap;
+        width: 100%;
+      }
+
+      .filter-field {
+        width: 100%;
+      }
+
+      .table-container {
+        overflow-x: scroll;
+      }
     }
   `]
 })
@@ -370,13 +489,14 @@ export class IpAddressesComponent implements OnInit {
 
   constructor(
     private ipAddressService: IpAddressService,
-    private dialog: MatDialog,
+    private router: Router,
     private cdr: ChangeDetectorRef,
     private projectService: ProjectService,
     private snackBar: MatSnackBar
   ) {}
 
   ngOnInit() {
+    // Subscribe to project changes
     this.projectService.currentProject$.subscribe((project: Project | null) => {
       this.projectId = project?.id || null;
       console.log('Project changed:', project);
@@ -470,47 +590,11 @@ export class IpAddressesComponent implements OnInit {
   }
 
   reserveExternalStatic() {
-    const dialogRef = this.dialog.open(ReserveIpDialogComponent, {
-      data: { type: 'external' } as ReserveIpDialogData,
-      width: '600px'
-    });
-
-    dialogRef.afterClosed().subscribe(result => {
-      if (result && this.projectId) {
-        this.ipAddressService.reserveExternalStaticIp(this.projectId, result).subscribe({
-          next: () => {
-            this.loadIpAddresses();
-            this.snackBar.open('External static IP reserved successfully', 'Close', { duration: 3000 });
-          },
-          error: (error) => {
-            console.error('Error reserving external static IP:', error);
-            this.snackBar.open('Error reserving external static IP', 'Close', { duration: 3000 });
-          }
-        });
-      }
-    });
+    this.router.navigate(['/ip-addresses/reserve'], { queryParams: { type: 'external' } });
   }
 
   reserveInternalStatic() {
-    const dialogRef = this.dialog.open(ReserveIpDialogComponent, {
-      data: { type: 'internal' } as ReserveIpDialogData,
-      width: '600px'
-    });
-
-    dialogRef.afterClosed().subscribe(result => {
-      if (result && this.projectId) {
-        this.ipAddressService.reserveInternalStaticIp(this.projectId, result).subscribe({
-          next: () => {
-            this.loadIpAddresses();
-            this.snackBar.open('Internal static IP reserved successfully', 'Close', { duration: 3000 });
-          },
-          error: (error) => {
-            console.error('Error reserving internal static IP:', error);
-            this.snackBar.open('Error reserving internal static IP', 'Close', { duration: 3000 });
-          }
-        });
-      }
-    });
+    this.router.navigate(['/ip-addresses/reserve'], { queryParams: { type: 'internal' } });
   }
 
   releaseSelected() {

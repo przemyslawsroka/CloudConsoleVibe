@@ -53,6 +53,7 @@ import { ProjectPickerComponent } from './components/project-picker/project-pick
 import { TopologyComponent } from './components/topology/topology.component';
 import { IpAddressesComponent } from './components/ip-addresses/ip-addresses.component';
 import { ReserveIpDialogComponent } from './components/ip-addresses/reserve-ip-dialog.component';
+import { ReserveIpComponent } from './components/ip-addresses/reserve-ip.component';
 import { FirewallManagementComponent } from './components/firewall-management/firewall-management.component';
 import { CreateFirewallRuleDialogComponent } from './components/firewall-management/create-firewall-rule-dialog.component';
 import { FlowAnalyzerComponent } from './components/flow-analyzer/flow-analyzer.component';
@@ -111,6 +112,7 @@ import { CreateCloudRouterComponent } from './components/create-cloud-router/cre
     TopologyComponent,
     IpAddressesComponent,
     ReserveIpDialogComponent,
+    ReserveIpComponent,
     FirewallManagementComponent,
     CreateFirewallRuleDialogComponent,
     FlowAnalyzerComponent,

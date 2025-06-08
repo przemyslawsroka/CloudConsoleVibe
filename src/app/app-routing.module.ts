@@ -9,6 +9,7 @@ import { AuthGuard } from './guards/auth.guard';
 import { VpcFlowLogsComponent } from './components/vpc-flow-logs/vpc-flow-logs.component';
 import { TopologyComponent } from './components/topology/topology.component';
 import { IpAddressesComponent } from './components/ip-addresses/ip-addresses.component';
+import { ReserveIpComponent } from './components/ip-addresses/reserve-ip.component';
 import { FirewallManagementComponent } from './components/firewall-management/firewall-management.component';
 import { FlowAnalyzerComponent } from './components/flow-analyzer/flow-analyzer.component';
 import { NetworkSolutionsComponent } from './components/network-solutions/network-solutions.component';
@@ -63,6 +64,7 @@ const routes: Routes = [
   },
   { path: 'topology', component: TopologyComponent, canActivate: [AuthGuard] },
   { path: 'ip-addresses', component: IpAddressesComponent, canActivate: [AuthGuard] },
+  { path: 'ip-addresses/reserve', component: ReserveIpComponent, canActivate: [AuthGuard] },
   { path: 'firewall', component: FirewallManagementComponent, canActivate: [AuthGuard] },
   { path: 'flow-analyzer', component: FlowAnalyzerComponent },
   { path: 'network-solutions', component: NetworkSolutionsComponent },
