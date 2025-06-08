@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, of, forkJoin } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { catchError, map, mergeMap } from 'rxjs/operators';
 import { AuthService } from './auth.service';
 import { ProjectService } from './project.service';
@@ -68,27 +68,63 @@ export class CloudNatService {
     private projectService: ProjectService
   ) {}
 
-  // Get all NAT gateways across all regions
+  // Get all NAT gateways across all regions using aggregatedList
   getNatGateways(projectId: string): Observable<CloudNatGateway[]> {
     if (!this.authService.isAuthenticated()) {
       console.log('Not authenticated, returning mock NAT gateways');
       return of(this.getMockNatGateways());
     }
 
-    // Get all regions first, then get NAT gateways for each region
-    return this.getRegions(projectId).pipe(
-      mergeMap(regions => {
-        const requests = regions.map(region => 
-          this.getNatGatewaysForRegion(projectId, region.name)
-        );
-        return forkJoin(requests);
-      }),
-      map(regionResults => regionResults.flat()),
-      catchError(error => {
-        console.error('Error fetching NAT gateways:', error);
-        return of(this.getMockNatGateways());
-      })
-    );
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${this.authService.getAccessToken()}`
+    });
+
+    // Use aggregatedList to get routers from all regions in one call
+    return this.http.get<any>(`${this.baseUrl}/projects/${projectId}/aggregated/routers`, { headers })
+      .pipe(
+        map(response => this.extractNatGatewaysFromAggregatedResponse(response)),
+        catchError(error => {
+          console.error('Error fetching NAT gateways using aggregatedList:', error);
+          return of(this.getMockNatGateways());
+        })
+      );
+  }
+
+  // Extract NAT gateways from aggregated response
+  private extractNatGatewaysFromAggregatedResponse(response: any): CloudNatGateway[] {
+    const natGateways: CloudNatGateway[] = [];
+    
+    // Handle partial success - log warnings but continue processing successful regions
+    if (response.warning && response.warning.length > 0) {
+      console.warn('Partial success when fetching NAT gateways:', response.warning);
+    }
+
+    if (!response.items) {
+      console.log('No router items found in aggregated response');
+      return natGateways;
+    }
+
+    // Process each region's routers
+    Object.keys(response.items).forEach(regionKey => {
+      const regionData = response.items[regionKey];
+      
+      // Skip regions with errors but log them
+      if (regionData.error) {
+        console.warn(`Error in region ${regionKey}:`, regionData.error);
+        return;
+      }
+
+      // Extract region name from the key (e.g., "regions/us-central1" -> "us-central1")
+      const regionName = regionKey.replace('regions/', '');
+      
+      if (regionData.routers && regionData.routers.length > 0) {
+        const regionNatGateways = this.extractNatGatewaysFromRouters(regionData.routers, regionName);
+        natGateways.push(...regionNatGateways);
+      }
+    });
+
+    console.log(`Successfully fetched ${natGateways.length} NAT gateways from aggregated response`);
+    return natGateways;
   }
 
   // Get NAT gateways for a specific region
@@ -174,29 +210,6 @@ export class CloudNatService {
         catchError(error => {
           console.error('Error deleting NAT gateway:', error);
           throw error;
-        })
-      );
-  }
-
-  // Helper method to get regions
-  private getRegions(projectId: string): Observable<any[]> {
-    const headers = new HttpHeaders({
-      'Authorization': `Bearer ${this.authService.getAccessToken()}`
-    });
-
-    return this.http.get<any>(`${this.baseUrl}/projects/${projectId}/regions`, { headers })
-      .pipe(
-        map(response => response.items || []),
-        catchError(error => {
-          console.error('Error fetching regions:', error);
-          // Return common regions as fallback
-          return of([
-            { name: 'us-central1' },
-            { name: 'us-east1' },
-            { name: 'us-west1' },
-            { name: 'europe-west1' },
-            { name: 'asia-east1' }
-          ]);
         })
       );
   }

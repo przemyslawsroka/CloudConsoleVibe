@@ -334,7 +334,8 @@ export class AppComponent implements OnInit {
       items: [
         { name: 'Load balancing', route: '/load-balancing', icon: 'balance' },
         { name: 'Cloud CDN', route: '/cloud-cdn', icon: 'cached' },
-        { name: 'Cloud DNS', route: '/dns-management', icon: 'dns' }
+        { name: 'Cloud DNS', route: '/dns-management', icon: 'dns' },
+        { name: 'Cloud NAT', route: '/cloud-nat', icon: 'nat' }
       ]
     },
     {
@@ -343,7 +344,6 @@ export class AppComponent implements OnInit {
       expanded: false,
       items: [
         { name: 'Cloud Router', route: '/cloud-router', icon: 'router' },
-        { name: 'Cloud NAT', route: '/cloud-nat', icon: 'nat' },
         { name: 'Network Solutions', route: '/network-solutions', icon: 'hub' }
       ]
     },
