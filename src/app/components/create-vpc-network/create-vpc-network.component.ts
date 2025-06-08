@@ -479,8 +479,10 @@ import { MatSnackBar } from '@angular/material/snack-bar';
   styles: [`
     .create-vpc-container {
       min-height: 100vh;
-      background: #f8f9fa;
+      background: var(--background-color);
       padding: 0;
+      color: var(--text-color);
+      transition: background-color 0.3s ease, color 0.3s ease;
     }
 
     .page-header {
@@ -537,9 +539,11 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 
     .form-step {
       margin-bottom: 24px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
       border-radius: 12px;
       overflow: hidden;
+      background: var(--surface-color);
+      border: 1px solid var(--border-color);
     }
 
     .step-header {
@@ -576,8 +580,8 @@ import { MatSnackBar } from '@angular/material/snack-bar';
     }
 
     .concept-explanation {
-      background: #e8f5e8;
-      border: 1px solid #4caf50;
+      background: var(--hover-color);
+      border: 1px solid rgba(76, 175, 80, 0.3);
       border-radius: 8px;
       padding: 16px;
       display: flex;
@@ -593,12 +597,12 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 
     .concept-text h4 {
       margin: 0 0 8px 0;
-      color: #2e7d32;
+      color: var(--text-color);
     }
 
     .concept-text p {
       margin: 0;
-      color: #2e7d32;
+      color: var(--text-secondary-color);
       line-height: 1.5;
     }
 
@@ -611,20 +615,21 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 
     .subnet-mode-option {
       padding: 20px;
-      border: 2px solid #e0e0e0;
+      border: 2px solid var(--border-color);
       border-radius: 12px;
       margin: 0;
       transition: all 0.3s ease;
+      background: var(--surface-color);
     }
 
     .subnet-mode-option:hover {
       border-color: #1976d2;
-      background: #f8f9ff;
+      background: var(--hover-color);
     }
 
     .subnet-mode-option.mat-radio-checked {
       border-color: #1976d2;
-      background: #f8f9ff;
+      background: var(--hover-color);
     }
 
     .radio-content {
@@ -659,7 +664,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
     }
 
     .radio-description {
-      color: #666;
+      color: var(--text-secondary-color);
       margin-bottom: 8px;
       line-height: 1.4;
     }
@@ -677,11 +682,11 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 
     /* Custom Subnets Styles */
     .subnet-card {
-      border: 1px solid #e0e0e0;
+      border: 1px solid var(--border-color);
       border-radius: 8px;
       padding: 20px;
       margin-bottom: 16px;
-      background: white;
+      background: var(--surface-color);
     }
 
     .subnet-header {
@@ -704,13 +709,13 @@ import { MatSnackBar } from '@angular/material/snack-bar';
     }
 
     .subnet-advanced {
-      border-top: 1px solid #e0e0e0;
+      border-top: 1px solid var(--border-color);
       padding-top: 16px;
     }
 
     .subnet-advanced h5 {
       margin: 0 0 12px 0;
-      color: #666;
+      color: var(--text-secondary-color);
     }
 
     .advanced-options {
@@ -721,8 +726,8 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 
     /* Flow Logs Advanced Styles */
     .flow-logs-advanced {
-      background: #f8f9fa;
-      border: 1px solid #e0e0e0;
+      background: var(--hover-color);
+      border: 1px solid var(--border-color);
       border-radius: 8px;
       padding: 16px;
       margin-top: 12px;
@@ -750,8 +755,8 @@ import { MatSnackBar } from '@angular/material/snack-bar';
     }
 
     .flow-logs-advanced-section {
-      background: white;
-      border: 1px solid #e0e0e0;
+      background: var(--surface-color);
+      border: 1px solid var(--border-color);
       border-radius: 6px;
       padding: 16px;
       margin-top: 8px;
@@ -765,10 +770,11 @@ import { MatSnackBar } from '@angular/material/snack-bar';
     .checkbox-content strong {
       display: block;
       margin-bottom: 4px;
+      color: var(--text-color);
     }
 
     .checkbox-description {
-      color: #666;
+      color: var(--text-secondary-color);
       font-size: 14px;
       line-height: 1.4;
     }
@@ -780,7 +786,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
     .sampling-rate-label {
       display: block;
       margin-bottom: 8px;
-      color: #333;
+      color: var(--text-color);
       font-weight: 500;
     }
 
@@ -795,7 +801,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
     }
 
     .percent-symbol {
-      color: #666;
+      color: var(--text-secondary-color);
       font-weight: bold;
     }
 
@@ -833,18 +839,19 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 
     .firewall-rule {
       padding: 12px;
-      border: 1px solid #e0e0e0;
+      border: 1px solid var(--border-color);
       border-radius: 8px;
-      background: white;
+      background: var(--surface-color);
     }
 
     .rule-content strong {
       display: block;
       margin-bottom: 4px;
+      color: var(--text-color);
     }
 
     .rule-description {
-      color: #666;
+      color: var(--text-secondary-color);
       font-size: 14px;
     }
 
@@ -869,24 +876,25 @@ import { MatSnackBar } from '@angular/material/snack-bar';
     }
 
     .radio-content-simple .description {
-      color: #666;
+      color: var(--text-secondary-color);
       font-size: 14px;
       margin-top: 4px;
     }
 
     .toggle-description {
-      color: #666;
+      color: var(--text-secondary-color);
       font-size: 14px;
       margin: 8px 0 0 36px;
     }
 
     /* Form Actions */
     .form-actions {
-      background: white;
+      background: var(--surface-color);
       border-radius: 12px;
       padding: 24px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
       margin-top: 24px;
+      border: 1px solid var(--border-color);
     }
 
     .action-buttons {
@@ -897,7 +905,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
     }
 
     .cancel-btn {
-      color: #666;
+      color: var(--text-secondary-color);
     }
 
     .advanced-btn {
@@ -917,9 +925,10 @@ import { MatSnackBar } from '@angular/material/snack-bar';
     .cost-estimate {
       display: flex;
       align-items: flex-start;
-      background: #f8f9fa;
+      background: var(--hover-color);
       border-radius: 8px;
       padding: 16px;
+      border: 1px solid var(--border-color);
     }
 
     .cost-icon {
@@ -936,8 +945,180 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 
     .cost-text p {
       margin: 0;
-      color: #666;
+      color: var(--text-secondary-color);
       font-size: 14px;
+    }
+
+    /* Dark theme specific adjustments */
+    :host-context(.dark-theme) {
+      .form-step,
+      .subnet-card,
+      .form-actions {
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+      }
+
+      .concept-explanation {
+        background: rgba(76, 175, 80, 0.1);
+        border: 1px solid rgba(76, 175, 80, 0.3);
+      }
+
+      .concept-text h4 {
+        color: #4caf50;
+      }
+    }
+
+    /* Material component overrides for dark theme */
+    :host-context(.dark-theme) ::ng-deep {
+      .mat-mdc-card {
+        background-color: var(--surface-color) !important;
+        color: var(--text-color) !important;
+      }
+
+      .mat-mdc-card-title {
+        color: var(--text-color) !important;
+      }
+
+      .mat-mdc-card-subtitle {
+        color: var(--text-secondary-color) !important;
+      }
+
+      .mat-mdc-form-field {
+        .mat-mdc-text-field-wrapper {
+          background-color: var(--surface-color) !important;
+        }
+
+        .mat-mdc-form-field-input-control {
+          color: var(--text-color) !important;
+        }
+
+        .mat-mdc-form-field-label {
+          color: var(--text-secondary-color) !important;
+        }
+
+        .mat-mdc-form-field-outline {
+          color: var(--border-color) !important;
+        }
+
+        .mat-mdc-form-field-outline-thick {
+          color: #1976d2 !important;
+        }
+      }
+
+      .mat-mdc-select {
+        color: var(--text-color) !important;
+      }
+
+      .mat-mdc-select-panel {
+        background-color: var(--surface-color) !important;
+      }
+
+      .mat-mdc-option {
+        color: var(--text-color) !important;
+      }
+
+      .mat-mdc-option:hover {
+        background-color: var(--hover-color) !important;
+      }
+
+      .mat-mdc-radio-button {
+        .mat-mdc-radio-outer-circle {
+          border-color: var(--border-color) !important;
+        }
+
+        .mat-mdc-radio-inner-circle {
+          background-color: #1976d2 !important;
+        }
+
+        .mdc-radio__background::before {
+          background-color: #1976d2 !important;
+        }
+      }
+
+      .mat-mdc-checkbox {
+        .mat-mdc-checkbox-frame {
+          border-color: var(--border-color) !important;
+        }
+
+        .mat-mdc-checkbox-checkmark {
+          color: white !important;
+        }
+      }
+
+      .mat-mdc-slide-toggle {
+        .mat-mdc-slide-toggle-bar {
+          background-color: var(--border-color) !important;
+        }
+      }
+
+      .mat-mdc-slide-toggle.mat-checked {
+        .mat-mdc-slide-toggle-bar {
+          background-color: rgba(25, 118, 210, 0.5) !important;
+        }
+
+        .mat-mdc-slide-toggle-thumb {
+          background-color: #1976d2 !important;
+        }
+      }
+
+      .mat-mdc-button {
+        color: var(--text-color) !important;
+      }
+
+      .mat-mdc-raised-button {
+        background-color: var(--primary-color) !important;
+        color: white !important;
+      }
+
+      .mat-mdc-icon-button {
+        color: var(--text-secondary-color) !important;
+      }
+
+      .mat-mdc-chip {
+        background-color: var(--hover-color) !important;
+        color: var(--text-color) !important;
+      }
+
+      .mat-hint {
+        color: var(--text-secondary-color) !important;
+      }
+
+      .mat-error {
+        color: #f44336 !important;
+      }
+    }
+
+    /* Standard overrides (for light theme compatibility) */
+    ::ng-deep .mat-mdc-card {
+      background-color: var(--surface-color);
+      color: var(--text-color);
+    }
+
+    ::ng-deep .mat-mdc-card-title {
+      color: var(--text-color);
+    }
+
+    ::ng-deep .mat-mdc-card-subtitle {
+      color: var(--text-secondary-color);
+    }
+
+    ::ng-deep .mat-mdc-form-field-input-control {
+      color: var(--text-color);
+    }
+
+    ::ng-deep .mat-mdc-form-field-label {
+      color: var(--text-secondary-color);
+    }
+
+    ::ng-deep .mat-mdc-button {
+      color: var(--text-color);
+    }
+
+    ::ng-deep .mat-mdc-icon-button {
+      color: var(--text-secondary-color);
+    }
+
+    ::ng-deep .mat-hint {
+      color: var(--text-secondary-color);
     }
 
     /* Responsive Design */
