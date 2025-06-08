@@ -432,8 +432,10 @@ gcloud services enable monitoring.googleapis.com</code></pre>
       max-width: none;
       margin: 0;
       padding: 0;
-      background: #fafafa;
+      background: var(--background-color);
       min-height: 100vh;
+      color: var(--text-color);
+      transition: background-color 0.3s ease, color 0.3s ease;
     }
     
     .documentation-header {
@@ -487,7 +489,7 @@ gcloud services enable monitoring.googleapis.com</code></pre>
     }
     
     .doc-nav {
-      background: white;
+      background: var(--surface-color);
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
       position: sticky;
       top: 0;
@@ -513,19 +515,19 @@ gcloud services enable monitoring.googleapis.com</code></pre>
       align-items: center;
       padding: 16px 24px;
       text-decoration: none;
-      color: #1976d2;
+      color: var(--primary-color);
       transition: all 0.3s ease;
       cursor: pointer;
       white-space: nowrap;
     }
     
     .doc-nav a:hover {
-      background: #f5f5f5;
-      color: #1976d2;
+      background: var(--hover-color);
+      color: var(--primary-color);
     }
     
     .doc-nav li.active a {
-      background: #1976d2;
+      background: var(--primary-color);
       color: white;
     }
     
@@ -541,22 +543,23 @@ gcloud services enable monitoring.googleapis.com</code></pre>
     }
     
     .doc-section {
-      background: white;
+      background: var(--surface-color);
       border-radius: 8px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
       margin-bottom: 40px;
       overflow: hidden;
+      border: 1px solid var(--border-color);
     }
     
     .doc-section h2 {
-      background: #f8f9fa;
+      background: var(--hover-color);
       margin: 0;
       padding: 24px 32px;
-      border-bottom: 1px solid #e0e0e0;
+      border-bottom: 1px solid var(--border-color);
       display: flex;
       align-items: center;
       font-size: 1.5rem;
-      color: #1976d2;
+      color: var(--primary-color);
     }
     
     .doc-section h2 mat-icon {
@@ -578,6 +581,9 @@ gcloud services enable monitoring.googleapis.com</code></pre>
     .module-card mat-card {
       height: 100%;
       transition: transform 0.2s ease, box-shadow 0.2s ease;
+      background: var(--surface-color);
+      color: var(--text-color);
+      border: 1px solid var(--border-color);
     }
     
     .module-card mat-card:hover {
@@ -591,12 +597,12 @@ gcloud services enable monitoring.googleapis.com</code></pre>
     
     .module-features mat-chip {
       margin: 4px;
-      background: #e3f2fd;
-      color: #1976d2;
+      background: rgba(66, 133, 244, 0.12);
+      color: var(--primary-color);
     }
     
     .demo-notice {
-      background: #e8f5e8;
+      background: rgba(76, 175, 80, 0.12);
       border: 1px solid #4caf50;
       border-radius: 8px;
       padding: 20px;
@@ -626,8 +632,8 @@ gcloud services enable monitoring.googleapis.com</code></pre>
     }
     
     .layer {
-      background: #f8f9fa;
-      border: 2px solid #e0e0e0;
+      background: var(--hover-color);
+      border: 2px solid var(--border-color);
       border-radius: 8px;
       margin: 16px 0;
       padding: 24px;
@@ -640,7 +646,7 @@ gcloud services enable monitoring.googleapis.com</code></pre>
       bottom: -24px;
       left: 50%;
       transform: translateX(-50%);
-      background: #1976d2;
+      background: var(--primary-color);
       color: white;
       width: 32px;
       height: 32px;
@@ -653,26 +659,26 @@ gcloud services enable monitoring.googleapis.com</code></pre>
     }
     
     .layer h4 {
-      color: #1976d2;
+      color: var(--primary-color);
       margin: 0 0 8px 0;
       font-size: 1.2rem;
     }
     
     .layer > p {
       margin: 0 0 16px 0;
-      color: #666;
+      color: var(--text-secondary-color);
       font-style: italic;
     }
     
     .layer-details {
-      background: white;
+      background: var(--surface-color);
       padding: 16px;
       border-radius: 4px;
-      border-left: 4px solid #1976d2;
+      border-left: 4px solid var(--primary-color);
     }
     
     .layer-details strong {
-      color: #1976d2;
+      color: var(--primary-color);
     }
     
     .layer-details ul {
@@ -680,12 +686,13 @@ gcloud services enable monitoring.googleapis.com</code></pre>
     }
     
     .layer-details code {
-      background: #f5f5f5;
+      background: var(--hover-color);
       padding: 2px 6px;
       border-radius: 3px;
       font-family: 'JetBrains Mono', 'Courier New', monospace;
       font-size: 0.9em;
       color: #d32f2f;
+      border: 1px solid var(--border-color);
     }
     
     .api-cards-full {
@@ -697,6 +704,9 @@ gcloud services enable monitoring.googleapis.com</code></pre>
     
     .api-card-full {
       width: 100%;
+      background: var(--surface-color);
+      color: var(--text-color);
+      border: 1px solid var(--border-color);
     }
     
     .api-content-grid {
@@ -708,7 +718,7 @@ gcloud services enable monitoring.googleapis.com</code></pre>
     
     .api-description h4,
     .api-endpoints h4 {
-      color: #1976d2;
+      color: var(--primary-color);
       margin: 16px 0 12px 0;
     }
     
@@ -717,8 +727,8 @@ gcloud services enable monitoring.googleapis.com</code></pre>
     }
     
     .endpoint {
-      background: #f8f9fa;
-      border: 1px solid #e0e0e0;
+      background: var(--hover-color);
+      border: 1px solid var(--border-color);
       border-radius: 6px;
       padding: 16px;
       margin: 12px 0;
@@ -760,15 +770,16 @@ gcloud services enable monitoring.googleapis.com</code></pre>
     
     .endpoint-description {
       margin: 8px 0;
-      color: #666;
+      color: var(--text-secondary-color);
     }
     
     .endpoint-usage {
-      background: #e3f2fd;
+      background: rgba(66, 133, 244, 0.12);
       padding: 8px 12px;
       border-radius: 4px;
       margin-top: 8px;
       font-size: 0.9em;
+      border: 1px solid var(--border-color);
     }
     
     .scopes-required {
@@ -781,10 +792,11 @@ gcloud services enable monitoring.googleapis.com</code></pre>
     
     .scopes-list mat-chip {
       margin: 4px;
-      background: #fff3e0;
+      background: rgba(255, 152, 0, 0.12);
       color: #e65100;
       font-family: 'JetBrains Mono', 'Courier New', monospace;
       font-size: 12px;
+      border: 1px solid var(--border-color);
     }
     
     pre {
@@ -797,16 +809,17 @@ gcloud services enable monitoring.googleapis.com</code></pre>
     }
     
     code {
-      background: #f5f5f5;
+      background: var(--hover-color);
       padding: 2px 6px;
       border-radius: 3px;
       font-family: 'JetBrains Mono', 'Courier New', monospace;
       font-size: 0.9em;
       color: #d32f2f;
+      border: 1px solid var(--border-color);
     }
     
     a {
-      color: #1976d2;
+      color: var(--primary-color);
       text-decoration: none;
     }
     
@@ -815,15 +828,15 @@ gcloud services enable monitoring.googleapis.com</code></pre>
     }
     
     a[href^="mailto:"] {
-      background: #e3f2fd;
+      background: rgba(66, 133, 244, 0.12);
       padding: 2px 6px;
       border-radius: 4px;
       font-weight: 500;
-      border: 1px solid #bbdefb;
+      border: 1px solid var(--border-color);
     }
     
     a[href^="mailto:"]:hover {
-      background: #bbdefb;
+      background: var(--hover-color);
       text-decoration: none;
     }
     
@@ -831,6 +844,78 @@ gcloud services enable monitoring.googleapis.com</code></pre>
       content: ' ↗';
       font-size: 0.8em;
       opacity: 0.7;
+    }
+
+    /* Dark theme specific adjustments */
+    :host-context(.dark-theme) {
+      .doc-section {
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+      }
+
+      .module-card mat-card:hover {
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+      }
+
+      .doc-nav {
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+      }
+    }
+
+    /* Material component overrides for dark theme */
+    :host-context(.dark-theme) ::ng-deep {
+      .mat-mdc-card {
+        background-color: var(--surface-color) !important;
+        color: var(--text-color) !important;
+      }
+
+      .mat-mdc-card-title {
+        color: var(--text-color) !important;
+      }
+
+      .mat-mdc-card-subtitle {
+        color: var(--text-secondary-color) !important;
+      }
+
+      .mat-mdc-card-content {
+        color: var(--text-color) !important;
+      }
+
+      .mat-mdc-chip {
+        background-color: rgba(66, 133, 244, 0.12) !important;
+        color: var(--primary-color) !important;
+      }
+
+      .mat-mdc-button {
+        color: var(--text-color) !important;
+      }
+
+      .mat-mdc-icon-button {
+        color: inherit !important;
+      }
+    }
+
+    /* Standard overrides (for light theme compatibility) */
+    ::ng-deep .mat-mdc-card {
+      background-color: var(--surface-color);
+      color: var(--text-color);
+      border: 1px solid var(--border-color);
+    }
+
+    ::ng-deep .mat-mdc-card-title {
+      color: var(--text-color);
+    }
+
+    ::ng-deep .mat-mdc-card-subtitle {
+      color: var(--text-secondary-color);
+    }
+
+    ::ng-deep .mat-mdc-card-content {
+      color: var(--text-color);
+    }
+
+    ::ng-deep .mat-mdc-chip {
+      background-color: rgba(66, 133, 244, 0.12);
+      color: var(--primary-color);
     }
     
     @media (max-width: 768px) {
@@ -847,21 +932,22 @@ gcloud services enable monitoring.googleapis.com</code></pre>
         padding: 20px;
       }
       
-      .modules-grid {
-        grid-template-columns: 1fr;
-      }
-      
       .api-content-grid {
         grid-template-columns: 1fr;
         gap: 24px;
       }
       
-      .documentation-header {
-        padding: 40px 20px;
-      }
-      
       .documentation-header h1 {
         font-size: 2rem;
+      }
+      
+      .back-button {
+        position: relative;
+        margin-bottom: 20px;
+      }
+      
+      .header-content {
+        flex-direction: column;
       }
     }
   `]
