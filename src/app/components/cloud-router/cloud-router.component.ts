@@ -141,6 +141,8 @@ export class CloudRouterComponent implements OnInit {
     this.loading = true;
     this.cloudRouterService.getCloudRouters().subscribe({
       next: (routers) => {
+        console.log('Cloud Routers received:', routers);
+        console.log('Number of routers:', routers.length);
         this.routers = routers;
         this.loading = false;
       },
