@@ -45,6 +45,18 @@ interface GcpInstance {
   }>;
 }
 
+/**
+ * Service for managing IP addresses across Google Cloud Platform.
+ * 
+ * This service efficiently fetches IP addresses using Google Cloud Compute Engine's
+ * aggregatedList API calls to minimize the number of requests:
+ * - Global addresses: Single API call
+ * - Regional addresses: aggregatedList across all regions  
+ * - Instance IPs: aggregatedList across all zones
+ * 
+ * This approach is significantly more efficient than making individual API calls 
+ * per region or zone, especially for projects with many regions/zones.
+ */
 @Injectable({
   providedIn: 'root'
 })
@@ -72,7 +84,10 @@ export class IpAddressService {
       return this.getMockData();
     }
 
-    // Fetch both global and regional addresses, plus instance IPs
+    // Fetch addresses using aggregatedList API calls for better efficiency:
+    // - Global addresses (single call)
+    // - Regional addresses (aggregatedList across all regions)
+    // - Instance IPs (aggregatedList across all zones)
     const globalAddresses$ = this.getGlobalAddresses(projectId);
     const regionalAddresses$ = this.getRegionalAddresses(projectId);
     const instanceIps$ = this.getInstanceIPs(projectId);
@@ -102,61 +117,106 @@ export class IpAddressService {
   }
 
   private getRegionalAddresses(projectId: string): Observable<IpAddress[]> {
-    // First get list of regions
-    const regionsUrl = `${this.baseUrl}/projects/${projectId}/regions`;
-    return this.http.get<{ items: Array<{ name: string }> }>(regionsUrl, { headers: this.getHeaders() }).pipe(
-      map(response => response.items || []),
-      switchMap(regions => {
-        if (regions.length === 0) return of([]);
-        const requests = regions.map(region => this.getRegionAddresses(projectId, region.name));
-        return forkJoin(requests).pipe(
-          map(addressArrays => addressArrays.reduce((acc, addresses) => acc.concat(addresses), []))
-        );
+    // Use aggregatedList to get addresses from all regions in one call
+    const url = `${this.baseUrl}/projects/${projectId}/aggregated/addresses`;
+    return this.http.get<{ items: { [key: string]: { addresses?: GcpAddress[], warning?: any } }, warning?: any }>(url, { headers: this.getHeaders() }).pipe(
+      map(response => {
+        const allAddresses: IpAddress[] = [];
+        
+        // Handle partial success - log warnings but continue processing successful regions
+        if (response.warning && response.warning.length > 0) {
+          console.warn('Partial success when fetching regional addresses:', response.warning);
+        }
+
+        if (!response.items) {
+          console.log('No address items found in aggregated response');
+          return allAddresses;
+        }
+
+        // Process each region's addresses
+        Object.keys(response.items).forEach(regionKey => {
+          const regionData = response.items[regionKey];
+          
+          // Skip regions with errors but log them
+          if (regionData.warning) {
+            const warnings = Array.isArray(regionData.warning) ? regionData.warning : [regionData.warning];
+            warnings.forEach((warning: any) => {
+              // Only log warnings that are not "no results" messages
+              if (warning.message && !warning.message.includes('No results for the scope')) {
+                console.warn(`Warning for region ${regionKey}:`, warning.message);
+              }
+            });
+          }
+
+          // Extract region name from the key (e.g., "regions/us-central1" -> "us-central1")
+          const regionName = regionKey.replace('regions/', '');
+          
+          if (regionData.addresses && regionData.addresses.length > 0) {
+            const regionAddresses = regionData.addresses.map(addr => this.convertGcpAddress(addr, regionName));
+            allAddresses.push(...regionAddresses);
+          }
+        });
+
+        console.log(`Successfully fetched ${allAddresses.length} regional addresses from aggregated response`);
+        return allAddresses;
       }),
       catchError(error => {
-        console.error('Error fetching regional addresses:', error);
-        return of([]);
-      })
-    );
-  }
-
-  private getRegionAddresses(projectId: string, region: string): Observable<IpAddress[]> {
-    const url = `${this.baseUrl}/projects/${projectId}/regions/${region}/addresses`;
-    return this.http.get<{ items: GcpAddress[] }>(url, { headers: this.getHeaders() }).pipe(
-      map(response => (response.items || []).map(addr => this.convertGcpAddress(addr, region))),
-      catchError(error => {
-        console.warn(`Error fetching addresses for region ${region}:`, error);
+        console.error('Error fetching regional addresses using aggregatedList:', error);
         return of([]);
       })
     );
   }
 
   private getInstanceIPs(projectId: string): Observable<IpAddress[]> {
-    // Get all zones first
-    const zonesUrl = `${this.baseUrl}/projects/${projectId}/zones`;
-    return this.http.get<{ items: Array<{ name: string }> }>(zonesUrl, { headers: this.getHeaders() }).pipe(
-      map(response => response.items || []),
-      switchMap(zones => {
-        if (zones.length === 0) return of([]);
-        const requests = zones.map(zone => this.getZoneInstances(projectId, zone.name));
-        return forkJoin(requests).pipe(
-          map(instanceArrays => instanceArrays.reduce((acc, instances) => acc.concat(instances), [])),
-          map(instances => this.extractInstanceIPs(instances))
-        );
+    // Use aggregatedList to get instances from all zones in one call
+    const url = `${this.baseUrl}/projects/${projectId}/aggregated/instances`;
+    return this.http.get<{ items: { [key: string]: { instances?: GcpInstance[], warning?: any } }, warning?: any }>(url, { headers: this.getHeaders() }).pipe(
+      map(response => {
+        const allInstances: GcpInstance[] = [];
+        
+        // Handle partial success - log warnings but continue processing successful zones
+        if (response.warning && response.warning.length > 0) {
+          console.warn('Partial success when fetching instances:', response.warning);
+        }
+
+        if (!response.items) {
+          console.log('No instance items found in aggregated response');
+          return [];
+        }
+
+        // Process each zone's instances
+        Object.keys(response.items).forEach(zoneKey => {
+          const zoneData = response.items[zoneKey];
+          
+          // Skip zones with errors but log them
+          if (zoneData.warning) {
+            const warnings = Array.isArray(zoneData.warning) ? zoneData.warning : [zoneData.warning];
+            warnings.forEach((warning: any) => {
+              // Only log warnings that are not "no results" messages
+              if (warning.message && !warning.message.includes('No results for the scope')) {
+                console.warn(`Warning for zone ${zoneKey}:`, warning.message);
+              }
+            });
+          }
+
+          // Extract zone name from the key (e.g., "zones/us-central1-a" -> "us-central1-a")
+          const zoneName = zoneKey.replace('zones/', '');
+          
+          if (zoneData.instances && zoneData.instances.length > 0) {
+            // Add zone information to each instance for IP extraction
+            const zoneInstances = zoneData.instances.map(instance => ({
+              ...instance,
+              zone: zoneName
+            }));
+            allInstances.push(...zoneInstances);
+          }
+        });
+
+        console.log(`Successfully fetched ${allInstances.length} instances from aggregated response`);
+        return this.extractInstanceIPs(allInstances);
       }),
       catchError(error => {
-        console.error('Error fetching instance IPs:', error);
-        return of([]);
-      })
-    );
-  }
-
-  private getZoneInstances(projectId: string, zone: string): Observable<GcpInstance[]> {
-    const url = `${this.baseUrl}/projects/${projectId}/zones/${zone}/instances`;
-    return this.http.get<{ items: GcpInstance[] }>(url, { headers: this.getHeaders() }).pipe(
-      map(response => (response.items || []).map(instance => ({ ...instance, zone }))),
-      catchError(error => {
-        console.warn(`Error fetching instances for zone ${zone}:`, error);
+        console.error('Error fetching instance IPs using aggregatedList:', error);
         return of([]);
       })
     );
