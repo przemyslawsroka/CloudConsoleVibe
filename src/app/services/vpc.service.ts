@@ -335,6 +335,58 @@ export class VpcService {
     return this.http.post<VpcNetwork>(url, network, { headers: this.getHeaders() });
   }
 
+  createVpcNetworkWithSubnets(projectId: string, network: Partial<VpcNetwork>, subnets: any[] | null): Observable<any> {
+    if (this.authService.isDemoMode()) {
+      console.log('🎭 Demo mode: Simulating VPC network creation with subnets');
+      const mockCreatedNetwork: VpcNetwork = {
+        id: Date.now().toString(),
+        name: network.name || 'demo-network',
+        description: network.description || 'Demo network created in demo mode',
+        selfLink: `https://www.googleapis.com/compute/v1/projects/demo-project/global/networks/${network.name}`,
+        autoCreateSubnetworks: network.autoCreateSubnetworks || false,
+        creationTimestamp: new Date().toISOString(),
+        subnetworks: subnets ? subnets.map((subnet, index) => 
+          `https://www.googleapis.com/compute/v1/projects/demo-project/regions/${subnet.region}/subnetworks/${subnet.name}`
+        ) : [],
+        routingConfig: { routingMode: 'REGIONAL' }
+      };
+      return of(mockCreatedNetwork);
+    }
+
+    // First create the VPC network
+    return this.createVpcNetwork(projectId, network).pipe(
+      switchMap((createdVpc: VpcNetwork) => {
+        // If no custom subnets or auto-create is enabled, return the VPC
+        if (!subnets || network.autoCreateSubnetworks) {
+          return of(createdVpc);
+        }
+
+        // Create each subnet
+        const subnetCreations = subnets.map(subnet => this.createSubnet(projectId, createdVpc.name, subnet));
+        
+        // Wait for all subnets to be created
+        return forkJoin(subnetCreations).pipe(
+          map(() => createdVpc) // Return the original VPC after subnets are created
+        );
+      })
+    );
+  }
+
+  private createSubnet(projectId: string, networkName: string, subnetData: any): Observable<any> {
+    const url = `${this.baseUrl}/projects/${projectId}/regions/${subnetData.region}/subnetworks`;
+    
+    const subnetPayload = {
+      name: subnetData.name,
+      network: `projects/${projectId}/global/networks/${networkName}`,
+      ipCidrRange: subnetData.ipRange,
+      region: subnetData.region,
+      privateIpGoogleAccess: subnetData.privateGoogleAccess || false,
+      enableFlowLogs: subnetData.flowLogs || false
+    };
+
+    return this.http.post(url, subnetPayload, { headers: this.getHeaders() });
+  }
+
   deleteVpcNetwork(projectId: string, networkName: string): Observable<any> {
     if (this.authService.isDemoMode()) {
       console.log('🎭 Demo mode: Simulating VPC network deletion');

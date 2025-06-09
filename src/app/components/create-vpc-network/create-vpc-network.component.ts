@@ -1257,7 +1257,10 @@ export class CreateVpcNetworkComponent implements OnInit {
         }
       };
 
-      this.vpcService.createVpcNetwork(this.projectId, vpcData).subscribe({
+      // Include subnets data for custom mode
+      const subnetsData = formValue.subnetMode === 'custom' ? formValue.subnets : null;
+
+      this.vpcService.createVpcNetworkWithSubnets(this.projectId, vpcData, subnetsData).subscribe({
         next: (response) => {
           this.snackBar.open('VPC Network created successfully!', 'Close', {
             duration: 5000,
