@@ -378,7 +378,7 @@ export class AppComponent implements OnInit {
       icon: 'widgets',
       expanded: false,
       items: [
-        { name: 'Clusters', route: '/kubernetes/clusters', icon: 'cluster' }
+        { name: 'Clusters', route: '/kubernetes/clusters', icon: 'view_in_ar' }
       ]
     }
   ];
