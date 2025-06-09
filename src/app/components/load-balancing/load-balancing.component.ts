@@ -2,6 +2,7 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { Router } from '@angular/router';
 import { LoadBalancerService, LoadBalancer } from '../../services/load-balancer.service';
 import { ProjectService, Project } from '../../services/project.service';
+import { GoogleAnalyticsService } from '../../services/google-analytics.service';
 import { TableColumn, TableAction, TableConfig } from '../../shared/gcp-data-table/gcp-data-table.component';
 
 @Component({
@@ -128,11 +129,16 @@ export class LoadBalancingComponent implements OnInit {
     private loadBalancerService: LoadBalancerService,
     private router: Router,
     private cdr: ChangeDetectorRef,
-    private projectService: ProjectService
+    private projectService: ProjectService,
+    private googleAnalyticsService: GoogleAnalyticsService
   ) {}
 
   ngOnInit() {
     console.log('LoadBalancingComponent initialized');
+    
+    // Track page view
+    this.googleAnalyticsService.trackPageView('/load-balancing', 'Load Balancing');
+    
     this.projectService.currentProject$.subscribe((project: Project | null) => {
       this.projectId = project?.id || null;
       console.log('Project changed:', project);
@@ -144,18 +150,43 @@ export class LoadBalancingComponent implements OnInit {
     console.log('Loading load balancers for project:', this.projectId);
     this.isLoading = true;
     
+    // Track load balancer list load event
+    this.googleAnalyticsService.trackEvent({
+      action: 'load_balancer_list_load',
+      category: 'networking',
+      label: 'load_balancers',
+      custom_parameters: {
+        project_id: this.projectId
+      }
+    });
+    
     this.loadBalancerService.getLoadBalancers().subscribe({
       next: (response) => {
         console.log('Load balancers loaded:', response);
         this.loadBalancers = response || [];
         this.isLoading = false;
         this.cdr.detectChanges();
+        
+        // Track successful load
+        this.googleAnalyticsService.trackEvent({
+          action: 'load_balancer_list_load_success',
+          category: 'networking',
+          label: 'load_balancers',
+          value: this.loadBalancers.length,
+          custom_parameters: {
+            load_balancer_count: this.loadBalancers.length,
+            project_id: this.projectId
+          }
+        });
       },
       error: (error) => {
         console.error('Error loading load balancers:', error);
         this.loadBalancers = [];
         this.isLoading = false;
         this.cdr.detectChanges();
+        
+        // Track error
+        this.googleAnalyticsService.trackError(error, 'load_balancer_list_load');
       }
     });
   }
@@ -166,16 +197,36 @@ export class LoadBalancingComponent implements OnInit {
 
   createLoadBalancer() {
     console.log('Navigate to create load balancer');
+    
+    // Track load balancer creation initiation
+    this.googleAnalyticsService.trackEvent({
+      action: 'load_balancer_creation_initiated',
+      category: 'networking',
+      label: 'create_load_balancer',
+      custom_parameters: {
+        project_id: this.projectId
+      }
+    });
+    
     this.router.navigate(['/load-balancing/create']);
   }
 
-  viewLoadBalancerDetails(loadBalancer: LoadBalancer | Event) {
-    // Handle the case where this is called from table row click
-    if (loadBalancer instanceof Event) {
-      return; // Ignore click events, only handle direct LoadBalancer object calls
-    }
+  viewLoadBalancerDetails(loadBalancer: LoadBalancer) {
     console.log('View load balancer details:', loadBalancer);
-    // TODO: Navigate to details view
+    
+    // Track load balancer details view
+    this.googleAnalyticsService.trackEvent({
+      action: 'load_balancer_details_viewed',
+      category: 'networking',
+      label: loadBalancer.name,
+      custom_parameters: {
+        load_balancer_name: loadBalancer.name,
+        load_balancer_type: loadBalancer.typeDisplay,
+        project_id: this.projectId
+      }
+    });
+    
+    // TODO: Implement details view
   }
 
   onRowClick(loadBalancer: LoadBalancer) {

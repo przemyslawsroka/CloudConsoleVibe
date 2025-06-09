@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { GoogleAnalyticsService } from '../../services/google-analytics.service';
 
 @Component({
   selector: 'app-login',
@@ -312,10 +313,14 @@ import { AuthService } from '../../services/auth.service';
 export class LoginComponent implements OnInit {
   constructor(
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private googleAnalyticsService: GoogleAnalyticsService
   ) {}
 
   ngOnInit() {
+    // Track login page view
+    this.googleAnalyticsService.trackPageView('/login', 'Login Page');
+    
     // Check if user is already authenticated
     if (this.authService.isAuthenticated()) {
       this.router.navigate(['/vpc']);
@@ -323,10 +328,30 @@ export class LoginComponent implements OnInit {
   }
 
   login() {
+    // Track login attempt
+    this.googleAnalyticsService.trackEvent({
+      action: 'login_attempted',
+      category: 'authentication',
+      label: 'google_oauth',
+      custom_parameters: {
+        login_method: 'google_oauth'
+      }
+    });
+    
     this.authService.login();
   }
 
   loginDemo() {
+    // Track demo mode login
+    this.googleAnalyticsService.trackEvent({
+      action: 'demo_mode_login',
+      category: 'authentication',
+      label: 'demo_mode',
+      custom_parameters: {
+        login_method: 'demo_mode'
+      }
+    });
+    
     this.authService.loginDemo();
     this.router.navigate(['/vpc']);
   }

@@ -44,6 +44,7 @@ import { AuthCallbackComponent } from './components/auth-callback/auth-callback.
 import { RoutesComponent } from './components/routes/routes.component';
 import { CreateRouteDialogComponent } from './components/create-route-dialog/create-route-dialog.component';
 import { AuthService } from './services/auth.service';
+import { GoogleAnalyticsService } from './services/google-analytics.service';
 import { VpcService } from './services/vpc.service';
 import { TPPIService } from './services/tppi.service';
 import { PacketMirroringService } from './services/packet-mirroring.service';
@@ -191,7 +192,7 @@ import { GkeClusterService } from './services/gke-cluster.service';
     MatDividerModule,
     TextFieldModule
   ],
-  providers: [AuthService, VpcService, TPPIService, PacketMirroringService, NetworkHealthMonitorService, AppNetaService, CloudNatService, GkeClusterService],
+  providers: [AuthService, GoogleAnalyticsService, VpcService, TPPIService, PacketMirroringService, NetworkHealthMonitorService, AppNetaService, CloudNatService, GkeClusterService],
   bootstrap: [AppComponent]
 })
 export class AppModule { } 

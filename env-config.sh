@@ -8,6 +8,7 @@ window._env_ = {
   CLIENT_ID: "${CLIENT_ID:-}",
   ENVIRONMENT: "${ENVIRONMENT:-production}",
   LOG_LEVEL: "${LOG_LEVEL:-error}",
+  GA_TRACKING_ID: "${GA_TRACKING_ID:-G-TCLR1BZ0N7}",
   ENABLE_ANALYTICS: "${ENABLE_ANALYTICS:-true}"
 };
 EOF 

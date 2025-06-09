@@ -6,6 +6,7 @@ import { Router } from '@angular/router';
 import { Observable } from 'rxjs';
 import { GkeClusterService, GkeCluster, ClusterMetrics } from '../../services/gke-cluster.service';
 import { AuthService } from '../../services/auth.service';
+import { GoogleAnalyticsService } from '../../services/google-analytics.service';
 
 @Component({
   selector: 'app-gke-clusters',
@@ -53,13 +54,16 @@ export class GkeClustersComponent implements OnInit, AfterViewInit {
   constructor(
     private gkeService: GkeClusterService,
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private googleAnalyticsService: GoogleAnalyticsService
   ) {
     this.clusterMetrics$ = this.gkeService.getClusterMetrics();
     this.isDemoMode$ = this.authService.isDemoMode$;
   }
 
   ngOnInit() {
+    // Track page view
+    this.googleAnalyticsService.trackPageView('/kubernetes/clusters', 'GKE Clusters');
     this.loadClusters();
   }
 
@@ -72,15 +76,36 @@ export class GkeClustersComponent implements OnInit, AfterViewInit {
     this.loading = true;
     this.error = null;
 
+    // Track cluster load event
+    this.googleAnalyticsService.trackEvent({
+      action: 'gke_clusters_load',
+      category: 'kubernetes',
+      label: 'clusters_list'
+    });
+
     this.gkeService.getClusters().subscribe({
       next: (clusters) => {
         this.dataSource.data = clusters;
         this.loading = false;
+        
+        // Track successful load
+        this.googleAnalyticsService.trackEvent({
+          action: 'gke_clusters_load_success',
+          category: 'kubernetes',
+          label: 'clusters_list',
+          value: clusters.length,
+          custom_parameters: {
+            cluster_count: clusters.length
+          }
+        });
       },
       error: (error) => {
         console.error('Error loading clusters:', error);
         this.error = 'Failed to load clusters. Please try again.';
         this.loading = false;
+        
+        // Track error
+        this.googleAnalyticsService.trackError(error, 'gke_clusters_load');
       }
     });
   }
@@ -139,16 +164,42 @@ export class GkeClustersComponent implements OnInit, AfterViewInit {
   }
 
   navigateToCluster(cluster: GkeCluster) {
+    // Track cluster details view
+    this.googleAnalyticsService.trackEvent({
+      action: 'gke_cluster_details_viewed',
+      category: 'kubernetes',
+      label: cluster.name,
+      custom_parameters: {
+        cluster_name: cluster.name,
+        cluster_status: cluster.status,
+        cluster_location: cluster.location
+      }
+    });
+    
     this.router.navigate(['/kubernetes/clusters', cluster.name], {
       queryParams: { location: cluster.location }
     });
   }
 
   createCluster() {
+    // Track cluster creation initiation
+    this.googleAnalyticsService.trackEvent({
+      action: 'gke_cluster_creation_initiated',
+      category: 'kubernetes',
+      label: 'create_cluster'
+    });
+    
     this.router.navigate(['/kubernetes/clusters/create']);
   }
 
   deployApplication() {
+    // Track deploy application action
+    this.googleAnalyticsService.trackEvent({
+      action: 'gke_deploy_application_initiated',
+      category: 'kubernetes',
+      label: 'deploy_application'
+    });
+    
     // TODO: Implement deploy application dialog
     console.log('Deploy application clicked');
   }

@@ -2,6 +2,7 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { Router, NavigationEnd } from '@angular/router';
 import { AuthService } from './services/auth.service';
 import { ThemeService, Theme } from './services/theme.service';
+import { GoogleAnalyticsService } from './services/google-analytics.service';
 import { Observable } from 'rxjs';
 import { filter, map } from 'rxjs/operators';
 import { MatDialog } from '@angular/material/dialog';
@@ -387,7 +388,8 @@ export class AppComponent implements OnInit {
     private router: Router,
     private dialog: MatDialog,
     private projectService: ProjectService,
-    private themeService: ThemeService
+    private themeService: ThemeService,
+    private googleAnalyticsService: GoogleAnalyticsService
   ) {
     this.isAuthenticated$ = this.authService.isAuthenticated$;
     this.isDemoMode$ = this.authService.isDemoMode$;
@@ -448,11 +450,13 @@ export class AppComponent implements OnInit {
 
   login() {
     this.authService.login();
+    this.googleAnalyticsService.trackAuthEvent('login');
   }
 
   logout() {
     this.authService.logout();
     this.router.navigate(['/login']);
+    this.googleAnalyticsService.trackAuthEvent('logout');
   }
 
   openProjectPicker() {

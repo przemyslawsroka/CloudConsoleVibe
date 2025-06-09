@@ -4,6 +4,7 @@ import { FormControl } from '@angular/forms';
 import { SelectionModel } from '@angular/cdk/collections';
 import { FirewallService, FirewallRule, FirewallPolicy } from '../../services/firewall.service';
 import { ProjectService, Project } from '../../services/project.service';
+import { GoogleAnalyticsService } from '../../services/google-analytics.service';
 import { CreateFirewallRuleDialogComponent } from './create-firewall-rule-dialog.component';
 import { switchMap, map } from 'rxjs/operators';
 
@@ -1003,10 +1004,14 @@ export class FirewallManagementComponent implements OnInit {
     private firewallService: FirewallService,
     private dialog: MatDialog,
     private cdr: ChangeDetectorRef,
-    private projectService: ProjectService
+    private projectService: ProjectService,
+    private googleAnalyticsService: GoogleAnalyticsService
   ) {}
 
   ngOnInit() {
+    // Track page view
+    this.googleAnalyticsService.trackPageView('/firewall', 'Firewall Management');
+    
     this.projectService.currentProject$.subscribe((project: Project | null) => {
       this.projectId = project?.id || null;
       this.loadData();
@@ -1181,6 +1186,16 @@ export class FirewallManagementComponent implements OnInit {
   }
 
   createFirewallRule() {
+    // Track firewall rule creation initiation
+    this.googleAnalyticsService.trackEvent({
+      action: 'firewall_rule_creation_initiated',
+      category: 'security',
+      label: 'create_firewall_rule',
+      custom_parameters: {
+        project_id: this.projectId
+      }
+    });
+    
     const dialogRef = this.dialog.open(CreateFirewallRuleDialogComponent, {
       width: '900px',
       maxWidth: '95vw',

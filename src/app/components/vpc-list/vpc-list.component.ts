@@ -1,6 +1,7 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { VpcService, VpcNetwork } from '../../services/vpc.service';
+import { GoogleAnalyticsService } from '../../services/google-analytics.service';
 import { Router } from '@angular/router';
 import { ProjectService, Project } from '../../services/project.service';
 import { TableColumn, TableAction, TableConfig } from '../../shared/gcp-data-table/gcp-data-table.component';
@@ -125,7 +126,8 @@ export class VpcListComponent implements OnInit {
     private dialog: MatDialog,
     private router: Router,
     private cdr: ChangeDetectorRef,
-    private projectService: ProjectService
+    private projectService: ProjectService,
+    private googleAnalyticsService: GoogleAnalyticsService
   ) {}
 
   ngOnInit() {
@@ -133,22 +135,51 @@ export class VpcListComponent implements OnInit {
       this.projectId = project?.id || null;
       this.loadVpcNetworks();
     });
+    
+    // Track page view
+    this.googleAnalyticsService.trackPageView('/vpc', 'VPC Networks');
   }
 
   loadVpcNetworks() {
     if (!this.projectId) return;
     this.isLoading = true;
+    
+    // Track VPC list load event
+    this.googleAnalyticsService.trackEvent({
+      action: 'vpc_list_loaded',
+      category: 'networking',
+      label: 'vpc_networks',
+      custom_parameters: {
+        project_id: this.projectId
+      }
+    });
+    
     this.vpcService.getVpcNetworks(this.projectId).subscribe({
       next: (response) => {
         this.vpcNetworks = response;
         this.isLoading = false;
         this.cdr.detectChanges();
+        
+        // Track successful load
+        this.googleAnalyticsService.trackEvent({
+          action: 'vpc_list_load_success',
+          category: 'networking',
+          label: 'vpc_networks',
+          value: response.length,
+          custom_parameters: {
+            vpc_count: response.length,
+            project_id: this.projectId
+          }
+        });
       },
       error: (error) => {
         console.error('Error loading VPC networks:', error);
         this.vpcNetworks = [];
         this.isLoading = false;
         this.cdr.detectChanges();
+        
+        // Track error
+        this.googleAnalyticsService.trackError(error, 'vpc_list_load');
       }
     });
   }
@@ -157,6 +188,18 @@ export class VpcListComponent implements OnInit {
     if (vpc instanceof Event) {
       return;
     }
+    
+    // Track VPC details view
+    this.googleAnalyticsService.trackEvent({
+      action: 'vpc_details_viewed',
+      category: 'networking',
+      label: vpc.name,
+      custom_parameters: {
+        vpc_name: vpc.name,
+        project_id: this.projectId
+      }
+    });
+    
     this.router.navigate(['/vpc', vpc.name]);
   }
 
@@ -166,22 +209,69 @@ export class VpcListComponent implements OnInit {
 
   editVpc(vpc: VpcNetwork) {
     console.log('Edit VPC:', vpc);
+    
+    // Track edit attempt
+    this.googleAnalyticsService.trackEvent({
+      action: 'vpc_edit_attempted',
+      category: 'networking',
+      label: vpc.name,
+      custom_parameters: {
+        vpc_name: vpc.name,
+        project_id: this.projectId
+      }
+    });
+    
     // TODO: Implement edit functionality
   }
 
   openCreateDialog() {
+    // Track VPC creation initiation
+    this.googleAnalyticsService.trackEvent({
+      action: 'vpc_creation_initiated',
+      category: 'networking',
+      label: 'create_vpc',
+      custom_parameters: {
+        project_id: this.projectId
+      }
+    });
+    
     this.router.navigate(['/vpc/create']);
   }
 
   deleteVpc(vpc: VpcNetwork) {
     if (!this.projectId) return;
     if (confirm(`Are you sure you want to delete VPC network "${vpc.name}"?`)) {
+      // Track deletion attempt
+      this.googleAnalyticsService.trackEvent({
+        action: 'vpc_deletion_attempted',
+        category: 'networking',
+        label: vpc.name,
+        custom_parameters: {
+          vpc_name: vpc.name,
+          project_id: this.projectId
+        }
+      });
+      
       this.vpcService.deleteVpcNetwork(this.projectId, vpc.name).subscribe({
         next: () => {
+          // Track successful deletion
+          this.googleAnalyticsService.trackEvent({
+            action: 'vpc_deletion_success',
+            category: 'networking',
+            label: vpc.name,
+            custom_parameters: {
+              vpc_name: vpc.name,
+              project_id: this.projectId
+            }
+          });
+          
           this.loadVpcNetworks();
         },
         error: (error) => {
           console.error('Error deleting VPC network:', error);
+          
+          // Track deletion error
+          this.googleAnalyticsService.trackError(error, 'vpc_deletion');
         }
       });
     }

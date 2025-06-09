@@ -4,5 +4,6 @@ window._env_ = {
   CLIENT_ID: "",
   ENVIRONMENT: "production",
   LOG_LEVEL: "error",
+  GA_TRACKING_ID: "G-TCLR1BZ0N7",
   ENABLE_ANALYTICS: "true"
 }; 
