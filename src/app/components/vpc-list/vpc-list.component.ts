@@ -240,7 +240,12 @@ export class VpcListComponent implements OnInit {
 
   deleteVpc(vpc: VpcNetwork) {
     if (!this.projectId) return;
-    if (confirm(`Are you sure you want to delete VPC network "${vpc.name}"?`)) {
+    
+    const confirmMessage = vpc.subnetworks && vpc.subnetworks.length > 0 
+      ? `Are you sure you want to delete VPC network "${vpc.name}"? This will also delete ${vpc.subnetworks.length} subnet(s).`
+      : `Are you sure you want to delete VPC network "${vpc.name}"?`;
+    
+    if (confirm(confirmMessage)) {
       // Track deletion attempt
       this.googleAnalyticsService.trackEvent({
         action: 'vpc_deletion_attempted',
@@ -248,9 +253,14 @@ export class VpcListComponent implements OnInit {
         label: vpc.name,
         custom_parameters: {
           vpc_name: vpc.name,
-          project_id: this.projectId
+          project_id: this.projectId,
+          has_subnets: vpc.subnetworks && vpc.subnetworks.length > 0 ? 'true' : 'false'
         }
       });
+      
+      // Show loading state
+      this.isLoading = true;
+      this.cdr.detectChanges();
       
       this.vpcService.deleteVpcNetwork(this.projectId, vpc.name).subscribe({
         next: () => {
@@ -265,10 +275,25 @@ export class VpcListComponent implements OnInit {
             }
           });
           
+          console.log(`✅ VPC network "${vpc.name}" deleted successfully`);
           this.loadVpcNetworks();
         },
         error: (error) => {
           console.error('Error deleting VPC network:', error);
+          this.isLoading = false;
+          this.cdr.detectChanges();
+          
+          // Show user-friendly error message
+          let errorMessage = 'Failed to delete VPC network. ';
+          if (error.error && error.error.error && error.error.error.message) {
+            errorMessage += error.error.error.message;
+          } else if (error.message) {
+            errorMessage += error.message;
+          } else {
+            errorMessage += 'Please ensure the VPC has no dependent resources and try again.';
+          }
+          
+          alert(errorMessage);
           
           // Track deletion error
           this.googleAnalyticsService.trackError(error, 'vpc_deletion');

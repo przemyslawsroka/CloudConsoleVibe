@@ -332,7 +332,31 @@ export class VpcService {
     }
 
     const url = `${this.baseUrl}/projects/${projectId}/global/networks`;
-    return this.http.post<VpcNetwork>(url, network, { headers: this.getHeaders() });
+    return this.http.post<any>(url, network, { headers: this.getHeaders() }).pipe(
+      switchMap((operation: any) => {
+        // Google Cloud API returns an operation, wait for it to complete
+        return this.waitForOperation(projectId, operation).pipe(
+          map(() => {
+            // Return a mock VPC network response based on the input
+            const createdNetwork: VpcNetwork = {
+              id: Date.now().toString(),
+              name: network.name || 'unknown',
+              description: network.description,
+              selfLink: `https://www.googleapis.com/compute/v1/projects/${projectId}/global/networks/${network.name}`,
+              autoCreateSubnetworks: network.autoCreateSubnetworks || false,
+              creationTimestamp: new Date().toISOString(),
+              subnetworks: [],
+              routingConfig: network.routingConfig || { routingMode: 'REGIONAL' }
+            };
+            return createdNetwork;
+          })
+        );
+      }),
+      catchError(error => {
+        console.error('Error creating VPC network:', error);
+        throw error;
+      })
+    );
   }
 
   createVpcNetworkWithSubnets(projectId: string, network: Partial<VpcNetwork>, subnets: any[] | null): Observable<any> {
@@ -384,7 +408,74 @@ export class VpcService {
       enableFlowLogs: subnetData.flowLogs || false
     };
 
-    return this.http.post(url, subnetPayload, { headers: this.getHeaders() });
+    return this.http.post(url, subnetPayload, { headers: this.getHeaders() }).pipe(
+      switchMap((operation: any) => {
+        // Wait for subnet creation operation to complete
+        return this.waitForOperation(projectId, operation);
+      }),
+      catchError(error => {
+        console.error('Error creating subnet:', error);
+        throw error;
+      })
+    );
+  }
+
+  private waitForOperation(projectId: string, operation: any): Observable<any> {
+    if (!operation || !operation.name) {
+      return of(operation);
+    }
+
+    // Extract operation details
+    const operationName = operation.name;
+    const isGlobalOperation = operation.zone ? false : operation.region ? false : true;
+    
+    let operationUrl: string;
+    if (isGlobalOperation) {
+      operationUrl = `${this.baseUrl}/projects/${projectId}/global/operations/${operationName}`;
+    } else if (operation.zone) {
+      const zone = operation.zone.split('/').pop();
+      operationUrl = `${this.baseUrl}/projects/${projectId}/zones/${zone}/operations/${operationName}`;
+    } else if (operation.region) {
+      const region = operation.region.split('/').pop();
+      operationUrl = `${this.baseUrl}/projects/${projectId}/regions/${region}/operations/${operationName}`;
+    } else {
+      operationUrl = `${this.baseUrl}/projects/${projectId}/global/operations/${operationName}`;
+    }
+
+    return this.pollOperation(operationUrl);
+  }
+
+  private pollOperation(operationUrl: string, maxAttempts: number = 30, delayMs: number = 2000): Observable<any> {
+    let attempts = 0;
+    
+    return new Observable(observer => {
+      const poll = () => {
+        attempts++;
+        
+        this.http.get<any>(operationUrl, { headers: this.getHeaders() }).subscribe({
+          next: (operation: any) => {
+            if (operation.status === 'DONE') {
+              if (operation.error) {
+                observer.error(new Error(`Operation failed: ${JSON.stringify(operation.error)}`));
+              } else {
+                observer.next(operation);
+                observer.complete();
+              }
+            } else if (attempts >= maxAttempts) {
+              observer.error(new Error(`Operation timeout after ${maxAttempts} attempts`));
+            } else {
+              // Continue polling
+              setTimeout(poll, delayMs);
+            }
+          },
+          error: (error) => {
+            observer.error(error);
+          }
+        });
+      };
+      
+      poll();
+    });
   }
 
   deleteVpcNetwork(projectId: string, networkName: string): Observable<any> {
@@ -393,8 +484,61 @@ export class VpcService {
       return of({ status: 'success' });
     }
 
+    // First check if the network has subnets that need to be deleted
+    return this.getVpcNetwork(projectId, networkName).pipe(
+      switchMap((vpc: VpcNetwork) => {
+        // If the VPC has custom subnets, delete them first
+        if (vpc.subnetworks && vpc.subnetworks.length > 0 && !vpc.autoCreateSubnetworks) {
+          console.log(`Deleting ${vpc.subnetworks.length} subnets before deleting VPC`);
+          const subnetDeletions = vpc.subnetworks.map(subnetUrl => {
+            // Extract region and subnet name from URL
+            const parts = subnetUrl.split('/');
+            const region = parts[parts.indexOf('regions') + 1];
+            const subnetName = parts[parts.length - 1];
+            return this.deleteSubnet(projectId, region, subnetName);
+          });
+          
+          // Wait for all subnets to be deleted, then delete the VPC
+          return forkJoin(subnetDeletions).pipe(
+            switchMap(() => this.performVpcDeletion(projectId, networkName))
+          );
+        } else {
+          // No subnets to delete, proceed with VPC deletion
+          return this.performVpcDeletion(projectId, networkName);
+        }
+      }),
+      catchError(error => {
+        console.error('Error deleting VPC network:', error);
+        // If we can't get VPC details, try to delete it anyway
+        return this.performVpcDeletion(projectId, networkName);
+      })
+    );
+  }
+
+  private deleteSubnet(projectId: string, region: string, subnetName: string): Observable<any> {
+    const url = `${this.baseUrl}/projects/${projectId}/regions/${region}/subnetworks/${subnetName}`;
+    return this.http.delete(url, { headers: this.getHeaders() }).pipe(
+      switchMap((operation: any) => {
+        return this.waitForOperation(projectId, operation);
+      }),
+      catchError(error => {
+        console.error(`Error deleting subnet ${subnetName}:`, error);
+        throw error;
+      })
+    );
+  }
+
+  private performVpcDeletion(projectId: string, networkName: string): Observable<any> {
     const url = `${this.baseUrl}/projects/${projectId}/global/networks/${networkName}`;
-    return this.http.delete(url, { headers: this.getHeaders() });
+    return this.http.delete(url, { headers: this.getHeaders() }).pipe(
+      switchMap((operation: any) => {
+        return this.waitForOperation(projectId, operation);
+      }),
+      catchError(error => {
+        console.error('Error in VPC deletion operation:', error);
+        throw error;
+      })
+    );
   }
 
   createRoute(projectId: string, route: Partial<Route>): Observable<Route> {
