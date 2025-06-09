@@ -367,8 +367,8 @@
   <!-- Other Tab Contents (placeholder) -->
   <div class="tab-content" *ngIf="selectedTab !== 'overview'">
     <div class="tab-placeholder">
-      <mat-icon>{{ tabs.find(t => t.id === selectedTab)?.icon }}</mat-icon>
-      <h2>{{ tabs.find(t => t.id === selectedTab)?.label }}</h2>
+      <mat-icon>{{ getSelectedTab()?.icon }}</mat-icon>
+      <h2>{{ getSelectedTab()?.label }}</h2>
       <p>This tab is coming soon. Stay tuned for updates!</p>
     </div>
   </div>

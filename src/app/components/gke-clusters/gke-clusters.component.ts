@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, AfterViewInit, ViewChild } from '@angular/core';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatSort } from '@angular/material/sort';
 import { MatPaginator } from '@angular/material/paginator';
@@ -12,7 +12,7 @@ import { AuthService } from '../../services/auth.service';
   templateUrl: './gke-clusters.component.html',
   styleUrls: ['./gke-clusters.component.scss']
 })
-export class GkeClustersComponent implements OnInit {
+export class GkeClustersComponent implements OnInit, AfterViewInit {
   @ViewChild(MatSort) sort!: MatSort;
   @ViewChild(MatPaginator) paginator!: MatPaginator;
 
@@ -242,5 +242,9 @@ export class GkeClustersComponent implements OnInit {
 
   trackByClusterId(index: number, cluster: GkeCluster): string {
     return cluster.id;
+  }
+
+  getSelectedTab() {
+    return this.tabs.find(t => t.id === this.selectedTab);
   }
 } 
