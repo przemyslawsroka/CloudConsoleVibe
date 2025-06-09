@@ -371,6 +371,14 @@ export class AppComponent implements OnInit {
         { name: 'Cloud Network Insights', route: '/cloud-network-insights', icon: 'insights' },
         { name: 'Connectivity Tests', route: '/connectivity-tests', icon: 'lan' }
       ]
+    },
+    {
+      name: 'Kubernetes',
+      icon: 'widgets',
+      expanded: false,
+      items: [
+        { name: 'Clusters', route: '/kubernetes/clusters', icon: 'cluster' }
+      ]
     }
   ];
 

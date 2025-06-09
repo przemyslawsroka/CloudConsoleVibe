@@ -39,6 +39,7 @@ import { CloudNatComponent } from './components/cloud-nat/cloud-nat.component';
 import { CloudNatDetailsComponent } from './components/cloud-nat-details/cloud-nat-details.component';
 import { CreateCloudNatComponent } from './components/create-cloud-nat/create-cloud-nat.component';
 import { CreateRouteComponent } from './components/create-route/create-route.component';
+import { GkeClustersComponent } from './components/gke-clusters/gke-clusters.component';
 
 const routes: Routes = [
   { path: '', redirectTo: '/vpc', pathMatch: 'full' },
@@ -101,7 +102,8 @@ const routes: Routes = [
   {
     path: 'network-health-monitor/:name',
     component: NetworkHealthMonitorDetailsComponent
-  }
+  },
+  { path: 'kubernetes/clusters', component: GkeClustersComponent, canActivate: [AuthGuard] }
 ];
 
 @NgModule({

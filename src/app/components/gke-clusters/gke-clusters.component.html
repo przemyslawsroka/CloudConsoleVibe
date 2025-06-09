@@ -1,0 +1,375 @@
+<div class="clusters-container">
+  <!-- Header -->
+  <div class="page-header">
+    <div class="header-content">
+      <div class="title-section">
+        <h1>Kubernetes clusters</h1>
+        <div class="header-actions">
+          <button mat-raised-button color="primary" (click)="createCluster()">
+            <mat-icon>add</mat-icon>
+            Create
+          </button>
+          <button mat-stroked-button (click)="deployApplication()">
+            <mat-icon>play_arrow</mat-icon>
+            Deploy
+          </button>
+          <button mat-icon-button (click)="refreshClusters()" matTooltip="Refresh">
+            <mat-icon>refresh</mat-icon>
+          </button>
+          <button mat-stroked-button (click)="attachCluster()">
+            <mat-icon>link</mat-icon>
+            Attach cluster
+            <span class="new-badge">New</span>
+          </button>
+          <button mat-icon-button matTooltip="Learn">
+            <mat-icon>school</mat-icon>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs-container">
+    <nav mat-tab-nav-bar>
+      <a 
+        mat-tab-link 
+        *ngFor="let tab of tabs"
+        [active]="selectedTab === tab.id"
+        (click)="selectTab(tab.id)"
+        class="tab-link">
+        <mat-icon class="tab-icon">{{ tab.icon }}</mat-icon>
+        {{ tab.label }}
+      </a>
+    </nav>
+  </div>
+
+  <!-- Overview Tab Content -->
+  <div class="tab-content" *ngIf="selectedTab === 'overview'">
+    
+    <!-- Metrics Cards -->
+    <div class="metrics-container" *ngIf="clusterMetrics$ | async as metrics">
+      <div class="metrics-row">
+        <!-- Health Card -->
+        <mat-card class="metric-card health-card">
+          <mat-card-content>
+            <div class="metric-header">
+              <div class="metric-info">
+                <h3>Health</h3>
+                <mat-icon matTooltip="Cluster health information">info_outline</mat-icon>
+              </div>
+            </div>
+            <div class="metric-value">
+              <span class="percentage">{{ metrics.healthPercentage | number:'1.2-2' }}%</span>
+              <span class="label">healthy</span>
+            </div>
+            <div class="metric-progress">
+              <mat-progress-bar 
+                mode="determinate" 
+                [value]="metrics.healthPercentage"
+                [ngClass]="{'good': metrics.healthPercentage >= 80, 'warning': metrics.healthPercentage >= 60 && metrics.healthPercentage < 80, 'error': metrics.healthPercentage < 60}">
+              </mat-progress-bar>
+            </div>
+            <div class="metric-action">
+              <a href="#" class="recommendations-link">View {{ metrics.healthRecommendations }} recommendations</a>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <!-- Upgrade Card -->
+        <mat-card class="metric-card upgrade-card">
+          <mat-card-content>
+            <div class="metric-header">
+              <div class="metric-info">
+                <h3>Upgrade</h3>
+                <mat-icon matTooltip="Cluster upgrade information">info_outline</mat-icon>
+              </div>
+            </div>
+            <div class="metric-value">
+              <span class="percentage">{{ metrics.upgradePercentage | number:'1.2-2' }}%</span>
+              <span class="label">up to date</span>
+            </div>
+            <div class="metric-progress">
+              <mat-progress-bar 
+                mode="determinate" 
+                [value]="metrics.upgradePercentage"
+                [ngClass]="{'good': metrics.upgradePercentage >= 80, 'warning': metrics.upgradePercentage >= 60 && metrics.upgradePercentage < 80, 'error': metrics.upgradePercentage < 60}">
+              </mat-progress-bar>
+            </div>
+            <div class="metric-action">
+              <a href="#" class="recommendations-link">View {{ metrics.upgradeRecommendations }} recommendations</a>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <!-- Cost Card -->
+        <mat-card class="metric-card cost-card">
+          <mat-card-content>
+            <div class="metric-header">
+              <div class="metric-info">
+                <h3>Estimated monthly cost</h3>
+                <mat-icon matTooltip="Estimated monthly cost information">info_outline</mat-icon>
+              </div>
+            </div>
+            <div class="metric-value">
+              <span class="currency">${{ metrics.estimatedMonthlyCost | number:'1.2-2' }}</span>
+              <span class="period">/ month</span>
+              <span class="change positive">
+                <mat-icon>trending_up</mat-icon>
+                0.02%
+              </span>
+            </div>
+            <div class="metric-action">
+              <a href="#" class="recommendations-link">View {{ metrics.costRecommendations }} recommendations</a>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </div>
+
+    <!-- Table Controls -->
+    <div class="table-controls">
+      <div class="filter-section">
+        <mat-icon class="filter-icon">filter_list</mat-icon>
+        <span class="filter-label">Filter</span>
+        <mat-form-field appearance="outline" class="search-field">
+          <mat-label>Enter property name or value</mat-label>
+          <input 
+            matInput 
+            [value]="searchValue" 
+            (input)="applyFilter($event)"
+            placeholder="Enter property name or value">
+          <mat-icon matSuffix *ngIf="searchValue" (click)="clearFilter()" class="clear-icon">clear</mat-icon>
+        </mat-form-field>
+        <mat-icon class="help-icon" matTooltip="Filter help">help_outline</mat-icon>
+      </div>
+      
+      <div class="table-actions">
+        <button 
+          mat-icon-button 
+          matTooltip="Table settings"
+          class="table-settings-btn">
+          <mat-icon>view_column</mat-icon>
+        </button>
+        <button 
+          mat-icon-button 
+          matTooltip="Maximize table"
+          class="maximize-btn">
+          <mat-icon>fullscreen</mat-icon>
+        </button>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div class="loading-container" *ngIf="loading">
+      <mat-spinner diameter="40"></mat-spinner>
+      <p>Loading clusters...</p>
+    </div>
+
+    <!-- Error State -->
+    <div class="error-container" *ngIf="error && !loading">
+      <mat-icon class="error-icon">error</mat-icon>
+      <h3>Error loading clusters</h3>
+      <p>{{ error }}</p>
+      <button mat-stroked-button (click)="loadClusters()">
+        <mat-icon>refresh</mat-icon>
+        Retry
+      </button>
+    </div>
+
+    <!-- Clusters Table -->
+    <div class="table-container" *ngIf="!loading && !error">
+      <table mat-table [dataSource]="dataSource" matSort class="clusters-table">
+        
+        <!-- Select Column -->
+        <ng-container matColumnDef="select">
+          <th mat-header-cell *matHeaderCellDef>
+            <mat-checkbox
+              [checked]="isAllSelected()"
+              [indeterminate]="isIndeterminate()"
+              (change)="toggleAllClusters()">
+            </mat-checkbox>
+          </th>
+          <td mat-cell *matCellDef="let cluster">
+            <mat-checkbox
+              [checked]="isClusterSelected(cluster.id)"
+              (change)="toggleClusterSelection(cluster.id)">
+            </mat-checkbox>
+          </td>
+        </ng-container>
+
+        <!-- Status Column -->
+        <ng-container matColumnDef="status">
+          <th mat-header-cell *matHeaderCellDef>Status</th>
+          <td mat-cell *matCellDef="let cluster">
+            <div class="status-cell">
+              <mat-icon 
+                [class]="getStatusClass(cluster.status)"
+                matTooltip="{{ cluster.status }}">
+                {{ getStatusIcon(cluster.status) }}
+              </mat-icon>
+            </div>
+          </td>
+        </ng-container>
+
+        <!-- Name Column -->
+        <ng-container matColumnDef="name">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Name</th>
+          <td mat-cell *matCellDef="let cluster">
+            <div class="name-cell">
+              <a (click)="navigateToCluster(cluster)" class="cluster-link">
+                {{ cluster.name }}
+              </a>
+            </div>
+          </td>
+        </ng-container>
+
+        <!-- Location Column -->
+        <ng-container matColumnDef="location">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Location</th>
+          <td mat-cell *matCellDef="let cluster">
+            <span class="location-cell">{{ cluster.location }}</span>
+          </td>
+        </ng-container>
+
+        <!-- Tier Column -->
+        <ng-container matColumnDef="tier">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Tier</th>
+          <td mat-cell *matCellDef="let cluster">
+            <span class="tier-cell">{{ cluster.tier }}</span>
+          </td>
+        </ng-container>
+
+        <!-- Fleet Column -->
+        <ng-container matColumnDef="fleet">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Fleet</th>
+          <td mat-cell *matCellDef="let cluster">
+            <div class="fleet-cell">
+              <mat-icon class="fleet-icon" *ngIf="cluster.fleet !== 'Register'">business</mat-icon>
+              <span>{{ cluster.fleet }}</span>
+            </div>
+          </td>
+        </ng-container>
+
+        <!-- Mode Column -->
+        <ng-container matColumnDef="mode">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Mode</th>
+          <td mat-cell *matCellDef="let cluster">
+            <span class="mode-cell" [class.autopilot]="cluster.mode === 'Autopilot'">
+              {{ cluster.mode }}
+            </span>
+          </td>
+        </ng-container>
+
+        <!-- Nodes Column -->
+        <ng-container matColumnDef="nodes">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Number of nodes</th>
+          <td mat-cell *matCellDef="let cluster">
+            <span class="nodes-cell">{{ cluster.nodeCount }}</span>
+          </td>
+        </ng-container>
+
+        <!-- vCPUs Column -->
+        <ng-container matColumnDef="vcpus">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Total vCPUs</th>
+          <td mat-cell *matCellDef="let cluster">
+            <span class="vcpus-cell">{{ cluster.totalVCpus }}</span>
+          </td>
+        </ng-container>
+
+        <!-- Memory Column -->
+        <ng-container matColumnDef="memory">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Total memory</th>
+          <td mat-cell *matCellDef="let cluster">
+            <span class="memory-cell">{{ cluster.totalMemoryGb }} GB</span>
+          </td>
+        </ng-container>
+
+        <!-- Notifications Column -->
+        <ng-container matColumnDef="notifications">
+          <th mat-header-cell *matHeaderCellDef>Notifications</th>
+          <td mat-cell *matCellDef="let cluster">
+            <div class="notifications-cell">
+              <div class="notification-item" *ngFor="let notification of cluster.notifications; let i = index">
+                <mat-icon 
+                  [class]="getNotificationClass(notification.type)"
+                  [matTooltip]="notification.message">
+                  {{ getNotificationIcon(notification.type) }}
+                </mat-icon>
+                <span class="notification-text" *ngIf="i === 0">{{ notification.action?.label || notification.message }}</span>
+              </div>
+              <button 
+                mat-button 
+                class="show-more-btn" 
+                *ngIf="cluster.notifications.length > 1"
+                (click)="showMoreNotifications(cluster)">
+                <mat-icon>expand_more</mat-icon>
+                Show more
+              </button>
+            </div>
+          </td>
+        </ng-container>
+
+        <!-- Labels Column -->
+        <ng-container matColumnDef="labels">
+          <th mat-header-cell *matHeaderCellDef>Labels</th>
+          <td mat-cell *matCellDef="let cluster">
+            <span class="labels-cell">{{ getLabelsDisplay(cluster.labels) }}</span>
+          </td>
+        </ng-container>
+
+        <!-- Actions Column -->
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef></th>
+          <td mat-cell *matCellDef="let cluster">
+            <button mat-icon-button [matMenuTriggerFor]="actionsMenu">
+              <mat-icon>more_vert</mat-icon>
+            </button>
+            <mat-menu #actionsMenu="matMenu">
+              <button mat-menu-item (click)="navigateToCluster(cluster)">
+                <mat-icon>visibility</mat-icon>
+                View details
+              </button>
+              <button mat-menu-item>
+                <mat-icon>edit</mat-icon>
+                Edit
+              </button>
+              <button mat-menu-item>
+                <mat-icon>link</mat-icon>
+                Connect
+              </button>
+              <mat-divider></mat-divider>
+              <button mat-menu-item class="delete-action">
+                <mat-icon>delete</mat-icon>
+                Delete
+              </button>
+            </mat-menu>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr 
+          mat-row 
+          *matRowDef="let cluster; columns: displayedColumns; trackBy: trackByClusterId"
+          [class.selected-row]="isClusterSelected(cluster.id)">
+        </tr>
+      </table>
+
+      <!-- Paginator -->
+      <mat-paginator 
+        [pageSizeOptions]="[5, 10, 25, 100]" 
+        showFirstLastButtons
+        aria-label="Select page of clusters">
+      </mat-paginator>
+    </div>
+  </div>
+
+  <!-- Other Tab Contents (placeholder) -->
+  <div class="tab-content" *ngIf="selectedTab !== 'overview'">
+    <div class="tab-placeholder">
+      <mat-icon>{{ tabs.find(t => t.id === selectedTab)?.icon }}</mat-icon>
+      <h2>{{ tabs.find(t => t.id === selectedTab)?.label }}</h2>
+      <p>This tab is coming soon. Stay tuned for updates!</p>
+    </div>
+  </div>
+</div> 

@@ -100,7 +100,9 @@ import { CloudNatComponent } from './components/cloud-nat/cloud-nat.component';
 import { CloudNatDetailsComponent } from './components/cloud-nat-details/cloud-nat-details.component';
 import { CreateCloudNatComponent } from './components/create-cloud-nat/create-cloud-nat.component';
 import { CreateRouteComponent } from './components/create-route/create-route.component';
+import { GkeClustersComponent } from './components/gke-clusters/gke-clusters.component';
 import { CloudNatService } from './services/cloud-nat.service';
+import { GkeClusterService } from './services/gke-cluster.service';
 
 @NgModule({
   declarations: [
@@ -161,7 +163,8 @@ import { CloudNatService } from './services/cloud-nat.service';
     CloudNatComponent,
     CloudNatDetailsComponent,
     CreateCloudNatComponent,
-    CreateRouteComponent
+    CreateRouteComponent,
+    GkeClustersComponent
   ],
   imports: [
     BrowserModule,
@@ -188,7 +191,7 @@ import { CloudNatService } from './services/cloud-nat.service';
     MatDividerModule,
     TextFieldModule
   ],
-  providers: [AuthService, VpcService, TPPIService, PacketMirroringService, NetworkHealthMonitorService, AppNetaService, CloudNatService],
+  providers: [AuthService, VpcService, TPPIService, PacketMirroringService, NetworkHealthMonitorService, AppNetaService, CloudNatService, GkeClusterService],
   bootstrap: [AppComponent]
 })
 export class AppModule { } 
