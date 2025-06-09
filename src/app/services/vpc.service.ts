@@ -15,6 +15,7 @@ export interface VpcNetwork {
   routingConfig?: {
     routingMode: string;
   };
+  networkFirewallPolicyEnforcementOrder?: string;
   subnetDetails?: SubnetDetails[];
 }
 
@@ -169,6 +170,7 @@ export class VpcService {
         routingConfig: {
           routingMode: 'REGIONAL'
         },
+        networkFirewallPolicyEnforcementOrder: 'AFTER_CLASSIC_FIREWALL',
         subnetDetails: [
           {
             name: 'prod-us-central1',
@@ -199,6 +201,7 @@ export class VpcService {
         routingConfig: {
           routingMode: 'REGIONAL'
         },
+        networkFirewallPolicyEnforcementOrder: 'BEFORE_CLASSIC_FIREWALL',
         subnetDetails: [
           {
             name: 'dev-us-west1',
@@ -222,6 +225,7 @@ export class VpcService {
         routingConfig: {
           routingMode: 'REGIONAL'
         },
+        networkFirewallPolicyEnforcementOrder: 'AFTER_CLASSIC_FIREWALL',
         subnetDetails: [
           {
             name: 'staging-us-central1',
@@ -326,7 +330,8 @@ export class VpcService {
         autoCreateSubnetworks: network.autoCreateSubnetworks || false,
         creationTimestamp: new Date().toISOString(),
         subnetworks: [],
-        routingConfig: { routingMode: 'REGIONAL' }
+        routingConfig: { routingMode: 'REGIONAL' },
+        networkFirewallPolicyEnforcementOrder: network.networkFirewallPolicyEnforcementOrder || 'AFTER_CLASSIC_FIREWALL'
       };
       return of(mockCreatedNetwork);
     }
@@ -346,7 +351,8 @@ export class VpcService {
               autoCreateSubnetworks: network.autoCreateSubnetworks || false,
               creationTimestamp: new Date().toISOString(),
               subnetworks: [],
-              routingConfig: network.routingConfig || { routingMode: 'REGIONAL' }
+              routingConfig: network.routingConfig || { routingMode: 'REGIONAL' },
+              networkFirewallPolicyEnforcementOrder: network.networkFirewallPolicyEnforcementOrder || 'AFTER_CLASSIC_FIREWALL'
             };
             return createdNetwork;
           })
@@ -372,7 +378,8 @@ export class VpcService {
         subnetworks: subnets ? subnets.map((subnet, index) => 
           `https://www.googleapis.com/compute/v1/projects/demo-project/regions/${subnet.region}/subnetworks/${subnet.name}`
         ) : [],
-        routingConfig: { routingMode: 'REGIONAL' }
+        routingConfig: { routingMode: 'REGIONAL' },
+        networkFirewallPolicyEnforcementOrder: network.networkFirewallPolicyEnforcementOrder || 'AFTER_CLASSIC_FIREWALL'
       };
       return of(mockCreatedNetwork);
     }

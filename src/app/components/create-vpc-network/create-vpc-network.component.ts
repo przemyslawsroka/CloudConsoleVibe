@@ -439,6 +439,24 @@ import { MatSnackBar } from '@angular/material/snack-bar';
                 </mat-radio-group>
                 <p class="toggle-description">Hybrid subnets allow for specialized network configurations</p>
               </div>
+
+              <!-- Network Firewall Policy Enforcement Order -->
+              <div class="form-section">
+                <h4>Network Firewall Policy Enforcement</h4>
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Enforcement Order</mat-label>
+                  <mat-select formControlName="networkFirewallPolicyEnforcementOrder">
+                    <mat-option value="AFTER_CLASSIC_FIREWALL">After Classic Firewall</mat-option>
+                    <mat-option value="BEFORE_CLASSIC_FIREWALL">Before Classic Firewall</mat-option>
+                  </mat-select>
+                  <mat-icon matSuffix matTooltip="Determines whether network firewall policies are applied before or after classic firewall rules">info</mat-icon>
+                  <mat-hint>Controls how network firewall policies interact with classic firewall rules</mat-hint>
+                </mat-form-field>
+                <p class="toggle-description">
+                  Configures the order in which network firewall policies and classic firewall rules are applied. 
+                  Most users should keep the default "After Classic Firewall" setting.
+                </p>
+              </div>
             </mat-card-content>
           </mat-card>
 
@@ -1203,7 +1221,8 @@ export class CreateVpcNetworkComponent implements OnInit {
       routingMode: ['REGIONAL'],
       dnsPolicy: ['DEFAULT'],
       enableFlowLogs: [false],
-      hybridSubnets: ['off']
+      hybridSubnets: ['off'],
+      networkFirewallPolicyEnforcementOrder: ['AFTER_CLASSIC_FIREWALL']
     });
   }
 
@@ -1254,7 +1273,8 @@ export class CreateVpcNetworkComponent implements OnInit {
         autoCreateSubnetworks: formValue.subnetMode === 'automatic',
         routingConfig: {
           routingMode: formValue.routingMode
-        }
+        },
+        networkFirewallPolicyEnforcementOrder: formValue.networkFirewallPolicyEnforcementOrder
       };
 
       // Include subnets data for custom mode

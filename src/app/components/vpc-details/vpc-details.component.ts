@@ -41,6 +41,10 @@ import { ProjectService, Project } from '../../services/project.service';
               <h3>Routing Mode</h3>
               <p>{{vpcNetwork.routingConfig?.routingMode || 'Global'}}</p>
             </div>
+            <div class="detail-item">
+              <h3>Network Firewall Policy Enforcement</h3>
+              <p>{{getFirewallPolicyEnforcementDisplay(vpcNetwork.networkFirewallPolicyEnforcementOrder)}}</p>
+            </div>
           </div>
 
           <div class="subnetworks-section">
@@ -227,5 +231,20 @@ export class VpcDetailsComponent implements OnInit {
 
   goBack() {
     window.history.back();
+  }
+
+  getFirewallPolicyEnforcementDisplay(order?: string): string {
+    if (!order) {
+      return 'After Classic Firewall (default)';
+    }
+    
+    switch (order) {
+      case 'AFTER_CLASSIC_FIREWALL':
+        return 'After Classic Firewall';
+      case 'BEFORE_CLASSIC_FIREWALL':
+        return 'Before Classic Firewall';
+      default:
+        return order;
+    }
   }
 } 
