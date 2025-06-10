@@ -1,0 +1,452 @@
+.dashboard-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 24px;
+  margin-bottom: 24px;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+
+  .header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .dashboard-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 0;
+    font-size: 28px;
+    font-weight: 500;
+
+    mat-icon {
+      font-size: 32px;
+      width: 32px;
+      height: 32px;
+    }
+  }
+
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+
+    .ws-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 500;
+
+      &.connected {
+        background: rgba(76, 175, 80, 0.2);
+        color: #4caf50;
+      }
+
+      &.disconnected {
+        background: rgba(244, 67, 54, 0.2);
+        color: #f44336;
+      }
+    }
+
+    .time-range-selector {
+      width: 140px;
+      
+      ::ng-deep .mat-form-field-wrapper {
+        padding-bottom: 0;
+      }
+    }
+
+    .auto-refresh-toggle {
+      color: white;
+    }
+  }
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  
+  p {
+    margin-top: 16px;
+    color: #666;
+  }
+}
+
+.dashboard-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+.overview-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 16px;
+  margin-bottom: 32px;
+
+  .overview-card {
+    text-align: center;
+    transition: transform 0.2s ease;
+
+    &:hover {
+      transform: translateY(-2px);
+    }
+
+    .health-indicator {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      
+      mat-icon {
+        font-size: 24px;
+        width: 24px;
+        height: 24px;
+      }
+
+      .health-text {
+        font-size: 18px;
+        font-weight: 500;
+      }
+    }
+
+    .metric-value {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+
+      .big-number {
+        font-size: 32px;
+        font-weight: 600;
+        color: #1976d2;
+      }
+
+      .metric-label {
+        font-size: 14px;
+        color: #666;
+      }
+    }
+  }
+}
+
+.charts-section {
+  margin-bottom: 32px;
+
+  .chart-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 16px;
+    margin-bottom: 16px;
+
+    .chart-card {
+      &.full-width {
+        grid-column: 1 / -1;
+      }
+
+      .chart-container {
+        height: 300px;
+        position: relative;
+      }
+
+      .chart-placeholder {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 250px;
+        color: #666;
+        border: 2px dashed #e0e0e0;
+        border-radius: 8px;
+        background: #fafafa;
+
+        mat-icon {
+          font-size: 48px;
+          width: 48px;
+          height: 48px;
+          margin-bottom: 16px;
+          opacity: 0.6;
+          color: #1976d2;
+        }
+
+        p {
+          margin: 4px 0;
+          text-align: center;
+        }
+
+        p:first-of-type {
+          font-weight: 500;
+          font-size: 16px;
+        }
+
+        p:last-of-type {
+          font-size: 14px;
+          color: #999;
+        }
+      }
+
+      .no-data {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 200px;
+        color: #666;
+
+        mat-icon {
+          font-size: 48px;
+          width: 48px;
+          height: 48px;
+          margin-bottom: 16px;
+          opacity: 0.5;
+        }
+      }
+    }
+  }
+}
+
+.bottom-section {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 16px;
+  margin-bottom: 32px;
+
+  @media (max-width: 968px) {
+    grid-template-columns: 1fr;
+  }
+
+  .agents-card {
+    .card-actions {
+      display: flex;
+      gap: 8px;
+      margin-left: auto;
+    }
+
+    .agents-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+
+      .agent-item {
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 16px;
+        transition: all 0.2s ease;
+
+        &:hover {
+          border-color: #1976d2;
+          box-shadow: 0 2px 8px rgba(25, 118, 210, 0.1);
+        }
+
+        .agent-header {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          margin-bottom: 8px;
+
+          .agent-status {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+          }
+
+          .agent-name {
+            font-weight: 500;
+            font-size: 14px;
+          }
+        }
+
+        .agent-details {
+          font-size: 12px;
+          color: #666;
+
+          .agent-location {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            margin-bottom: 4px;
+
+            mat-icon {
+              font-size: 14px;
+              width: 14px;
+              height: 14px;
+            }
+          }
+
+          .agent-metrics {
+            display: flex;
+            justify-content: space-between;
+
+            .metric {
+              font-size: 11px;
+            }
+          }
+        }
+      }
+    }
+
+    .no-agents {
+      text-align: center;
+      padding: 40px 20px;
+      color: #666;
+
+      mat-icon {
+        font-size: 48px;
+        width: 48px;
+        height: 48px;
+        margin-bottom: 16px;
+        opacity: 0.5;
+      }
+
+      p {
+        margin-bottom: 16px;
+      }
+    }
+  }
+
+  .activity-card {
+    .activity-list {
+      max-height: 300px;
+      overflow-y: auto;
+
+      .activity-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 12px 0;
+        border-bottom: 1px solid #f0f0f0;
+
+        &:last-child {
+          border-bottom: none;
+        }
+
+        .activity-icon {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 32px;
+          height: 32px;
+          border-radius: 50%;
+          background: #f5f5f5;
+          color: #666;
+
+          mat-icon {
+            font-size: 16px;
+            width: 16px;
+            height: 16px;
+          }
+        }
+
+        .activity-content {
+          flex: 1;
+
+          .activity-message {
+            font-size: 14px;
+            margin-bottom: 4px;
+          }
+
+          .activity-time {
+            font-size: 12px;
+            color: #666;
+          }
+        }
+      }
+    }
+
+    .no-activity {
+      text-align: center;
+      padding: 40px 20px;
+      color: #666;
+
+      mat-icon {
+        font-size: 48px;
+        width: 48px;
+        height: 48px;
+        margin-bottom: 16px;
+        opacity: 0.5;
+      }
+    }
+  }
+}
+
+.quick-actions {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  z-index: 1000;
+
+  .mat-fab {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transition: all 0.2s ease;
+
+    &:hover {
+      transform: scale(1.05);
+    }
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .dashboard-header {
+    .header-content {
+      flex-direction: column;
+      gap: 16px;
+      text-align: center;
+    }
+
+    .header-actions {
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+  }
+
+  .overview-cards {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
+
+  .charts-section .chart-row {
+    grid-template-columns: 1fr;
+  }
+
+  .quick-actions {
+    bottom: 16px;
+    right: 16px;
+  }
+}
+
+// Dark theme support
+@media (prefers-color-scheme: dark) {
+  .dashboard-header {
+    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+  }
+
+  .agent-item {
+    border-color: #424242;
+    background: #303030;
+
+    &:hover {
+      border-color: #2196f3;
+    }
+  }
+
+  .activity-item {
+    border-bottom-color: #424242;
+  }
+
+  .activity-icon {
+    background: #424242;
+    color: #bbb;
+  }
+} 

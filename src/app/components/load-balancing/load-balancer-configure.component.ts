@@ -1271,7 +1271,7 @@ export interface HostRule {
                     <text x="80" y="20" text-anchor="middle" class="backend-title">{{ service.name }}</text>
                     <text x="80" y="40" text-anchor="middle" class="backend-text">{{ service.type === 'SERVICE' ? 'Service' : 'Bucket' }}</text>
                     <text x="80" y="55" text-anchor="middle" class="backend-text">{{ service.protocol || 'N/A' }}</text>
-                    <text x="80" y="70" text-anchor="middle" class="backend-text">{{ service.backends?.length || 0 }} Backend(s)</text>
+                    <text x="80" y="70" text-anchor="middle" class="backend-text">{{ service.backends.length || 0 }} Backend(s)</text>
                     <text x="80" y="85" text-anchor="middle" class="backend-text">CDN: {{ service.cloudCDN ? 'On' : 'Off' }}</text>
                   </g>
                 </g>

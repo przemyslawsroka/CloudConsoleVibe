@@ -1,0 +1,267 @@
+<!-- Agent List Header -->
+<div class="agent-list-header">
+  <div class="header-content">
+    <h1 class="page-title">
+      <mat-icon>devices</mat-icon>
+      Monitoring Agents
+    </h1>
+    
+    <div class="header-actions">
+      <!-- WebSocket Status -->
+      <div class="ws-status" [class.connected]="wsConnected" [class.disconnected]="!wsConnected">
+        <mat-icon>{{ wsConnected ? 'wifi' : 'wifi_off' }}</mat-icon>
+        <span>{{ wsConnected ? 'Connected' : 'Disconnected' }}</span>
+      </div>
+      
+      <!-- Refresh Button -->
+      <button mat-icon-button (click)="refresh()" [disabled]="isLoading" matTooltip="Refresh Agents">
+        <mat-icon>refresh</mat-icon>
+      </button>
+      
+      <!-- Deploy Button -->
+      <button mat-raised-button color="primary" routerLink="/monitoring/deploy">
+        <mat-icon>add</mat-icon>
+        Deploy Agent
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Filters -->
+<div class="filters-section">
+  <mat-card>
+    <mat-card-content>
+      <div class="filters-row">
+        <mat-form-field appearance="outline">
+          <mat-label>Search</mat-label>
+          <mat-icon matPrefix>search</mat-icon>
+          <input matInput (keyup)="applyTextFilter($event)" placeholder="Search agents...">
+        </mat-form-field>
+        
+        <mat-form-field appearance="outline">
+          <mat-label>Status</mat-label>
+          <mat-select [(value)]="statusFilter" (selectionChange)="applyFilters()">
+            <mat-option value="">All Statuses</mat-option>
+            <mat-option *ngFor="let status of statusOptions" [value]="status">
+              {{ status | titlecase }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+        
+        <mat-form-field appearance="outline">
+          <mat-label>Provider</mat-label>
+          <mat-select [(value)]="providerFilter" (selectionChange)="applyFilters()">
+            <mat-option value="">All Providers</mat-option>
+            <mat-option *ngFor="let provider of providerOptions" [value]="provider">
+              {{ provider }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+        
+        <mat-form-field appearance="outline">
+          <mat-label>Region</mat-label>
+          <mat-select [(value)]="regionFilter" (selectionChange)="applyFilters()">
+            <mat-option value="">All Regions</mat-option>
+            <mat-option *ngFor="let region of regionOptions" [value]="region">
+              {{ region }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+        
+        <button mat-button (click)="clearFilters()">
+          <mat-icon>clear</mat-icon>
+          Clear Filters
+        </button>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>
+
+<!-- Loading Indicator -->
+<div *ngIf="isLoading" class="loading-container">
+  <mat-spinner diameter="40"></mat-spinner>
+  <p>Loading agents...</p>
+</div>
+
+<!-- Agents Table -->
+<div *ngIf="!isLoading" class="table-container">
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title>Registered Agents ({{ totalAgents }})</mat-card-title>
+      <div class="bulk-actions" *ngIf="selection.selected.length > 0">
+        <span>{{ selection.selected.length }} selected</span>
+        <button mat-button color="warn" (click)="deleteSelectedAgents()">
+          <mat-icon>delete</mat-icon>
+          Delete Selected
+        </button>
+      </div>
+    </mat-card-header>
+    
+    <mat-card-content>
+      <table mat-table [dataSource]="dataSource" class="agents-table" matSort (matSortChange)="onSortChange()">
+        
+        <!-- Checkbox Column -->
+        <ng-container matColumnDef="select">
+          <th mat-header-cell *matHeaderCellDef>
+            <mat-checkbox (change)="$event ? masterToggle() : null"
+                          [checked]="selection.hasValue() && isAllSelected()"
+                          [indeterminate]="selection.hasValue() && !isAllSelected()">
+            </mat-checkbox>
+          </th>
+          <td mat-cell *matCellDef="let agent">
+            <mat-checkbox (click)="$event.stopPropagation()"
+                          (change)="$event ? selection.toggle(agent) : null"
+                          [checked]="selection.isSelected(agent)">
+            </mat-checkbox>
+          </td>
+        </ng-container>
+
+        <!-- Status Column -->
+        <ng-container matColumnDef="status">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Status</th>
+          <td mat-cell *matCellDef="let agent">
+            <div class="status-indicator">
+              <div class="status-dot" [style.background-color]="getStatusColor(agent.status)"></div>
+              <mat-icon [style.color]="getStatusColor(agent.status)">{{ getStatusIcon(agent.status) }}</mat-icon>
+              <span>{{ agent.status | titlecase }}</span>
+            </div>
+          </td>
+        </ng-container>
+
+        <!-- ID Column -->
+        <ng-container matColumnDef="id">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Agent ID</th>
+          <td mat-cell *matCellDef="let agent">
+            <div class="agent-id">
+              <span class="id-text">{{ agent.id }}</span>
+              <button mat-icon-button matTooltip="Copy ID" (click)="$event.stopPropagation()">
+                <mat-icon>content_copy</mat-icon>
+              </button>
+            </div>
+          </td>
+        </ng-container>
+
+        <!-- Provider Column -->
+        <ng-container matColumnDef="provider">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Provider</th>
+          <td mat-cell *matCellDef="let agent">
+            <mat-chip-set>
+              <mat-chip>{{ agent.provider }}</mat-chip>
+            </mat-chip-set>
+          </td>
+        </ng-container>
+
+        <!-- Region Column -->
+        <ng-container matColumnDef="region">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Region</th>
+          <td mat-cell *matCellDef="let agent">
+            <div class="location-info">
+              <mat-icon>location_on</mat-icon>
+              <span>{{ agent.region }}</span>
+              <span *ngIf="agent.zone" class="zone-info">{{ agent.zone }}</span>
+            </div>
+          </td>
+        </ng-container>
+
+        <!-- IP Address Column -->
+        <ng-container matColumnDef="ip_address">
+          <th mat-header-cell *matHeaderCellDef>IP Address</th>
+          <td mat-cell *matCellDef="let agent">
+            <code class="ip-address">{{ agent.ip_address }}</code>
+          </td>
+        </ng-container>
+
+        <!-- Version Column -->
+        <ng-container matColumnDef="version">
+          <th mat-header-cell *matHeaderCellDef>Version</th>
+          <td mat-cell *matCellDef="let agent">
+            <mat-chip-set>
+              <mat-chip color="accent">{{ agent.version }}</mat-chip>
+            </mat-chip-set>
+          </td>
+        </ng-container>
+
+        <!-- Metrics Column -->
+        <ng-container matColumnDef="total_metrics">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Metrics</th>
+          <td mat-cell *matCellDef="let agent">
+            <div class="metrics-info">
+              <span class="metric-count">{{ agent.total_metrics }}</span>
+              <span class="metric-label">metrics</span>
+            </div>
+          </td>
+        </ng-container>
+
+        <!-- Last Seen Column -->
+        <ng-container matColumnDef="last_seen">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Last Seen</th>
+          <td mat-cell *matCellDef="let agent">
+            <div class="time-info">
+              <span>{{ formatLastSeen(agent.last_seen) }}</span>
+              <mat-icon *ngIf="agent.status === 'connected'" class="online-indicator">fiber_manual_record</mat-icon>
+            </div>
+          </td>
+        </ng-container>
+
+        <!-- Actions Column -->
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef>Actions</th>
+          <td mat-cell *matCellDef="let agent" (click)="$event.stopPropagation()">
+            <button mat-icon-button [matMenuTriggerFor]="agentMenu" matTooltip="More Actions">
+              <mat-icon>more_vert</mat-icon>
+            </button>
+            <mat-menu #agentMenu="matMenu">
+              <button mat-menu-item (click)="viewAgent(agent)">
+                <mat-icon>visibility</mat-icon>
+                <span>View Details</span>
+              </button>
+              <button mat-menu-item (click)="configureAgent(agent)">
+                <mat-icon>settings</mat-icon>
+                <span>Configure</span>
+              </button>
+              <button mat-menu-item (click)="subscribeToAgent(agent)" *ngIf="agent.status === 'connected'">
+                <mat-icon>notifications</mat-icon>
+                <span>Subscribe</span>
+              </button>
+              <button mat-menu-item (click)="unsubscribeFromAgent(agent)" *ngIf="agent.status === 'connected'">
+                <mat-icon>notifications_off</mat-icon>
+                <span>Unsubscribe</span>
+              </button>
+              <mat-divider></mat-divider>
+              <button mat-menu-item (click)="deleteAgent(agent)" class="delete-action">
+                <mat-icon>delete</mat-icon>
+                <span>Delete</span>
+              </button>
+            </mat-menu>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let agent; columns: displayedColumns;" 
+            (click)="viewAgent(agent)" 
+            class="agent-row"
+            [class.selected]="selection.isSelected(agent)">
+        </tr>
+      </table>
+
+      <!-- No Data State -->
+      <div *ngIf="dataSource.data.length === 0" class="no-data">
+        <mat-icon>devices</mat-icon>
+        <h3>No Agents Found</h3>
+        <p>No monitoring agents match your current filters.</p>
+        <button mat-raised-button color="primary" routerLink="/monitoring/deploy">
+          <mat-icon>add</mat-icon>
+          Deploy Your First Agent
+        </button>
+      </div>
+
+      <!-- Pagination -->
+      <mat-paginator [length]="totalAgents"
+                     [pageSize]="pageSize"
+                     [pageSizeOptions]="[10, 25, 50, 100]"
+                     (page)="onPageChange($event)"
+                     showFirstLastButtons>
+      </mat-paginator>
+    </mat-card-content>
+  </mat-card>
+</div> 

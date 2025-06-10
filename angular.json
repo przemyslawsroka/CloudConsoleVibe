@@ -32,7 +32,11 @@
               "@angular/material/prebuilt-themes/indigo-pink.css",
               "src/styles.scss"
             ],
-            "scripts": []
+            "scripts": [],
+            "allowedCommonJsDependencies": [
+              "ngraph.forcelayout",
+              "ngraph.graph"
+            ]
           },
           "configurations": {
             "production": {

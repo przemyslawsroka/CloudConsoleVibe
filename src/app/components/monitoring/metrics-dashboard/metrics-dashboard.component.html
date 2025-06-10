@@ -1,0 +1,267 @@
+<!-- Dashboard Header -->
+<div class="dashboard-header">
+  <div class="header-content">
+    <h1 class="dashboard-title">
+      <mat-icon>dashboard</mat-icon>
+      Network Monitoring Dashboard
+    </h1>
+    
+    <div class="header-actions">
+      <!-- WebSocket Status -->
+      <div class="ws-status" [class.connected]="wsConnected" [class.disconnected]="!wsConnected">
+        <mat-icon>{{ wsConnected ? 'wifi' : 'wifi_off' }}</mat-icon>
+        <span>{{ wsConnected ? 'Connected' : 'Disconnected' }}</span>
+      </div>
+      
+      <!-- Time Range Selector -->
+      <mat-form-field appearance="outline" class="time-range-selector">
+        <mat-label>Time Range</mat-label>
+        <mat-select [(value)]="selectedTimeRange" (selectionChange)="onTimeRangeChange()">
+          <mat-option *ngFor="let range of timeRanges" [value]="range.value">
+            {{ range.label }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+      
+      <!-- Auto Refresh Toggle -->
+      <mat-slide-toggle 
+        [(ngModel)]="autoRefresh" 
+        (change)="toggleAutoRefresh()"
+        class="auto-refresh-toggle">
+        Auto Refresh
+      </mat-slide-toggle>
+      
+      <!-- Refresh Button -->
+      <button mat-icon-button 
+              (click)="onRefresh()" 
+              [disabled]="isLoading"
+              matTooltip="Refresh Dashboard">
+        <mat-icon>refresh</mat-icon>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Loading Indicator -->
+<div *ngIf="isLoading" class="loading-container">
+  <mat-spinner diameter="40"></mat-spinner>
+  <p>Loading dashboard data...</p>
+</div>
+
+<!-- Dashboard Content -->
+<div *ngIf="!isLoading" class="dashboard-content">
+  
+  <!-- System Overview Cards -->
+  <div class="overview-cards">
+    <mat-card class="overview-card">
+      <mat-card-header>
+        <mat-card-title>System Health</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="health-indicator">
+          <mat-icon [style.color]="getSystemHealthColor()">
+            {{ dashboardOverview?.systemHealth === 'healthy' ? 'check_circle' : 
+               dashboardOverview?.systemHealth === 'warning' ? 'warning' : 'error' }}
+          </mat-icon>
+          <span class="health-text">{{ dashboardOverview?.systemHealth | titlecase }}</span>
+        </div>
+      </mat-card-content>
+    </mat-card>
+    
+    <mat-card class="overview-card">
+      <mat-card-header>
+        <mat-card-title>Active Agents</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="metric-value">
+          <span class="big-number">{{ dashboardOverview?.activeAgents || 0 }}</span>
+          <span class="metric-label">of {{ dashboardOverview?.totalAgents || 0 }} total</span>
+        </div>
+      </mat-card-content>
+    </mat-card>
+    
+    <mat-card class="overview-card">
+      <mat-card-header>
+        <mat-card-title>Total Metrics</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="metric-value">
+          <span class="big-number">{{ dashboardOverview?.totalMetrics || 0 | number }}</span>
+          <span class="metric-label">collected</span>
+        </div>
+      </mat-card-content>
+    </mat-card>
+    
+    <mat-card class="overview-card">
+      <mat-card-header>
+        <mat-card-title>Avg Latency</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="metric-value">
+          <span class="big-number">{{ formatLatency(dashboardOverview?.metricsSummary?.networkLatency?.avg || 0) }}</span>
+          <span class="metric-label">network response</span>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- Charts Section -->
+  <div class="charts-section">
+    <div class="chart-row">
+      <!-- Network Latency Chart -->
+      <mat-card class="chart-card">
+        <mat-card-header>
+          <mat-card-title>Network Latency</mat-card-title>
+          <mat-card-subtitle>Average and maximum response times</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="chart-container" *ngIf="networkLatencyData">
+            <div class="chart-placeholder">
+              <mat-icon>timeline</mat-icon>
+              <p>Network Latency Chart</p>
+              <p>Chart.js integration coming soon</p>
+            </div>
+          </div>
+          <div *ngIf="!networkLatencyData" class="no-data">
+            <mat-icon>timeline</mat-icon>
+            <p>No latency data available</p>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Packet Loss Chart -->
+      <mat-card class="chart-card">
+        <mat-card-header>
+          <mat-card-title>Packet Loss</mat-card-title>
+          <mat-card-subtitle>Network packet loss percentage</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="chart-container" *ngIf="packetLossData">
+            <div class="chart-placeholder">
+              <mat-icon>signal_cellular_connected_no_internet_0_bar</mat-icon>
+              <p>Packet Loss Chart</p>
+              <p>Chart.js integration coming soon</p>
+            </div>
+          </div>
+          <div *ngIf="!packetLossData" class="no-data">
+            <mat-icon>signal_cellular_connected_no_internet_0_bar</mat-icon>
+            <p>No packet loss data available</p>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <div class="chart-row">
+      <!-- Throughput Chart -->
+      <mat-card class="chart-card full-width">
+        <mat-card-header>
+          <mat-card-title>Network Throughput</mat-card-title>
+          <mat-card-subtitle>Data transmission rates (RX/TX)</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="chart-container" *ngIf="throughputData">
+            <div class="chart-placeholder">
+              <mat-icon>swap_horiz</mat-icon>
+              <p>Throughput Chart</p>
+              <p>Chart.js integration coming soon</p>
+            </div>
+          </div>
+          <div *ngIf="!throughputData" class="no-data">
+            <mat-icon>swap_horiz</mat-icon>
+            <p>No throughput data available</p>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+
+  <!-- Agents and Activity Section -->
+  <div class="bottom-section">
+    <!-- Connected Agents -->
+    <mat-card class="agents-card">
+      <mat-card-header>
+        <mat-card-title>Connected Agents</mat-card-title>
+        <mat-card-subtitle>{{ agents.length }} agents registered</mat-card-subtitle>
+        <div class="card-actions">
+          <button mat-button routerLink="/monitoring/agents">
+            <mat-icon>visibility</mat-icon>
+            View All
+          </button>
+          <button mat-button routerLink="/monitoring/deploy">
+            <mat-icon>add</mat-icon>
+            Deploy New
+          </button>
+        </div>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="agents-grid" *ngIf="agents.length > 0">
+          <div class="agent-item" *ngFor="let agent of agents.slice(0, 6)">
+            <div class="agent-header">
+              <div class="agent-status" [style.background-color]="getAgentStatusColor(agent.status)"></div>
+              <span class="agent-name">{{ agent.id }}</span>
+            </div>
+            <div class="agent-details">
+              <div class="agent-location">
+                <mat-icon>location_on</mat-icon>
+                <span>{{ agent.region }}</span>
+              </div>
+              <div class="agent-metrics">
+                <span class="metric">{{ agent.total_metrics }} metrics</span>
+                <span class="metric">{{ formatLatency(getAgentLatency(agent)) }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div *ngIf="agents.length === 0" class="no-agents">
+          <mat-icon>devices</mat-icon>
+          <p>No agents connected</p>
+          <button mat-raised-button color="primary" routerLink="/monitoring/deploy">
+            Deploy Your First Agent
+          </button>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Recent Activity -->
+    <mat-card class="activity-card">
+      <mat-card-header>
+        <mat-card-title>Recent Activity</mat-card-title>
+        <mat-card-subtitle>Latest system events</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="activity-list" *ngIf="dashboardOverview && dashboardOverview.recentActivity && dashboardOverview.recentActivity.length > 0">
+          <div class="activity-item" *ngFor="let activity of dashboardOverview.recentActivity.slice(0, 5)">
+            <div class="activity-icon">
+              <mat-icon>
+                {{ activity.type === 'agent_connected' ? 'link' : 
+                   activity.type === 'agent_disconnected' ? 'link_off' :
+                   activity.type === 'metric_received' ? 'insights' : 'warning' }}
+              </mat-icon>
+            </div>
+            <div class="activity-content">
+              <div class="activity-message">{{ activity.message }}</div>
+              <div class="activity-time">{{ activity.timestamp | date:'short' }}</div>
+            </div>
+          </div>
+        </div>
+        <div *ngIf="!dashboardOverview || !dashboardOverview.recentActivity || dashboardOverview.recentActivity.length === 0" class="no-activity">
+          <mat-icon>history</mat-icon>
+          <p>No recent activity</p>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="quick-actions">
+    <button mat-fab color="primary" routerLink="/monitoring/deploy" matTooltip="Deploy New Agent">
+      <mat-icon>add</mat-icon>
+    </button>
+    <button mat-fab color="accent" routerLink="/monitoring/targets" matTooltip="Configure Targets">
+      <mat-icon>settings</mat-icon>
+    </button>
+    <button mat-fab routerLink="/monitoring/visualization" matTooltip="Advanced Visualization">
+      <mat-icon>analytics</mat-icon>
+    </button>
+  </div>
+</div> 

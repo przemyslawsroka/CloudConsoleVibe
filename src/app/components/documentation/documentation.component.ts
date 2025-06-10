@@ -138,7 +138,43 @@ interface DocumentationSection {
             </ul>
 
             <h3>Application Structure</h3>
-            <p>CloudConsoleVibe follows a <strong>pure frontend architecture</strong> with no backend server. The application connects directly to Google Cloud APIs from the browser using OAuth 2.0 authentication.</p>
+            <p>CloudConsoleVibe has evolved from a <strong>pure frontend architecture</strong> to a comprehensive <strong>full-stack architecture</strong> with monitoring capabilities. The application now includes both direct Google Cloud API integration and a backend monitoring system.</p>
+
+            <div class="architecture-overview">
+              <h4>Full-Stack Architecture Overview</h4>
+              <div class="architecture-grid">
+                <div class="arch-column">
+                  <h5>Frontend Application</h5>
+                  <ul>
+                    <li>Angular 15+ with TypeScript</li>
+                    <li>Material Design UI components</li>
+                    <li>Direct Google Cloud API integration</li>
+                    <li>Real-time monitoring dashboard</li>
+                    <li>WebSocket communication</li>
+                  </ul>
+                </div>
+                <div class="arch-column">
+                  <h5>Backend API Server</h5>
+                  <ul>
+                    <li>Node.js/Express REST API</li>
+                    <li>WebSocket server for real-time communication</li>
+                    <li>SQLite database for metrics storage</li>
+                    <li>Agent registration and management</li>
+                    <li>Metrics aggregation and processing</li>
+                  </ul>
+                </div>
+                <div class="arch-column">
+                  <h5>Monitoring Agents</h5>
+                  <ul>
+                    <li>Go-based lightweight agents</li>
+                    <li>Network metrics collection</li>
+                    <li>Connectivity testing</li>
+                    <li>Multi-platform deployment</li>
+                    <li>Real-time data transmission</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
             
             <div class="architecture-diagram">
               <div class="layer">
@@ -340,22 +376,48 @@ interface DocumentationSection {
           </h2>
           <div class="section-content">
             <h3>Deployment Architecture</h3>
-            <p>CloudConsoleVibe is deployed as a containerized application on Google Cloud Run, providing scalable and cost-effective hosting.</p>
+            <p>CloudConsoleVibe is deployed as a full-stack application with both frontend and backend services on Google Cloud Run, providing scalable and cost-effective hosting for the complete monitoring solution.</p>
+
+            <h3>Multi-Service Deployment</h3>
+            <div class="deployment-services">
+              <div class="service-card">
+                <h4>Frontend Service</h4>
+                <ul>
+                  <li><strong>URL:</strong> cloudconsolevibe-frontend-931553324054.us-central1.run.app</li>
+                  <li><strong>Technology:</strong> Angular + Nginx</li>
+                  <li><strong>Purpose:</strong> User interface and Google Cloud API integration</li>
+                  <li><strong>Configuration:</strong> 1GB memory, 1 CPU, standard timeout</li>
+                </ul>
+              </div>
+              <div class="service-card">
+                <h4>Backend Service</h4>
+                <ul>
+                  <li><strong>URL:</strong> cloudconsolevibe-backend-931553324054.us-central1.run.app</li>
+                  <li><strong>Technology:</strong> Node.js/Express + SQLite</li>
+                  <li><strong>Purpose:</strong> Monitoring API and WebSocket communication</li>
+                  <li><strong>Configuration:</strong> 2GB memory, 2 CPU, 3600s timeout (WebSocket support)</li>
+                </ul>
+              </div>
+            </div>
 
             <h3>Deployment Process</h3>
             <ol>
-              <li><strong>Build:</strong> <code>ng build --configuration production</code> creates optimized build</li>
-              <li><strong>Containerize:</strong> Docker builds multi-stage container with Nginx serving static files</li>
-              <li><strong>Push:</strong> Container image pushed to Google Container Registry</li>
-              <li><strong>Deploy:</strong> Google Cloud Run deploys the container with automatic scaling</li>
+              <li><strong>Frontend Build:</strong> <code>ng build --configuration production</code> creates optimized Angular build</li>
+              <li><strong>Backend Build:</strong> <code>npm install</code> and dependency setup for Node.js server</li>
+              <li><strong>Containerization:</strong> Separate Docker containers for frontend (Nginx) and backend (Node.js)</li>
+              <li><strong>Image Registry:</strong> Container images pushed to Google Container Registry</li>
+              <li><strong>Cloud Run Deployment:</strong> Both services deployed to Google Cloud Run with different configurations</li>
+              <li><strong>Service Communication:</strong> Frontend configured to communicate with backend via HTTPS and WSS</li>
             </ol>
 
             <h3>Infrastructure Components</h3>
             <ul>
-              <li><strong>Google Cloud Run:</strong> Serverless container hosting</li>
-              <li><strong>Google Container Registry:</strong> Container image storage</li>
+              <li><strong>Google Cloud Run:</strong> Serverless container hosting for both frontend and backend</li>
+              <li><strong>Google Container Registry:</strong> Container image storage and versioning</li>
               <li><strong>Nginx:</strong> Web server for serving Angular application</li>
-              <li><strong>Cloud Build (Optional):</strong> CI/CD pipeline for automated deployments</li>
+              <li><strong>Node.js/Express:</strong> Backend API server with WebSocket support</li>
+              <li><strong>SQLite:</strong> Embedded database for metrics and configuration storage</li>
+              <li><strong>Cloud Build:</strong> CI/CD pipeline for automated multi-service deployments</li>
             </ul>
 
             <h3>Environment Configuration</h3>
@@ -423,6 +485,281 @@ gcloud services enable monitoring.googleapis.com</code></pre>
               <li>Set up OAuth consent screen with required scopes</li>
               <li>Download client configuration and update application</li>
             </ol>
+          </div>
+        </section>
+
+        <section id="monitoring" class="doc-section">
+          <h2>
+            <mat-icon>monitoring</mat-icon>
+            Monitoring System
+          </h2>
+          <div class="section-content">
+            <p>CloudConsoleVibe includes a comprehensive monitoring system with real-time metrics collection, agent management, and dashboard visualization. The system consists of a backend API, WebSocket communication, and lightweight Go monitoring agents.</p>
+
+            <div class="architecture-diagram">
+              <h3>Monitoring Architecture</h3>
+              <div class="layer">
+                <h4>Frontend Dashboard</h4>
+                <p>Angular monitoring module with real-time visualization</p>
+                <div class="layer-details">
+                  <strong>Components:</strong>
+                  <ul>
+                    <li><code>MetricsDashboardComponent</code> - Real-time charts and system overview</li>
+                    <li><code>AgentListComponent</code> - Agent management and filtering</li>
+                    <li><code>AgentDeployComponent</code> - Multi-platform deployment wizard</li>
+                  </ul>
+                </div>
+              </div>
+              
+              <div class="layer">
+                <h4>WebSocket Communication</h4>
+                <p>Real-time bidirectional communication between frontend and backend</p>
+                <div class="layer-details">
+                  <strong>Features:</strong>
+                  <ul>
+                    <li>Live metric updates from agents</li>
+                    <li>Agent connection/disconnection events</li>
+                    <li>Alert notifications and system events</li>
+                    <li>Configuration updates and commands</li>
+                  </ul>
+                </div>
+              </div>
+              
+              <div class="layer">
+                <h4>Backend API Server</h4>
+                <p>Node.js/Express server with SQLite database</p>
+                <div class="layer-details">
+                  <strong>Responsibilities:</strong>
+                  <ul>
+                    <li>Agent registration and management</li>
+                    <li>Metrics storage and aggregation</li>
+                    <li>Alert rule processing</li>
+                    <li>WebSocket connection management</li>
+                    <li>API endpoints for CRUD operations</li>
+                  </ul>
+                </div>
+              </div>
+              
+              <div class="layer">
+                <h4>Monitoring Agents</h4>
+                <p>Lightweight Go agents collecting network metrics</p>
+                <div class="layer-details">
+                  <strong>Agent Information:</strong>
+                  <ul>
+                    <li><strong>Language:</strong> {{ monitoringAgentInfo.language }}</li>
+                    <li><strong>Version:</strong> {{ monitoringAgentInfo.version }}</li>
+                    <li><strong>Description:</strong> {{ monitoringAgentInfo.description }}</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <h3>Agent Features</h3>
+            <div class="feature-grid">
+              <mat-card *ngFor="let feature of monitoringAgentInfo.features" class="feature-card">
+                <mat-card-content>
+                  <mat-icon>check_circle</mat-icon>
+                  <p>{{ feature }}</p>
+                </mat-card-content>
+              </mat-card>
+            </div>
+
+            <h3>Collected Metrics</h3>
+            <div class="metrics-grid">
+              <div class="metric-category">
+                <h4>Network Interface Metrics</h4>
+                <ul>
+                  <li *ngFor="let metric of monitoringAgentInfo.metrics.slice(0, 8)">
+                    <code>{{ metric.split(':')[0] }}</code>: {{ metric.split(':')[1] }}
+                  </li>
+                </ul>
+              </div>
+              <div class="metric-category">
+                <h4>Connectivity Metrics</h4>
+                <ul>
+                  <li *ngFor="let metric of monitoringAgentInfo.metrics.slice(8)">
+                    <code>{{ metric.split(':')[0] }}</code>: {{ metric.split(':')[1] }}
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            <h3>Deployment Options</h3>
+            <div class="deployment-options">
+              <mat-card *ngFor="let deployment of monitoringAgentInfo.deployment" class="deployment-card">
+                <mat-card-content>
+                  <h4>{{ deployment.split(':')[0] }}</h4>
+                  <p>{{ deployment.split(':')[1] }}</p>
+                </mat-card-content>
+              </mat-card>
+            </div>
+
+            <h3>Getting Started with Monitoring</h3>
+            <ol>
+              <li><strong>Access Monitoring:</strong> Navigate to /monitoring in the application</li>
+              <li><strong>Deploy Agents:</strong> Use the deployment wizard to install agents on your infrastructure</li>
+              <li><strong>Configure Targets:</strong> Set up connectivity testing targets</li>
+              <li><strong>Monitor Metrics:</strong> View real-time dashboards and set up alert rules</li>
+            </ol>
+          </div>
+        </section>
+
+        <section id="backend" class="doc-section">
+          <h2>
+            <mat-icon>api</mat-icon>
+            Backend API
+          </h2>
+          <div class="section-content">
+            <p>The CloudConsoleVibe backend provides API endpoints for monitoring agent management, metrics collection, and real-time communication via WebSockets.</p>
+
+            <div class="api-cards-full">
+              <mat-card class="api-card-full" *ngFor="let api of backendApis">
+                <mat-card-header>
+                  <mat-icon mat-card-avatar [style.color]="api.color">{{ api.icon }}</mat-icon>
+                  <mat-card-title>{{ api.name }}</mat-card-title>
+                  <mat-card-subtitle>{{ api.baseUrl }}</mat-card-subtitle>
+                </mat-card-header>
+                <mat-card-content>
+                  <div class="api-content-grid">
+                    <div class="api-description">
+                      <p><strong>Purpose:</strong> {{ api.purpose }}</p>
+                      <p><strong>Used For:</strong> {{ api.usedFor }}</p>
+                      
+                      <h4>Key Features:</h4>
+                      <ul>
+                        <li *ngFor="let feature of api.features">{{ feature }}</li>
+                      </ul>
+                    </div>
+                    
+                    <div class="api-endpoints">
+                      <h4>REST API Endpoints:</h4>
+                      <div class="endpoints-list">
+                        <div class="endpoint" *ngFor="let endpoint of api.endpoints">
+                          <div class="endpoint-header">
+                            <span class="http-method" [class]="endpoint.method.toLowerCase()">{{ endpoint.method }}</span>
+                            <code class="endpoint-path">{{ endpoint.path }}</code>
+                          </div>
+                          <p class="endpoint-description">{{ endpoint.description }}</p>
+                          <div class="endpoint-usage" *ngIf="endpoint.usage">
+                            <strong>Usage:</strong> {{ endpoint.usage }}
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <h4>WebSocket Endpoints:</h4>
+                      <div class="websocket-info" *ngFor="let ws of api.websockets">
+                        <div class="websocket-header">
+                          <span class="websocket-method">WS</span>
+                          <code class="endpoint-path">{{ ws.path }}</code>
+                        </div>
+                        <p class="endpoint-description">{{ ws.description }}</p>
+                        <div class="websocket-events">
+                          <h5>Events:</h5>
+                          <ul>
+                            <li *ngFor="let event of ws.events">
+                              <code>{{ event.split(':')[0] }}</code>: {{ event.split(':')[1] }}
+                            </li>
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </mat-card-content>
+              </mat-card>
+            </div>
+
+            <h3>Database Schema</h3>
+            <div class="database-schema">
+              <h4>Tables</h4>
+              <div class="table-info">
+                <mat-card>
+                  <mat-card-header>
+                    <mat-card-title>agents</mat-card-title>
+                    <mat-card-subtitle>Registered monitoring agents</mat-card-subtitle>
+                  </mat-card-header>
+                  <mat-card-content>
+                    <ul>
+                      <li><code>id</code> - Unique agent identifier</li>
+                      <li><code>name</code> - Agent display name</li>
+                      <li><code>hostname</code> - Agent hostname</li>
+                      <li><code>ip_address</code> - Agent IP address</li>
+                      <li><code>status</code> - Current status (online/offline)</li>
+                      <li><code>last_seen</code> - Last activity timestamp</li>
+                      <li><code>metadata</code> - Additional agent information</li>
+                    </ul>
+                  </mat-card-content>
+                </mat-card>
+
+                <mat-card>
+                  <mat-card-header>
+                    <mat-card-title>metrics</mat-card-title>
+                    <mat-card-subtitle>Individual metric records</mat-card-subtitle>
+                  </mat-card-header>
+                  <mat-card-content>
+                    <ul>
+                      <li><code>id</code> - Unique metric identifier</li>
+                      <li><code>agent_id</code> - Associated agent ID</li>
+                      <li><code>metric_name</code> - Metric name/type</li>
+                      <li><code>value</code> - Metric value</li>
+                      <li><code>timestamp</code> - Collection timestamp</li>
+                      <li><code>labels</code> - Metric labels (JSON)</li>
+                    </ul>
+                  </mat-card-content>
+                </mat-card>
+
+                <mat-card>
+                  <mat-card-header>
+                    <mat-card-title>metric_batches</mat-card-title>
+                    <mat-card-subtitle>Batched metric submissions</mat-card-subtitle>
+                  </mat-card-header>
+                  <mat-card-content>
+                    <ul>
+                      <li><code>id</code> - Unique batch identifier</li>
+                      <li><code>agent_id</code> - Source agent ID</li>
+                      <li><code>batch_data</code> - Metrics batch (JSON)</li>
+                      <li><code>timestamp</code> - Batch submission time</li>
+                    </ul>
+                  </mat-card-content>
+                </mat-card>
+
+                <mat-card>
+                  <mat-card-header>
+                    <mat-card-title>alert_rules</mat-card-title>
+                    <mat-card-subtitle>Configured alert conditions</mat-card-subtitle>
+                  </mat-card-header>
+                  <mat-card-content>
+                    <ul>
+                      <li><code>id</code> - Unique rule identifier</li>
+                      <li><code>name</code> - Rule display name</li>
+                      <li><code>condition</code> - Alert condition</li>
+                      <li><code>threshold</code> - Alert threshold value</li>
+                      <li><code>enabled</code> - Rule activation status</li>
+                    </ul>
+                  </mat-card-content>
+                </mat-card>
+              </div>
+            </div>
+
+            <h3>Deployment Information</h3>
+            <div class="deployment-info">
+              <mat-card>
+                <mat-card-header>
+                  <mat-card-title>Production Deployment</mat-card-title>
+                </mat-card-header>
+                <mat-card-content>
+                  <ul>
+                    <li><strong>Platform:</strong> Google Cloud Run</li>
+                    <li><strong>URL:</strong> https://cloudconsolevibe-backend-931553324054.us-central1.run.app</li>
+                    <li><strong>Runtime:</strong> Node.js 18</li>
+                    <li><strong>Database:</strong> SQLite (file-based)</li>
+                    <li><strong>Memory:</strong> 2GB</li>
+                    <li><strong>CPU:</strong> 2 vCPU</li>
+                    <li><strong>Timeout:</strong> 3600s (WebSocket support)</li>
+                    <li><strong>Concurrency:</strong> 1000 concurrent requests</li>
+                  </ul>
+                </mat-card-content>
+              </mat-card>
+            </div>
           </div>
         </section>
       </div>
@@ -645,6 +982,50 @@ gcloud services enable monitoring.googleapis.com</code></pre>
     
     .architecture-diagram {
       margin: 32px 0;
+    }
+
+    .architecture-overview {
+      background: var(--hover-color);
+      border: 2px solid var(--border-color);
+      border-radius: 12px;
+      padding: 24px;
+      margin: 24px 0;
+    }
+
+    .architecture-overview h4 {
+      margin: 0 0 20px 0;
+      color: var(--primary-color);
+      text-align: center;
+    }
+
+    .architecture-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+    }
+
+    .arch-column {
+      background: var(--surface-color);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 16px;
+    }
+
+    .arch-column h5 {
+      margin: 0 0 12px 0;
+      color: var(--primary-color);
+      text-align: center;
+      font-size: 1.1rem;
+    }
+
+    .arch-column ul {
+      margin: 0;
+      padding-left: 16px;
+    }
+
+    .arch-column li {
+      margin: 6px 0;
+      font-size: 0.9rem;
     }
     
     .layer {
@@ -1001,6 +1382,246 @@ gcloud services enable monitoring.googleapis.com</code></pre>
         flex-direction: column;
       }
     }
+
+    /* New monitoring and backend specific styles */
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 16px;
+      margin: 24px 0;
+    }
+
+    .feature-card {
+      border: 1px solid var(--border-color);
+    }
+
+    .feature-card mat-card-content {
+      display: flex;
+      align-items: center;
+      padding: 16px !important;
+    }
+
+    .feature-card mat-icon {
+      color: #4caf50;
+      margin-right: 12px;
+      font-size: 20px;
+    }
+
+    .feature-card p {
+      margin: 0;
+      font-size: 0.9rem;
+    }
+
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 24px;
+      margin: 24px 0;
+    }
+
+    .metric-category {
+      background: var(--hover-color);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 20px;
+    }
+
+    .metric-category h4 {
+      margin: 0 0 16px 0;
+      color: var(--primary-color);
+    }
+
+    .metric-category ul {
+      margin: 0;
+      padding-left: 0;
+      list-style: none;
+    }
+
+    .metric-category li {
+      padding: 4px 0;
+      border-bottom: 1px solid rgba(0,0,0,0.05);
+    }
+
+    .metric-category li:last-child {
+      border-bottom: none;
+    }
+
+    .deployment-options {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 16px;
+      margin: 24px 0;
+    }
+
+    .deployment-card {
+      border: 1px solid var(--border-color);
+    }
+
+    .deployment-card h4 {
+      margin: 0 0 8px 0;
+      color: var(--primary-color);
+    }
+
+    .deployment-card p {
+      margin: 0;
+      font-size: 0.9rem;
+      color: var(--text-secondary-color);
+    }
+
+    .websocket-info {
+      background: var(--hover-color);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 16px;
+      margin: 16px 0;
+    }
+
+    .websocket-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .websocket-method {
+      background: #673ab7;
+      color: white;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      font-weight: bold;
+      margin-right: 12px;
+    }
+
+    .websocket-events {
+      margin-top: 12px;
+    }
+
+    .websocket-events h5 {
+      margin: 0 0 8px 0;
+      color: var(--primary-color);
+      font-size: 0.9rem;
+    }
+
+    .websocket-events ul {
+      margin: 0;
+      padding-left: 16px;
+    }
+
+    .websocket-events li {
+      font-size: 0.9rem;
+      margin: 4px 0;
+    }
+
+    .database-schema {
+      margin: 24px 0;
+    }
+
+    .table-info {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+      margin: 16px 0;
+    }
+
+    .table-info mat-card {
+      border: 1px solid var(--border-color);
+    }
+
+    .table-info mat-card-title {
+      font-family: 'Courier New', monospace;
+      color: var(--primary-color) !important;
+    }
+
+    .table-info ul {
+      margin: 0;
+      padding-left: 0;
+      list-style: none;
+    }
+
+    .table-info li {
+      padding: 6px 0;
+      border-bottom: 1px solid rgba(0,0,0,0.05);
+      font-family: 'Courier New', monospace;
+      font-size: 0.9rem;
+    }
+
+    .table-info li:last-child {
+      border-bottom: none;
+    }
+
+    .deployment-info {
+      margin: 24px 0;
+    }
+
+    .deployment-info mat-card {
+      border: 1px solid var(--border-color);
+    }
+
+    .deployment-info ul {
+      margin: 0;
+      padding-left: 16px;
+    }
+
+    .deployment-info li {
+      margin: 8px 0;
+    }
+
+    .deployment-services {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+      gap: 20px;
+      margin: 24px 0;
+    }
+
+    .service-card {
+      background: var(--hover-color);
+      border: 2px solid var(--border-color);
+      border-radius: 8px;
+      padding: 20px;
+    }
+
+    .service-card h4 {
+      margin: 0 0 16px 0;
+      color: var(--primary-color);
+      text-align: center;
+      font-size: 1.2rem;
+    }
+
+    .service-card ul {
+      margin: 0;
+      padding-left: 16px;
+    }
+
+    .service-card li {
+      margin: 8px 0;
+      font-size: 0.9rem;
+    }
+
+    @media (max-width: 768px) {
+      .feature-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .metrics-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .deployment-options {
+        grid-template-columns: 1fr;
+      }
+
+      .table-info {
+        grid-template-columns: 1fr;
+      }
+
+      .architecture-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .deployment-services {
+        grid-template-columns: 1fr;
+      }
+    }
   `]
 })
 export class DocumentationComponent implements OnInit, OnDestroy {
@@ -1011,7 +1632,9 @@ export class DocumentationComponent implements OnInit, OnDestroy {
     { id: 'overview', title: 'Overview', icon: 'info' },
     { id: 'user-guide', title: 'User Guide', icon: 'person' },
     { id: 'architecture', title: 'Architecture', icon: 'architecture' },
-    { id: 'google-apis', title: 'Google Cloud APIs', icon: 'api' },
+    { id: 'monitoring', title: 'Monitoring System', icon: 'monitoring' },
+    { id: 'backend', title: 'Backend API', icon: 'api' },
+    { id: 'google-apis', title: 'Google Cloud APIs', icon: 'cloud' },
     { id: 'authentication', title: 'Authentication', icon: 'security' },
     { id: 'deployment', title: 'Deployment', icon: 'cloud_upload' },
     { id: 'configuration', title: 'Configuration', icon: 'settings' }
@@ -1047,6 +1670,12 @@ export class DocumentationComponent implements OnInit, OnDestroy {
       icon: 'analytics',
       description: 'Analyze VPC Flow Logs for network traffic patterns, performance, and security insights.',
       features: ['Flow Logs Analysis', 'Traffic Metrics', 'Latency Analysis', 'Real-time Queries']
+    },
+    {
+      title: 'Monitoring System',
+      icon: 'monitoring',
+      description: 'Real-time monitoring of network agents with metrics collection, alerting, and dashboard visualization.',
+      features: ['Agent Management', 'Real-time Metrics', 'WebSocket Communication', 'Network Monitoring', 'Alert Rules', 'Dashboard Visualization']
     }
   ];
 
@@ -1317,6 +1946,128 @@ export class DocumentationComponent implements OnInit, OnDestroy {
       scopes: ['https://www.googleapis.com/auth/cloud-platform', 'https://www.googleapis.com/auth/monitoring.read']
     }
   ];
+
+  backendApis = [
+    {
+      name: 'CloudConsoleVibe Backend API',
+      baseUrl: 'cloudconsolevibe-backend-931553324054.us-central1.run.app',
+      icon: 'storage',
+      color: '#4285f4',
+      purpose: 'Backend API for monitoring agents, metrics collection, and real-time data processing',
+      usedFor: 'Agent management, metrics collection, WebSocket communication, alert rules',
+      features: [
+        'Agent registration and management',
+        'Real-time metrics collection and storage',
+        'WebSocket communication for live updates',
+        'Alert rules configuration and processing',
+        'Metric batching and aggregation',
+        'Authentication and authorization'
+      ],
+      endpoints: [
+        {
+          method: 'GET',
+          path: '/api/health',
+          description: 'Health check endpoint',
+          usage: 'Verify backend service availability'
+        },
+        {
+          method: 'GET',
+          path: '/api/agents',
+          description: 'List all registered monitoring agents',
+          usage: 'Display agents in monitoring dashboard'
+        },
+        {
+          method: 'POST',
+          path: '/api/agents/register',
+          description: 'Register a new monitoring agent',
+          usage: 'Agent registration during deployment'
+        },
+        {
+          method: 'GET',
+          path: '/api/agents/:id/metrics',
+          description: 'Get metrics for a specific agent',
+          usage: 'Fetch agent metrics for dashboard visualization'
+        },
+        {
+          method: 'POST',
+          path: '/api/metrics/batch',
+          description: 'Submit batch of metrics from agents',
+          usage: 'Agent metric submission'
+        },
+        {
+          method: 'GET',
+          path: '/api/metrics/latest',
+          description: 'Get latest metrics across all agents',
+          usage: 'Real-time dashboard updates'
+        },
+        {
+          method: 'GET',
+          path: '/api/alert-rules',
+          description: 'List all alert rules',
+          usage: 'Display configured alert rules'
+        },
+        {
+          method: 'POST',
+          path: '/api/alert-rules',
+          description: 'Create new alert rule',
+          usage: 'Configure alerting conditions'
+        },
+        {
+          method: 'GET',
+          path: '/api/agent-configs/:id',
+          description: 'Get configuration for specific agent',
+          usage: 'Agent configuration management'
+        }
+      ],
+      websockets: [
+        {
+          path: '/ws',
+          description: 'WebSocket connection for real-time communication',
+          events: [
+            'agent_connected: New agent connection',
+            'agent_disconnected: Agent disconnection',
+            'metrics_update: Real-time metric updates',
+            'alert_triggered: Alert notifications'
+          ]
+        }
+      ]
+    }
+  ];
+
+  monitoringAgentInfo = {
+    name: 'CloudConsoleVibe Monitoring Agent',
+    language: 'Go',
+    version: '1.0.0',
+    description: 'Lightweight monitoring agent for network metrics collection and connectivity testing',
+    features: [
+      'Network interface metrics collection (TX/RX bytes, packets, errors, drops)',
+      'Connectivity testing with ping and traceroute',
+      'WebSocket communication with backend',
+      'Configurable collection intervals',
+      'Command-line interface for management',
+      'Cross-platform support (Linux, macOS, Windows)'
+    ],
+    metrics: [
+      'network.tx_bytes: Transmitted bytes per interface',
+      'network.rx_bytes: Received bytes per interface',
+      'network.tx_packets: Transmitted packets per interface',
+      'network.rx_packets: Received packets per interface',
+      'network.tx_errors: Transmission errors per interface',
+      'network.rx_errors: Reception errors per interface',
+      'network.tx_drops: Transmission drops per interface',
+      'network.rx_drops: Reception drops per interface',
+      'connectivity.rtt_min: Minimum round-trip time',
+      'connectivity.rtt_max: Maximum round-trip time',
+      'connectivity.rtt_avg: Average round-trip time',
+      'connectivity.packet_loss: Packet loss percentage',
+      'connectivity.reachable: Target reachability status'
+    ],
+    deployment: [
+      'Compute Engine: Direct installation on VM instances',
+      'GKE: Kubernetes DaemonSet deployment',
+      'Cloud Run Jobs: Scheduled monitoring tasks'
+    ]
+  };
 
   constructor(
     private router: Router,

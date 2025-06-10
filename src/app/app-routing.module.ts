@@ -103,7 +103,12 @@ const routes: Routes = [
     path: 'network-health-monitor/:name',
     component: NetworkHealthMonitorDetailsComponent
   },
-  { path: 'kubernetes/clusters', component: GkeClustersComponent, canActivate: [AuthGuard] }
+  { path: 'kubernetes/clusters', component: GkeClustersComponent, canActivate: [AuthGuard] },
+  {
+    path: 'monitoring',
+    loadChildren: () => import('./components/monitoring/monitoring.module').then(m => m.MonitoringModule),
+    canActivate: [AuthGuard]
+  }
 ];
 
 @NgModule({

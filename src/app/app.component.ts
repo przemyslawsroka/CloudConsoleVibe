@@ -374,6 +374,16 @@ export class AppComponent implements OnInit {
       ]
     },
     {
+      name: 'Monitoring',
+      icon: 'monitor_heart',
+      expanded: false,
+      items: [
+        { name: 'Dashboard', route: '/monitoring', icon: 'dashboard' },
+        { name: 'Agent Management', route: '/monitoring/agents', icon: 'devices' },
+        { name: 'Deploy Agents', route: '/monitoring/deploy', icon: 'cloud_upload' }
+      ]
+    },
+    {
       name: 'Kubernetes',
       icon: 'widgets',
       expanded: false,

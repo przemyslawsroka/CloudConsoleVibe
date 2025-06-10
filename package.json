@@ -28,6 +28,7 @@
     "date-fns": "^4.1.0",
     "force-graph": "^1.43.0",
     "googleapis": "^129.0.0",
+    "ng2-charts": "^6.0.1",
     "rxjs": "~7.8.0",
     "three": "^0.177.0",
     "tslib": "^2.3.0",
