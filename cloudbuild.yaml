@@ -20,12 +20,12 @@ steps:
       - 'push'
       - 'gcr.io/$PROJECT_ID/cloud-console-vibe:latest'
 
-  # Deploy to Cloud Run
+  # Deploy frontend to Cloud Run
   - name: 'gcr.io/cloud-builders/gcloud'
     args:
       - 'run'
       - 'deploy'
-      - 'cloud-console-vibe'
+      - 'cloudconsolevibe-frontend'
       - '--image=gcr.io/$PROJECT_ID/cloud-console-vibe:$BUILD_ID'
       - '--region=us-central1'
       - '--platform=managed'
@@ -37,7 +37,7 @@ steps:
       - '--min-instances=0'
       - '--concurrency=100'
       - '--timeout=300'
-      - '--set-env-vars=ENVIRONMENT=production,LOG_LEVEL=info'
+      - '--set-env-vars=ENVIRONMENT=production,LOG_LEVEL=info,BACKEND_URL=https://cloudconsolevibe-backend-931553324054.us-central1.run.app'
 
 # Store images in Container Registry
 images:

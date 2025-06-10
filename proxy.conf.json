@@ -1,26 +1,21 @@
 {
-  "/api/logging/**": {
-    "target": "https://logging.googleapis.com",
-    "secure": true,
+  "/api/v1/**": {
+    "target": "http://localhost:8080",
+    "secure": false,
     "changeOrigin": true,
     "logLevel": "debug",
-    "pathRewrite": {
-      "^/api/logging": ""
-    },
-    "headers": {
-      "host": "logging.googleapis.com"
-    }
+    "ws": true
+  },
+  "/api/logging/**": {
+    "target": "http://localhost:8080",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug"
   },
   "/api/compute/**": {
-    "target": "https://compute.googleapis.com",
-    "secure": true,
+    "target": "http://localhost:8080",
+    "secure": false,
     "changeOrigin": true,
-    "logLevel": "debug",
-    "pathRewrite": {
-      "^/api/compute": ""
-    },
-    "headers": {
-      "host": "compute.googleapis.com"
-    }
+    "logLevel": "debug"
   }
 } 
