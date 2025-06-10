@@ -1,0 +1,29 @@
+websocket:
+  url: "https://cloudconsolevibe-backend-6anbejtsta-uc.a.run.app/api/v1/agents/connect"
+  agent_id: "monitoring-agent-${HOSTNAME:-$(uuidgen | cut -d'-' -f1)}"
+  retry_attempts: 5
+  retry_delay: 5000
+  heartbeat_interval: 30
+
+collection:
+  interval: 30
+  transmission_interval: 60
+  batch_size: 100
+
+targets:
+  ping:
+    - "8.8.8.8"
+    - "1.1.1.1"
+    - "google.com"
+    - "cloudflare.com"
+  dns:
+    - "8.8.8.8"
+    - "1.1.1.1"
+
+filters:
+  interfaces:
+    - "eth0"
+    - "en0"
+  metrics:
+    - "network.*"
+    - "ping.*"
