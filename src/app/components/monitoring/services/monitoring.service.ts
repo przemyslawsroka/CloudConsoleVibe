@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, BehaviorSubject } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { environment } from '../../../../environments/environment';
 
 export interface Agent {
@@ -131,6 +132,26 @@ export class MonitoringService {
     return this.http.get<{ agents: Agent[]; pagination: any }>(
       `${this.baseUrl}/api/v1/agents`,
       { params: httpParams }
+    ).pipe(
+      // Handle the simple backend response format
+      map((response: any) => {
+        if (Array.isArray(response)) {
+          // If response is array, wrap it in expected format
+          return {
+            agents: response,
+            pagination: { total: response.length, page: 0, limit: response.length }
+          };
+        } else if (response.agents) {
+          // If response has agents property, use it
+          return response;
+        } else {
+          // Otherwise, assume it's the agents array
+          return {
+            agents: response.agents || [],
+            pagination: response.pagination || { total: 0, page: 0, limit: 0 }
+          };
+        }
+      })
     );
   }
 
@@ -173,6 +194,21 @@ export class MonitoringService {
     return this.http.get<{ metrics: Metric[]; pagination: any }>(
       `${this.baseUrl}/api/v1/metrics`,
       { params: httpParams }
+    ).pipe(
+      map((response: any) => {
+        // Handle different response formats
+        if (Array.isArray(response)) {
+          return {
+            metrics: response,
+            pagination: { total: response.length, page: 0, limit: response.length }
+          };
+        } else {
+          return {
+            metrics: response.metrics || [],
+            pagination: response.pagination || { total: 0, page: 0, limit: 0 }
+          };
+        }
+      })
     );
   }
 

@@ -104,15 +104,23 @@ export class AgentListComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response) => {
-          this.dataSource.data = response.agents;
-          this.totalAgents = response.pagination.total;
-          this.updateFilterOptions(response.agents);
+          // Handle both backend response formats
+          const agents = response.agents || [];
+          const pagination = response.pagination || { total: 0 };
+          
+          this.dataSource.data = agents;
+          this.totalAgents = pagination.total || 0;
+          this.updateFilterOptions(agents);
           this.isLoading = false;
         },
         error: (error) => {
           console.error('Error loading agents:', error);
-          this.showError('Failed to load agents');
+          this.showError('Failed to load agents. Backend may be unavailable.');
           this.isLoading = false;
+          
+          // Set empty data on error
+          this.dataSource.data = [];
+          this.totalAgents = 0;
         }
       });
   }

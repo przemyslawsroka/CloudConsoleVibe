@@ -100,27 +100,68 @@ export class MetricsDashboardComponent implements OnInit, OnDestroy {
   private loadDashboardData(): void {
     this.isLoading = true;
     
-    combineLatest([
-      this.monitoringService.getDashboardOverview(),
-      this.monitoringService.getAgents({ limit: 100 }),
-      this.monitoringService.getMetrics({ limit: 50 }),
-      this.monitoringService.getDashboardMetrics(this.selectedTimeRange)
-    ]).pipe(
-      takeUntil(this.destroy$)
-    ).subscribe({
-      next: ([overview, agentsResponse, metricsResponse, chartData]) => {
-        this.dashboardOverview = overview;
-        this.agents = agentsResponse.agents;
-        this.recentMetrics = metricsResponse.metrics;
-        this.updateChartData(chartData);
-        this.isLoading = false;
-      },
-      error: (error) => {
-        console.error('Error loading dashboard data:', error);
-        this.isLoading = false;
-        this.showError('Failed to load dashboard data');
-      }
-    });
+    // Load agents first, which is the most important data
+    this.monitoringService.getAgents({ limit: 100 })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (agentsResponse) => {
+          this.agents = agentsResponse.agents || [];
+          this.isLoading = false;
+          
+          // Initialize dashboard overview with basic data
+          this.dashboardOverview = {
+            totalAgents: this.agents.length,
+            activeAgents: this.agents.filter(a => a.status === 'connected').length,
+            totalMetrics: 0,
+            systemHealth: this.agents.length > 0 ? 'healthy' : 'warning',
+            recentActivity: [],
+            metricsSummary: {
+              networkLatency: { avg: 0, min: 0, max: 0 },
+              packetLoss: 0,
+              throughput: { rx: 0, tx: 0 }
+            }
+          };
+          
+          // Load other data if available
+          this.loadOptionalData();
+        },
+        error: (error) => {
+          console.error('Error loading agents:', error);
+          this.isLoading = false;
+          
+          // Set default values for offline state
+          this.agents = [];
+          this.dashboardOverview = {
+            totalAgents: 0,
+            activeAgents: 0,
+            totalMetrics: 0,
+            systemHealth: 'error',
+            recentActivity: [],
+            metricsSummary: {
+              networkLatency: { avg: 0, min: 0, max: 0 },
+              packetLoss: 0,
+              throughput: { rx: 0, tx: 0 }
+            }
+          };
+          
+          this.showError('Backend unavailable. Showing demo data.');
+        }
+      });
+  }
+  
+  private loadOptionalData(): void {
+    // Try to load metrics and charts, but don't fail if unavailable
+    this.monitoringService.getMetrics({ limit: 50 })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (metricsResponse) => {
+          this.recentMetrics = metricsResponse.metrics || [];
+        },
+        error: (error) => {
+          console.warn('Metrics unavailable:', error);
+          this.recentMetrics = [];
+        }
+      });
   }
 
   private setupAutoRefresh(): void {

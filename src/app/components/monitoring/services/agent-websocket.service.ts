@@ -36,8 +36,9 @@ export class AgentWebSocketService {
 
   constructor() {
     // Convert HTTP URL to WebSocket URL
-    const baseUrl = environment.apiBaseUrl || 'https://cloudconsolevibe-backend-931553324054.us-central1.run.app';
+    const baseUrl = environment.apiBaseUrl || 'https://cloudconsolevibe-backend-6anbejtsta-uc.a.run.app';
     this.wsUrl = baseUrl.replace('https://', 'wss://').replace('http://', 'ws://') + '/ws';
+    console.log('WebSocket URL configured:', this.wsUrl);
   }
 
   public connect(): void {
