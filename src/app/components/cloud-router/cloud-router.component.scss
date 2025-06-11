@@ -134,11 +134,11 @@
     cursor: pointer;
     
     &:hover {
-      background-color: #f8f9fa;
+      background-color: var(--hover-color);
     }
     
     &.selected {
-      background-color: #e8f0fe;
+      background-color: var(--selected-color);
     }
   }
 }
@@ -216,7 +216,7 @@
   min-width: auto;
   
   &:hover {
-    background-color: #f8f9fa;
+    background-color: var(--hover-color);
   }
 }
 

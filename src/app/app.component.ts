@@ -39,7 +39,7 @@ interface NavItem {
           <span>Demo Mode</span>
         </div>
         
-        <button mat-stroked-button color="accent" class="project-picker-btn" (click)="openProjectPicker()" *ngIf="!isDocumentationRoute">
+        <button mat-stroked-button class="project-picker-btn" (click)="openProjectPicker()" *ngIf="!isDocumentationRoute">
           <mat-icon>folder_open</mat-icon>
           {{ (currentProject$ | async)?.name || 'Select project' }}
         </button>
@@ -129,15 +129,20 @@ interface NavItem {
     
     .project-picker-btn { 
       margin-left: 16px;
-      background-color: rgba(255, 255, 255, 0.1);
-      color: white;
-      border-color: rgba(255, 255, 255, 0.3);
+      background-color: rgba(255, 255, 255, 0.1) !important;
+      color: white !important;
+      border-color: rgba(255, 255, 255, 0.3) !important;
       font-weight: 500;
     }
     
+    .project-picker-btn mat-icon {
+      color: white !important;
+    }
+    
     .project-picker-btn:hover {
-      background-color: rgba(255, 255, 255, 0.2);
-      border-color: rgba(255, 255, 255, 0.5);
+      background-color: rgba(255, 255, 255, 0.2) !important;
+      border-color: rgba(255, 255, 255, 0.5) !important;
+      color: white !important;
     }
     
     .demo-indicator {
@@ -321,14 +326,19 @@ interface NavItem {
     }
     
     :host-context(.dark-theme) .project-picker-btn {
-      background-color: rgba(255, 255, 255, 0.08);
-      color: #e8eaed;
-      border-color: rgba(255, 255, 255, 0.2);
+      background-color: rgba(255, 255, 255, 0.08) !important;
+      color: #e8eaed !important;
+      border-color: rgba(255, 255, 255, 0.2) !important;
+    }
+    
+    :host-context(.dark-theme) .project-picker-btn mat-icon {
+      color: #e8eaed !important;
     }
     
     :host-context(.dark-theme) .project-picker-btn:hover {
-      background-color: rgba(255, 255, 255, 0.12);
-      border-color: rgba(255, 255, 255, 0.3);
+      background-color: rgba(255, 255, 255, 0.12) !important;
+      border-color: rgba(255, 255, 255, 0.3) !important;
+      color: #e8eaed !important;
     }
     `
   ]
