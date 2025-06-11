@@ -180,7 +180,20 @@ export class GeminiAiService {
       this.session.close();
       this.session = undefined;
     }
-    this.updateVoiceSession({ isActive: false, isRecording: false, isProcessing: false });
+    
+    // Clean up audio monitor
+    if ((this as any).audioMonitor) {
+      clearInterval((this as any).audioMonitor);
+      (this as any).audioMonitor = undefined;
+    }
+    
+    this.updateVoiceSession({ 
+      isActive: false, 
+      isRecording: false, 
+      isProcessing: false,
+      microphoneLevel: 0,
+      isMicrophoneDetected: false 
+    });
   }
 
   async shareScreen(): Promise<void> {
@@ -231,8 +244,18 @@ export class GeminiAiService {
 
       // Handle microphone audio for voice input using modern Web Audio API
       const audioTrack = micStream.getAudioTracks()[0];
+      console.log('🎤 Audio track info:', {
+        enabled: audioTrack?.enabled,
+        muted: audioTrack?.muted,
+        readyState: audioTrack?.readyState,
+        label: audioTrack?.label
+      });
+      
       if (audioTrack && this.session) {
+        console.log('🎤 Setting up microphone streaming...');
         this.setupMicrophoneStreaming(micStream);
+      } else {
+        console.error('🎤 Missing audio track or session:', { audioTrack: !!audioTrack, session: !!this.session });
       }
       
       // Handle track ending
@@ -278,6 +301,21 @@ export class GeminiAiService {
       // Always use ScriptProcessor for now (more reliable)
       this.setupScriptProcessor(audioContext, source);
       
+      // Monitor audio context state
+      const monitorAudioContext = () => {
+        console.log(`🎤 Audio context state: ${audioContext.state}`);
+        if (audioContext.state === 'suspended') {
+          console.warn('🎤 Audio context suspended, attempting to resume...');
+          audioContext.resume();
+        }
+      };
+      
+      // Check audio context state every 2 seconds
+      const audioMonitor = setInterval(monitorAudioContext, 2000);
+      
+      // Store monitor for cleanup
+      (this as any).audioMonitor = audioMonitor;
+      
       console.log('🎤 Microphone streaming setup complete');
       this.addSystemMessage('🎤 Microphone connected - You can now speak!');
       
@@ -298,7 +336,7 @@ export class GeminiAiService {
       const inputBuffer = event.inputBuffer;
       const inputData = inputBuffer.getChannelData(0);
       
-      // Calculate microphone level with better sensitivity
+      // Calculate microphone level - use same method as the working test
       let sum = 0;
       let maxAmplitude = 0;
       
@@ -309,27 +347,37 @@ export class GeminiAiService {
       }
       
       const rms = Math.sqrt(sum / inputData.length);
-      const micLevel = Math.min(100, Math.floor(rms * 10000)); // More sensitive scaling
+      
+      // Use same scaling as the working microphone test
+      const micLevel = Math.min(100, Math.floor(rms * 10000));
       const peakLevel = Math.floor(maxAmplitude * 100);
+      const combinedLevel = Math.max(micLevel, peakLevel);
       
-      // Use lower thresholds for better detection
-      const isMicDetected = micLevel > 0.1 || peakLevel > 1; // Much lower threshold
+      // Always log audio processing (even if silent) for debugging
+      console.log(`🎤 Audio processing - RMS: ${rms.toFixed(6)}, Level: ${micLevel}, Peak: ${peakLevel}, Combined: ${combinedLevel}`);
       
-      // Debug logging
-      if (micLevel > 0 || peakLevel > 0) {
-        console.log(`🎤 Audio detected - RMS: ${rms.toFixed(4)}, Level: ${micLevel}, Peak: ${peakLevel}`);
-      }
+      // Use very low threshold for detection
+      const isMicDetected = combinedLevel > 0;
       
+      // Always update the UI with current levels
       this.updateVoiceSession({ 
-        microphoneLevel: Math.max(micLevel, peakLevel), // Use higher of RMS or peak
+        microphoneLevel: combinedLevel,
         isMicrophoneDetected: isMicDetected 
       });
       
-      // Send audio if recording and above very low threshold
-      if (!this.session || !this.voiceSessionSubject.value.isRecording) return;
+      // Debug session state
+      if (!this.session) {
+        console.log('🎤 No session available');
+        return;
+      }
       
-      // Send if there's any meaningful audio (much lower threshold)
-      if (micLevel > 0.5 || peakLevel > 2) {
+      if (!this.voiceSessionSubject.value.isRecording) {
+        console.log('🎤 Not in recording state');
+        return;
+      }
+      
+      // Send audio if there's any detectable level (very low threshold)
+      if (combinedLevel > 0) {
         try {
           // Convert Float32Array to 16-bit PCM for Gemini
           const pcmData = this.convertToPCM16(inputData);
@@ -340,10 +388,13 @@ export class GeminiAiService {
             turns: [{ parts: [{ inlineData: { mimeType: 'audio/pcm', data: base64Audio } }] }]
           });
           
-          console.log(`🎤 Sending audio to Gemini (RMS: ${micLevel}, Peak: ${peakLevel})`);
+          console.log(`🎤 ✅ SENT audio to Gemini (Level: ${combinedLevel})`);
         } catch (error) {
-          console.error('Error sending audio to Gemini:', error);
+          console.error('❌ Error sending audio to Gemini:', error);
         }
+      } else {
+        // Log when no audio is detected
+        console.log('🎤 Silent - no audio to send');
       }
     };
     
