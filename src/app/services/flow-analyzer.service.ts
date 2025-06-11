@@ -1017,8 +1017,8 @@ LIMIT 100
     const flows: FlowLogEntry[] = [];
     const timeSpanMs = endTime.getTime() - startTime.getTime();
     
-    // Generate 50-200 flow entries for a realistic dataset
-    const numFlows = Math.floor(Math.random() * 150) + 50;
+    // Generate more flows for better visualization (200-500 entries)
+    const numFlows = Math.floor(Math.random() * 300) + 200;
     
     // Demo VPC networks and projects
     const demoProjects = ['demo-project-prod', 'demo-project-dev', 'shared-vpc-host'];
@@ -1028,38 +1028,64 @@ LIMIT 100
     const protocols = ['TCP', 'UDP', 'ICMP', 'ESP'];
     const commonPorts = [80, 443, 22, 3306, 5432, 6379, 8080, 9090, 3389, 53];
     
-    // Generate realistic IP ranges
-    const internalIpRanges = [
-      '10.128.0.', '10.132.0.', '10.140.0.', '10.150.0.',
-      '172.16.0.', '172.17.0.', '172.18.0.',
-      '192.168.1.', '192.168.10.', '192.168.100.'
+    // Generate realistic IP ranges - Create fewer source IPs for better sankey visualization
+    const sourceIpPool = [
+      '10.128.0.10', '10.128.0.15', '10.128.0.25', '10.128.0.35', '10.128.0.50',
+      '10.132.0.12', '10.132.0.20', '10.132.0.30',
+      '172.16.0.5', '172.16.0.15', '172.16.0.25',
+      '192.168.1.10', '192.168.1.20', '192.168.1.30'
     ];
     
-    const externalIps = [
+    // Generate diverse destination pool for rich sankey
+    const destinationIpPool = [
+      // Internal destinations
+      '10.140.0.10', '10.140.0.20', '10.140.0.30', '10.140.0.40', '10.140.0.50',
+      '10.150.0.15', '10.150.0.25', '10.150.0.35', '10.150.0.45',
+      '172.17.0.10', '172.17.0.20', '172.17.0.30', '172.17.0.40',
+      '172.18.0.5', '172.18.0.15', '172.18.0.25',
+      '192.168.10.5', '192.168.10.15', '192.168.10.25', '192.168.10.35',
+      '192.168.100.10', '192.168.100.20', '192.168.100.30',
+      // External destinations (popular services)
       '8.8.8.8', '8.8.4.4', '1.1.1.1', '1.0.0.1',
       '104.209.224.181', '142.250.191.14', '216.58.194.174',
-      '52.86.25.184', '34.102.136.180', '35.186.224.25'
+      '52.86.25.184', '34.102.136.180', '35.186.224.25',
+      '185.199.108.153', '185.199.109.153', '185.199.110.153'
     ];
     
+    // Create source-to-destination mappings for richer sankey
+    const sourceDestinationMappings = new Map<string, string[]>();
+    sourceIpPool.forEach(sourceIp => {
+      // Each source connects to 3-8 different destinations
+      const numDestinations = Math.floor(Math.random() * 6) + 3;
+      const destinations: string[] = [];
+      const shuffledDestinations = [...destinationIpPool].sort(() => Math.random() - 0.5);
+      
+      for (let i = 0; i < numDestinations && i < shuffledDestinations.length; i++) {
+        destinations.push(shuffledDestinations[i]);
+      }
+      sourceDestinationMappings.set(sourceIp, destinations);
+    });
+    
+    // Generate flows with better time distribution for continuous chart
     for (let i = 0; i < numFlows; i++) {
-      const timestamp = new Date(startTime.getTime() + Math.random() * timeSpanMs);
+      // Create more even time distribution across the entire time range
+      const timeProgress = i / numFlows; // Even distribution
+      const randomOffset = (Math.random() - 0.5) * 0.1; // Small random variation
+      const adjustedProgress = Math.max(0, Math.min(1, timeProgress + randomOffset));
+      const timestamp = new Date(startTime.getTime() + adjustedProgress * timeSpanMs);
+      
       const sourceProject = this.getRandomItem(demoProjects);
       const sourceNetwork = this.getRandomItem(demoNetworks);
       const protocol = this.getRandomItem(protocols);
       const region = this.getRandomItem(demoRegions);
       const zone = this.getRandomItem(demoZones);
       
-      // Generate source IP (mostly internal)
-      const isSourceInternal = Math.random() > 0.3;
-      const sourceIp = isSourceInternal 
-        ? this.getRandomItem(internalIpRanges) + Math.floor(Math.random() * 254 + 1)
-        : this.getRandomItem(externalIps);
+      // Use predefined source IPs for better sankey visualization
+      const sourceIp = this.getRandomItem(sourceIpPool);
       
-      // Generate destination IP (mix of internal and external)
-      const isDestInternal = Math.random() > 0.5;
-      const destinationIp = isDestInternal
-        ? this.getRandomItem(internalIpRanges) + Math.floor(Math.random() * 254 + 1)
-        : this.getRandomItem(externalIps);
+      // Get mapped destinations for this source IP
+      const possibleDestinations = sourceDestinationMappings.get(sourceIp) || destinationIpPool;
+      const destinationIp = this.getRandomItem(possibleDestinations);
       
       // Apply filters if specified
       if (filters.sourceIp && !sourceIp.includes(filters.sourceIp)) continue;
@@ -1078,17 +1104,22 @@ LIMIT 100
       // Apply port filter
       if (filters.port && destinationPort.toString() !== filters.port && sourcePort.toString() !== filters.port) continue;
       
-      // Generate realistic traffic volumes
-      const bytes = this.generateTrafficVolume();
-      const packets = Math.floor(bytes / (Math.random() * 1000 + 500)); // Realistic packet sizes
+      // Generate realistic traffic volumes with some correlation to time
+      const baseTraffic = this.generateTrafficVolume();
+      // Add some time-based patterns (higher traffic during business hours simulation)
+      const hourOfDay = timestamp.getHours();
+      const businessHourMultiplier = (hourOfDay >= 8 && hourOfDay <= 18) ? 1.5 : 0.8;
+      const bytes = Math.floor(baseTraffic * businessHourMultiplier);
+      const packets = Math.floor(bytes / (Math.random() * 1000 + 500));
       const rttMsec = protocol === 'TCP' ? Math.floor(Math.random() * 100 + 5) : undefined;
       
+      // Determine if destination is internal
+      const isDestInternal = destinationIp.startsWith('10.') || destinationIp.startsWith('172.') || destinationIp.startsWith('192.168.');
+      
       // Generate instance names for internal IPs
-      const sourceInstanceName = isSourceInternal && Math.random() > 0.3 
-        ? `instance-${Math.floor(Math.random() * 100)}-${sourceNetwork}` 
-        : undefined;
-      const destinationInstanceName = isDestInternal && Math.random() > 0.3
-        ? `instance-${Math.floor(Math.random() * 100)}-${this.getRandomItem(demoNetworks)}`
+      const sourceInstanceName = `instance-${sourceIp.split('.').pop()}-${sourceNetwork}`;
+      const destinationInstanceName = isDestInternal 
+        ? `instance-${destinationIp.split('.').pop()}-${this.getRandomItem(demoNetworks)}`
         : undefined;
       
       const flow: FlowLogEntry = {
@@ -1134,7 +1165,7 @@ LIMIT 100
     const timeSeriesData: FlowMetrics[] = [];
     const buckets = new Map<number, FlowMetrics>();
     
-    // Create time buckets
+    // Create time buckets for the ENTIRE time range to ensure full coverage
     for (let time = startTime.getTime(); time < endTime.getTime(); time += intervalMs) {
       const bucketKey = Math.floor(time / intervalMs) * intervalMs;
       buckets.set(bucketKey, {
@@ -1174,6 +1205,31 @@ LIMIT 100
         if (flow.rttMsec) {
           bucket.rttMsec = Math.max(bucket.rttMsec || 0, flow.rttMsec);
         }
+      }
+    });
+    
+    // Ensure we have data points even for empty buckets (creates continuous line)
+    // Add baseline traffic to empty buckets to avoid gaps
+    buckets.forEach(bucket => {
+      if (bucket.value === 0) {
+        // Add minimal baseline traffic to maintain chart continuity
+        switch (metricType) {
+          case 'bytes':
+            bucket.value = Math.floor(Math.random() * 1000 + 100); // 100B - 1KB baseline
+            break;
+          case 'packets':
+            bucket.value = Math.floor(Math.random() * 10 + 1); // 1-10 packets baseline
+            break;
+          case 'connections':
+            bucket.value = Math.floor(Math.random() * 3); // 0-2 connections baseline
+            break;
+          case 'latency':
+            bucket.value = Math.floor(Math.random() * 20 + 10); // 10-30ms baseline
+            break;
+        }
+        bucket.bytes = bucket.bytes || bucket.value;
+        bucket.packets = bucket.packets || Math.max(1, Math.floor(bucket.value / 100));
+        bucket.rttMsec = bucket.rttMsec || Math.floor(Math.random() * 50 + 10);
       }
     });
     

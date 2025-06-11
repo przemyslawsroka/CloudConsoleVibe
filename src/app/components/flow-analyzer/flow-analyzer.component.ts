@@ -681,23 +681,6 @@ Chart.register(...registerables);
       align-items: center;
       width: 100%;
       gap: 16px;
-      flex-wrap: wrap;
-    }
-
-    @media (min-width: 1200px) {
-      .section-header {
-        flex-wrap: nowrap;
-      }
-      
-      .multiselect-field {
-        min-width: 250px;
-        max-width: 400px;
-      }
-      
-      .organize-field {
-        min-width: 300px;
-        max-width: 450px;
-      }
     }
 
     .section-title {
@@ -707,6 +690,7 @@ Chart.register(...registerables);
       font-weight: 500;
       font-size: 14px;
       min-width: 140px;
+      flex-shrink: 0;
       text-align: center;
       color: #3c4043;
       border: 1px solid #e8eaed;
@@ -717,18 +701,61 @@ Chart.register(...registerables);
       font-size: 14px;
       font-weight: 500;
       margin-left: 8px;
+      flex-shrink: 0;
     }
 
     .multiselect-field {
+      flex: 2;
       min-width: 200px;
-      max-width: 300px;
-      flex: 1;
+    }
+
+    .organize-label {
+      color: #5f6368;
+      font-size: 14px;
+      font-weight: 500;
+      margin-left: auto;
+      margin-right: 8px;
+      white-space: nowrap;
+      flex-shrink: 0;
     }
 
     .organize-field {
+      flex: 2;
       min-width: 250px;
-      max-width: 350px;
-      flex: 1;
+    }
+
+    .section-header button[mat-icon-button] {
+      flex-shrink: 0;
+    }
+
+    /* Responsive layout for smaller screens */
+    @media (max-width: 1400px) {
+      .section-header {
+        flex-wrap: wrap;
+        gap: 12px;
+      }
+      
+      .multiselect-field,
+      .organize-field {
+        flex: 1 1 100%;
+        min-width: 200px;
+      }
+      
+      .organize-label {
+        margin-left: 0;
+        margin-top: 8px;
+      }
+    }
+
+    /* Extra wide screens - let fields expand more */
+    @media (min-width: 1600px) {
+      .multiselect-field {
+        flex: 3;
+      }
+      
+      .organize-field {
+        flex: 3;
+      }
     }
 
     .multiselect-field .mat-form-field-wrapper {
@@ -741,15 +768,6 @@ Chart.register(...registerables);
 
     .multiselect-field .mat-form-field-outline-thick {
       color: #1976d2;
-    }
-
-    .organize-label {
-      color: #5f6368;
-      font-size: 14px;
-      font-weight: 500;
-      margin-left: auto;
-      margin-right: 8px;
-      white-space: nowrap;
     }
 
     .add-filter-button {
