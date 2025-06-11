@@ -1,5 +1,5 @@
 websocket:
-  url: "https://cloudconsolevibe-backend-6anbejtsta-uc.a.run.app/api/v1/agents/connect"
+  url: "https://cloudconsolevibe-backend-vpi7bqw4kq-uc.a.run.app/api/v1/agents/connect"
   agent_id: "monitoring-agent-${HOSTNAME:-$(uuidgen | cut -d'-' -f1)}"
   retry_attempts: 5
   retry_delay: 5000

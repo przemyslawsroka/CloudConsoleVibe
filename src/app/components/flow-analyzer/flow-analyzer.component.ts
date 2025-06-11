@@ -557,10 +557,10 @@ Chart.register(...registerables);
 
     .query-section {
       margin-bottom: 24px;
-      background: white;
+      background: var(--surface-color);
       border-radius: 8px;
-      box-shadow: 0 1px 2px 0 rgba(60,64,67,.3), 0 1px 3px 1px rgba(60,64,67,.15);
-      border: 1px solid #dadce0;
+      box-shadow: 0 1px 2px 0 rgba(0,0,0,0.1), 0 1px 3px 1px rgba(0,0,0,0.05);
+      border: 1px solid var(--border-color);
       padding: 0;
     }
 
@@ -569,8 +569,8 @@ Chart.register(...registerables);
       align-items: center;
       justify-content: space-between;
       padding: 16px 20px;
-      border-bottom: 1px solid #e8eaed;
-      background: white;
+      border-bottom: 1px solid var(--border-color);
+      background: var(--surface-color);
     }
 
     .query-title {
@@ -602,9 +602,9 @@ Chart.register(...registerables);
       align-items: center;
       gap: 8px;
       padding: 8px 12px;
-      border: 1px solid #fdd663;
-      background: #fef7e0;
-      color: #3c4043;
+      border: 1px solid var(--warning-border, #fdd663);
+      background: var(--warning-background, #fef7e0);
+      color: var(--text-color);
       font-size: 14px;
       border-radius: 4px;
       min-width: 250px;
@@ -613,7 +613,7 @@ Chart.register(...registerables);
     }
 
     .source-bucket-button:hover {
-      background: #fef0c7;
+      background: var(--warning-background-hover, #fef0c7);
     }
 
     .warning-icon {
@@ -624,22 +624,22 @@ Chart.register(...registerables);
     }
 
     .filter-mode-toggle mat-button-toggle-group {
-      border: 1px solid #dadce0;
+      border: 1px solid var(--border-color);
       border-radius: 4px;
       height: 36px;
-      background: white;
+      background: var(--surface-color);
     }
 
     .filter-mode-toggle .mat-button-toggle {
       border: none;
-      color: #5f6368;
+      color: var(--text-secondary-color);
       font-size: 14px;
       font-weight: 500;
     }
 
     .filter-mode-toggle .mat-button-toggle-checked {
-      background: #e8f0fe;
-      color: #1976d2;
+      background: var(--primary-background, #e8f0fe);
+      color: var(--primary-color);
     }
 
     .traffic-aggregation {
@@ -684,7 +684,7 @@ Chart.register(...registerables);
     }
 
     .section-title {
-      background: #f8f9fa;
+      background: var(--hover-color);
       padding: 8px 16px;
       border-radius: 20px;
       font-weight: 500;
@@ -692,12 +692,12 @@ Chart.register(...registerables);
       min-width: 140px;
       flex-shrink: 0;
       text-align: center;
-      color: #3c4043;
-      border: 1px solid #e8eaed;
+      color: var(--text-color);
+      border: 1px solid var(--border-color);
     }
 
     .section-subtitle {
-      color: #5f6368;
+      color: var(--text-secondary-color);
       font-size: 14px;
       font-weight: 500;
       margin-left: 8px;
@@ -710,7 +710,7 @@ Chart.register(...registerables);
     }
 
     .organize-label {
-      color: #5f6368;
+      color: var(--text-secondary-color);
       font-size: 14px;
       font-weight: 500;
       margin-left: auto;
@@ -763,11 +763,11 @@ Chart.register(...registerables);
     }
 
     .multiselect-field .mat-form-field-outline {
-      color: #dadce0;
+      color: var(--border-color);
     }
 
     .multiselect-field .mat-form-field-outline-thick {
-      color: #1976d2;
+      color: var(--primary-color);
     }
 
     .add-filter-button {
@@ -776,7 +776,7 @@ Chart.register(...registerables);
       gap: 6px;
       padding: 6px 12px;
       font-size: 14px;
-      color: #1976d2;
+      color: var(--primary-color);
       border: none;
       background: none;
       border-radius: 4px;
@@ -785,7 +785,7 @@ Chart.register(...registerables);
     }
 
     .add-filter-button:hover {
-      background-color: #f1f3f4;
+      background-color: var(--hover-color);
     }
 
     .add-filter-button mat-icon {
@@ -804,11 +804,11 @@ Chart.register(...registerables);
       font-size: 18px;
       width: 18px;
       height: 18px;
-      color: #5f6368;
+      color: var(--text-secondary-color);
     }
 
     .section-header button[mat-icon-button]:hover {
-      background-color: #f1f3f4;
+      background-color: var(--hover-color);
     }
 
     .sql-filters {
@@ -884,15 +884,15 @@ Chart.register(...registerables);
       justify-content: space-between;
       align-items: center;
       padding: 16px 20px;
-      background: #f8f9fa;
-      border-top: 1px solid #e8eaed;
+      background: var(--hover-color);
+      border-top: 1px solid var(--border-color);
     }
 
     .hide-filters-button {
       display: flex;
       align-items: center;
       gap: 6px;
-      color: #1976d2;
+      color: var(--primary-color);
       font-size: 14px;
       font-weight: 500;
       border: none;
@@ -904,7 +904,7 @@ Chart.register(...registerables);
     }
 
     .hide-filters-button:hover {
-      background-color: #e3f2fd;
+      background-color: var(--primary-background-hover, rgba(25, 118, 210, 0.08));
     }
 
     .hide-filters-button mat-icon {
@@ -920,8 +920,8 @@ Chart.register(...registerables);
       padding: 10px 24px;
       font-size: 14px;
       font-weight: 500;
-      background: #1976d2;
-      color: white;
+      background: var(--primary-color);
+      color: var(--primary-text-color, white);
       border: none;
       border-radius: 4px;
       cursor: pointer;
@@ -929,12 +929,12 @@ Chart.register(...registerables);
     }
 
     .run-query-button:hover:not(:disabled) {
-      background: #1565c0;
+      background: var(--primary-color-dark, #1565c0);
     }
 
     .run-query-button:disabled {
-      background: #e0e0e0;
-      color: #9e9e9e;
+      background: var(--disabled-background, #e0e0e0);
+      color: var(--disabled-text-color, #9e9e9e);
       cursor: not-allowed;
     }
 
@@ -996,22 +996,22 @@ Chart.register(...registerables);
     }
 
     .visualization-mode mat-button-toggle-group {
-      border: 1px solid #dadce0;
+      border: 1px solid var(--border-color);
       border-radius: 4px;
-      background: white;
+      background: var(--surface-color);
     }
 
     .visualization-mode .mat-button-toggle {
       border: none;
-      color: #5f6368;
+      color: var(--text-secondary-color);
       font-size: 14px;
       font-weight: 500;
       padding: 8px 16px;
     }
 
     .visualization-mode .mat-button-toggle-checked {
-      background: #e8f0fe;
-      color: #1976d2;
+      background: var(--primary-background, #e8f0fe);
+      color: var(--primary-color);
     }
 
     .visualization-mode .mat-button-toggle mat-icon {
@@ -2179,6 +2179,11 @@ export class FlowAnalyzerComponent implements OnInit {
 
     const datasets = this.createChartDatasets();
 
+    // Get theme colors for proper dark mode support
+    const isDarkMode = document.documentElement.classList.contains('dark-mode');
+    const textColor = isDarkMode ? '#e8eaed' : '#3c4043';
+    const gridColor = isDarkMode ? '#3c4043' : '#e8eaed';
+
     this.chart = new Chart(ctx, {
       type: this.selectedMetricType === 'latency' ? 'line' : 'line',
       data: {
@@ -2198,25 +2203,49 @@ export class FlowAnalyzerComponent implements OnInit {
             },
             title: {
               display: true,
-              text: 'Time'
+              text: 'Time',
+              color: textColor
+            },
+            ticks: {
+              color: textColor
+            },
+            grid: {
+              color: gridColor
             }
           },
           y: {
             beginAtZero: true,
             title: {
               display: true,
-              text: this.getYAxisLabel()
+              text: this.getYAxisLabel(),
+              color: textColor
+            },
+            ticks: {
+              color: textColor
+            },
+            grid: {
+              color: gridColor
             }
           }
         },
         plugins: {
           legend: {
             display: true,
-            position: 'top'
+            position: 'top',
+            labels: {
+              color: textColor,
+              usePointStyle: true,
+              pointStyle: 'circle'
+            }
           },
           tooltip: {
             mode: 'index',
-            intersect: false
+            intersect: false,
+            backgroundColor: isDarkMode ? '#2d2e30' : '#fff',
+            titleColor: textColor,
+            bodyColor: textColor,
+            borderColor: isDarkMode ? '#5f6368' : '#dadce0',
+            borderWidth: 1
           }
         },
         interaction: {
