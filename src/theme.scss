@@ -1,0 +1,273 @@
+@use '@angular/material' as mat;
+
+// Google Brand Colors
+$google-blue: #4285f4;
+$google-red: #ea4335;
+$google-green: #34a853;
+$google-yellow: #fbbc05;
+
+// Additional Google Blue variations
+$google-blue-50: #e8f0fe;
+$google-blue-100: #d2e3fc;
+$google-blue-200: #aecbfa;
+$google-blue-300: #8ab4f8;
+$google-blue-400: #669df6;
+$google-blue-500: #4285f4;
+$google-blue-600: #1a73e8;
+$google-blue-700: #1967d2;
+$google-blue-800: #185abc;
+$google-blue-900: #174ea6;
+
+// Custom Google Palettes
+$google-blue-palette: (
+  50: $google-blue-50,
+  100: $google-blue-100,
+  200: $google-blue-200,
+  300: $google-blue-300,
+  400: $google-blue-400,
+  500: $google-blue-500,
+  600: $google-blue-600,
+  700: $google-blue-700,
+  800: $google-blue-800,
+  900: $google-blue-900,
+  A100: #82b1ff,
+  A200: #448aff,
+  A400: #2979ff,
+  A700: #2962ff,
+  contrast: (
+    50: rgba(black, 0.87),
+    100: rgba(black, 0.87),
+    200: rgba(black, 0.87),
+    300: rgba(black, 0.87),
+    400: rgba(black, 0.87),
+    500: white,
+    600: white,
+    700: white,
+    800: white,
+    900: white,
+    A100: rgba(black, 0.87),
+    A200: white,
+    A400: white,
+    A700: white,
+  )
+);
+
+$google-red-palette: (
+  50: #fce8e6,
+  100: #f9dedc,
+  200: #f2b8b5,
+  300: #e8928d,
+  400: #de6c65,
+  500: $google-red,
+  600: #d33b01,
+  700: #b52d20,
+  800: #9aa0a6,
+  900: #80868b,
+  A100: #ff8a80,
+  A200: #ff5722,
+  A400: #ff1744,
+  A700: #d50000,
+  contrast: (
+    50: rgba(black, 0.87),
+    100: rgba(black, 0.87),
+    200: rgba(black, 0.87),
+    300: rgba(black, 0.87),
+    400: rgba(black, 0.87),
+    500: white,
+    600: white,
+    700: white,
+    800: white,
+    900: white,
+    A100: rgba(black, 0.87),
+    A200: white,
+    A400: white,
+    A700: white,
+  )
+);
+
+$google-green-palette: (
+  50: #e6f4ea,
+  100: #ceead6,
+  200: #a8dab5,
+  300: #81c995,
+  400: #5bb974,
+  500: $google-green,
+  600: #137333,
+  700: #0d652d,
+  800: #0b5729,
+  900: #064e25,
+  A100: #69f0ae,
+  A200: #00e676,
+  A400: #00c853,
+  A700: #00b248,
+  contrast: (
+    50: rgba(black, 0.87),
+    100: rgba(black, 0.87),
+    200: rgba(black, 0.87),
+    300: rgba(black, 0.87),
+    400: rgba(black, 0.87),
+    500: white,
+    600: white,
+    700: white,
+    800: white,
+    900: white,
+    A100: rgba(black, 0.87),
+    A200: rgba(black, 0.87),
+    A400: rgba(black, 0.87),
+    A700: white,
+  )
+);
+
+// Include the common styles for Angular Material
+@include mat.core();
+
+// Define light theme
+$light-theme: mat.define-light-theme((
+  color: (
+    primary: mat.define-palette($google-blue-palette, 600),
+    accent: mat.define-palette($google-green-palette, 500),
+    warn: mat.define-palette($google-red-palette, 500),
+  ),
+  typography: mat.define-typography-config(
+    $font-family: 'Roboto, "Helvetica Neue", sans-serif',
+    $headline-1: mat.define-typography-level(112px, 112px, 300, $letter-spacing: -0.05em),
+    $headline-2: mat.define-typography-level(56px, 56px, 400, $letter-spacing: -0.02em),
+    $headline-3: mat.define-typography-level(45px, 48px, 400, $letter-spacing: -0.005em),
+    $headline-4: mat.define-typography-level(34px, 40px, 400),
+    $headline-5: mat.define-typography-level(24px, 32px, 400),
+    $headline-6: mat.define-typography-level(20px, 32px, 500),
+    $subtitle-1: mat.define-typography-level(16px, 28px, 400),
+    $subtitle-2: mat.define-typography-level(14px, 28px, 500),
+    $body-1: mat.define-typography-level(16px, 24px, 400),
+    $body-2: mat.define-typography-level(14px, 20px, 400),
+    $caption: mat.define-typography-level(12px, 20px, 400),
+    $button: mat.define-typography-level(14px, 14px, 500),
+    $overline: mat.define-typography-level(10px, 16px, 400, $letter-spacing: 0.1em),
+  ),
+  density: 0,
+));
+
+// Define dark theme
+$dark-theme: mat.define-dark-theme((
+  color: (
+    primary: mat.define-palette($google-blue-palette, 400),
+    accent: mat.define-palette($google-green-palette, 400),
+    warn: mat.define-palette($google-red-palette, 400),
+  ),
+  typography: mat.define-typography-config(
+    $font-family: 'Roboto, "Helvetica Neue", sans-serif',
+  ),
+  density: 0,
+));
+
+// Apply the light theme by default
+@include mat.all-component-themes($light-theme);
+
+// Apply dark theme when dark-theme class is present
+.dark-theme {
+  @include mat.all-component-colors($dark-theme);
+}
+
+// Custom overrides for better Google branding
+.mat-toolbar.mat-primary {
+  background: linear-gradient(135deg, #1a73e8 0%, #4285f4 100%);
+  color: white;
+}
+
+.mat-raised-button.mat-primary {
+  background-color: #1a73e8;
+  color: white;
+  
+  &:hover:not([disabled]) {
+    background-color: #1967d2;
+    box-shadow: 0 2px 4px rgba(26, 115, 232, 0.3);
+  }
+  
+  &:active:not([disabled]) {
+    background-color: #185abc;
+  }
+}
+
+.mat-stroked-button.mat-primary {
+  color: #1a73e8;
+  border-color: #1a73e8;
+  
+  &:hover:not([disabled]) {
+    background-color: rgba(26, 115, 232, 0.04);
+  }
+}
+
+.mat-button.mat-primary {
+  color: #1a73e8;
+  
+  &:hover:not([disabled]) {
+    background-color: rgba(26, 115, 232, 0.04);
+  }
+}
+
+.mat-fab.mat-primary,
+.mat-mini-fab.mat-primary {
+  background-color: #1a73e8;
+  color: white;
+}
+
+.mat-checkbox-checked.mat-accent .mat-checkbox-background,
+.mat-checkbox-indeterminate.mat-accent .mat-checkbox-background {
+  background-color: #34a853;
+}
+
+.mat-radio-button.mat-accent.mat-radio-checked .mat-radio-outer-circle {
+  border-color: #34a853;
+}
+
+.mat-radio-button.mat-accent .mat-radio-inner-circle {
+  background-color: #34a853;
+}
+
+.mat-slide-toggle.mat-checked.mat-accent .mat-slide-toggle-thumb {
+  background-color: #34a853;
+}
+
+.mat-slide-toggle.mat-checked.mat-accent .mat-slide-toggle-bar {
+  background-color: rgba(52, 168, 83, 0.54);
+}
+
+.mat-progress-bar-fill::after {
+  background-color: #1a73e8;
+}
+
+.mat-progress-spinner circle {
+  stroke: #1a73e8;
+}
+
+.mat-tab-label-active {
+  color: #1a73e8 !important;
+}
+
+.mat-ink-bar {
+  background-color: #1a73e8;
+}
+
+// Dark theme specific overrides
+.dark-theme {
+  .mat-toolbar.mat-primary {
+    background: linear-gradient(135deg, #1565c0 0%, #1976d2 100%);
+  }
+  
+  .mat-raised-button.mat-primary {
+    background-color: #1976d2;
+    
+    &:hover:not([disabled]) {
+      background-color: #1565c0;
+    }
+  }
+  
+  .mat-stroked-button.mat-primary {
+    color: #4285f4;
+    border-color: #4285f4;
+  }
+  
+  .mat-button.mat-primary {
+    color: #4285f4;
+  }
+} 

@@ -76,12 +76,12 @@ export class ThemeService {
       document.documentElement.style.setProperty('--surface-color', '#f8f9fa');
       document.documentElement.style.setProperty('--text-color', '#202124');
       document.documentElement.style.setProperty('--text-secondary-color', '#5f6368');
-      document.documentElement.style.setProperty('--primary-color', '#4285f4');
+      document.documentElement.style.setProperty('--primary-color', '#1a73e8');
       document.documentElement.style.setProperty('--accent-color', '#34a853');
       document.documentElement.style.setProperty('--warn-color', '#ea4335');
       document.documentElement.style.setProperty('--border-color', '#dadce0');
-      document.documentElement.style.setProperty('--hover-color', 'rgba(32, 33, 36, 0.04)');
-      document.documentElement.style.setProperty('--selected-color', 'rgba(66, 133, 244, 0.12)');
+      document.documentElement.style.setProperty('--hover-color', 'rgba(26, 115, 232, 0.04)');
+      document.documentElement.style.setProperty('--selected-color', 'rgba(26, 115, 232, 0.12)');
       document.documentElement.style.setProperty('--disabled-color', 'rgba(32, 33, 36, 0.38)');
       document.documentElement.style.setProperty('--divider-color', 'rgba(32, 33, 36, 0.12)');
     }
