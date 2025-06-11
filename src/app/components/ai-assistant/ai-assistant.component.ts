@@ -46,15 +46,36 @@ import { GeminiAiService, ChatMessage, VoiceSessionState } from '../../services/
 
         <div class="voice-controls" *ngIf="voiceSession$ | async as voiceState">
           <div class="voice-status" *ngIf="voiceState.isActive">
-            <mat-icon 
-              class="voice-indicator" 
-              [class.recording]="voiceState.isRecording"
-              [class.processing]="voiceState.isProcessing">
-              {{ voiceState.isRecording ? 'mic' : voiceState.isProcessing ? 'hourglass_empty' : 'mic_off' }}
-            </mat-icon>
-            <span class="voice-status-text">
-              {{ voiceState.isRecording ? 'Listening...' : voiceState.isProcessing ? 'Processing...' : 'Voice session active' }}
-            </span>
+            <div class="voice-indicator-section">
+              <mat-icon 
+                class="voice-indicator" 
+                [class.recording]="voiceState.isRecording"
+                [class.processing]="voiceState.isProcessing"
+                [class.mic-detected]="voiceState.isMicrophoneDetected">
+                {{ voiceState.isRecording ? 'mic' : voiceState.isProcessing ? 'hourglass_empty' : 'mic_off' }}
+              </mat-icon>
+              
+              <div class="microphone-level" *ngIf="voiceState.isRecording">
+                <div class="level-bar">
+                  <div 
+                    class="level-fill" 
+                    [style.width.%]="voiceState.microphoneLevel"
+                    [class.active]="voiceState.microphoneLevel > 5">
+                  </div>
+                </div>
+                <span class="level-text">{{ voiceState.microphoneLevel }}%</span>
+              </div>
+            </div>
+            
+            <div class="voice-status-info">
+              <span class="voice-status-text">
+                {{ voiceState.isRecording ? 'Listening...' : voiceState.isProcessing ? 'Processing...' : 'Voice session active' }}
+              </span>
+              <span class="mic-status" *ngIf="voiceState.isRecording">
+                {{ voiceState.isMicrophoneDetected ? '🎤 Audio detected' : '🔇 No audio detected' }}
+              </span>
+            </div>
+            
             <button mat-stroked-button color="warn" (click)="stopVoiceSession()" class="stop-voice-btn">
               Stop Voice
             </button>
@@ -253,12 +274,19 @@ import { GeminiAiService, ChatMessage, VoiceSessionState } from '../../services/
 
     .voice-status {
       display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .voice-indicator-section {
+      display: flex;
       align-items: center;
       gap: 12px;
     }
 
     .voice-indicator {
       color: var(--primary-color);
+      font-size: 20px;
     }
 
     .voice-indicator.recording {
@@ -271,16 +299,65 @@ import { GeminiAiService, ChatMessage, VoiceSessionState } from '../../services/
       animation: rotate 2s linear infinite;
     }
 
-    .voice-status-text {
+    .voice-indicator.mic-detected {
+      color: #4caf50;
+    }
+
+    .microphone-level {
+      display: flex;
+      align-items: center;
+      gap: 8px;
       flex: 1;
+    }
+
+    .level-bar {
+      flex: 1;
+      height: 6px;
+      background: rgba(0, 0, 0, 0.1);
+      border-radius: 3px;
+      overflow: hidden;
+      max-width: 120px;
+    }
+
+    .level-fill {
+      height: 100%;
+      background: #ccc;
+      transition: width 0.1s ease, background-color 0.2s ease;
+      border-radius: 3px;
+    }
+
+    .level-fill.active {
+      background: #4caf50;
+    }
+
+    .level-text {
+      font-size: 10px;
+      color: var(--text-secondary-color);
+      min-width: 30px;
+    }
+
+    .voice-status-info {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .voice-status-text {
       font-size: 14px;
       color: var(--text-color);
+      font-weight: 500;
+    }
+
+    .mic-status {
+      font-size: 12px;
+      color: var(--text-secondary-color);
     }
 
     .stop-voice-btn {
       font-size: 12px;
       padding: 4px 12px;
       min-height: 32px;
+      align-self: flex-start;
     }
 
     .action-buttons {

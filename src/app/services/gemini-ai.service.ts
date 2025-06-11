@@ -22,6 +22,8 @@ export interface VoiceSessionState {
   isActive: boolean;
   isRecording: boolean;
   isProcessing: boolean;
+  microphoneLevel: number; // 0-100 indicating microphone input level
+  isMicrophoneDetected: boolean;
 }
 
 @Injectable({
@@ -36,7 +38,9 @@ export class GeminiAiService {
   private voiceSessionSubject = new BehaviorSubject<VoiceSessionState>({
     isActive: false,
     isRecording: false,
-    isProcessing: false
+    isProcessing: false,
+    microphoneLevel: 0,
+    isMicrophoneDetected: false
   });
   
   public messages$: Observable<ChatMessage[]> = this.messagesSubject.asObservable();
@@ -208,7 +212,10 @@ export class GeminiAiService {
       
       // Start voice session with enhanced context
       if (!this.voiceSessionSubject.value.isActive) {
-        await this.startVoiceSession();
+        // Add small delay to ensure screen sharing is fully established
+        setTimeout(async () => {
+          await this.startVoiceSession();
+        }, 1000);
       }
 
       // Send screen context to AI if session exists
@@ -266,29 +273,54 @@ export class GeminiAiService {
   }
 
   private setupScriptProcessor(audioContext: AudioContext, source: MediaStreamAudioSourceNode): void {
-    const processor = audioContext.createScriptProcessor(4096, 1, 1);
+    const processor = audioContext.createScriptProcessor(2048, 1, 1); // Smaller buffer for better responsiveness
+    const analyser = audioContext.createAnalyser();
+    analyser.fftSize = 256;
+    
+    source.connect(analyser);
+    analyser.connect(processor);
     
     processor.onaudioprocess = (event) => {
-      if (!this.session || !this.voiceSessionSubject.value.isRecording) return;
-      
       const inputBuffer = event.inputBuffer;
       const inputData = inputBuffer.getChannelData(0);
       
-      // Convert Float32Array to 16-bit PCM for Gemini
-      const pcmData = this.convertToPCM16(inputData);
-      const base64Audio = btoa(String.fromCharCode(...pcmData));
+      // Calculate microphone level for visualization
+      let sum = 0;
+      for (let i = 0; i < inputData.length; i++) {
+        sum += inputData[i] * inputData[i];
+      }
+      const rms = Math.sqrt(sum / inputData.length);
+      const micLevel = Math.min(100, Math.floor(rms * 1000)); // Scale to 0-100
       
-      // Send to Gemini Live API
-      try {
-        this.session.sendClientContent({
-          turns: [{ parts: [{ inlineData: { mimeType: 'audio/pcm', data: base64Audio } }] }]
-        });
-      } catch (error) {
-        console.error('Error sending audio to Gemini:', error);
+      // Update microphone status
+      const isMicDetected = micLevel > 1; // Threshold for detecting input
+      this.updateVoiceSession({ 
+        microphoneLevel: micLevel, 
+        isMicrophoneDetected: isMicDetected 
+      });
+      
+      // Only send audio if recording and there's actual input
+      if (!this.session || !this.voiceSessionSubject.value.isRecording) return;
+      
+      // Only send if there's meaningful audio (above noise threshold)
+      if (micLevel > 5) {
+        try {
+          // Convert Float32Array to 16-bit PCM for Gemini
+          const pcmData = this.convertToPCM16(inputData);
+          const base64Audio = btoa(String.fromCharCode(...pcmData));
+          
+          // Send to Gemini Live API
+          this.session.sendClientContent({
+            turns: [{ parts: [{ inlineData: { mimeType: 'audio/pcm', data: base64Audio } }] }]
+          });
+          
+          console.log(`🎤 Sending audio to Gemini (level: ${micLevel})`);
+        } catch (error) {
+          console.error('Error sending audio to Gemini:', error);
+        }
       }
     };
     
-    source.connect(processor);
     processor.connect(audioContext.destination);
   }
 
@@ -346,10 +378,11 @@ export class GeminiAiService {
       const audioUrl = URL.createObjectURL(wavBlob);
       
       const audio = new Audio(audioUrl);
-      audio.volume = 0.9;
+      audio.volume = 0.8;
+      audio.playbackRate = 0.9; // Slightly slower for better understanding
       
       audio.play().then(() => {
-        console.log('🔊 Playing audio chunk');
+        console.log('🔊 Playing audio chunk (slower rate for clarity)');
       }).catch(error => {
         console.error('Audio playback failed:', error);
       });
@@ -365,8 +398,8 @@ export class GeminiAiService {
   }
 
   private createWavFile(pcmData: Uint8Array): Blob {
-    // Audio format parameters for Gemini Live API
-    const sampleRate = 24000;
+    // Audio format parameters for Gemini Live API - using lower sample rate for better compatibility
+    const sampleRate = 16000; // Lower sample rate for better playback compatibility
     const numChannels = 1;
     const bitsPerSample = 16;
     const bytesPerSample = bitsPerSample / 8;
