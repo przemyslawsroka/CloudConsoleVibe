@@ -221,28 +221,10 @@ export class GeminiAiService {
         });
       }
 
-      // Handle microphone audio for voice input
+      // Handle microphone audio for voice input using modern Web Audio API
       const audioTrack = micStream.getAudioTracks()[0];
       if (audioTrack && this.session) {
-        // Create audio processor for real-time voice input
-        const audioContext = new AudioContext();
-        const source = audioContext.createMediaStreamSource(micStream);
-        const processor = audioContext.createScriptProcessor(4096, 1, 1);
-        
-        processor.onaudioprocess = (event) => {
-          const inputBuffer = event.inputBuffer;
-          const inputData = inputBuffer.getChannelData(0);
-          
-          // Process audio for voice input - this would need proper implementation
-          // based on the Gemini Live API documentation
-          if (this.session && this.voiceSessionSubject.value.isRecording) {
-            // For now, just log that we're processing audio
-            console.log('Processing audio input for voice conversation');
-          }
-        };
-        
-        source.connect(processor);
-        processor.connect(audioContext.destination);
+        this.setupMicrophoneStreaming(micStream);
       }
       
       // Handle track ending
@@ -264,163 +246,171 @@ export class GeminiAiService {
     }
   }
 
-  private convertAudioToBase64(audioData: Float32Array): string {
-    // Convert Float32Array to 16-bit PCM
-    const buffer = new ArrayBuffer(audioData.length * 2);
+  private setupMicrophoneStreaming(micStream: MediaStream): void {
+    try {
+      const audioContext = new AudioContext({ sampleRate: 16000 });
+      const source = audioContext.createMediaStreamSource(micStream);
+      
+      // Use AudioWorklet for modern browsers (fallback to ScriptProcessor if needed)
+      if (audioContext.audioWorklet) {
+        this.setupAudioWorklet(audioContext, source);
+      } else {
+        this.setupScriptProcessor(audioContext, source);
+      }
+      
+      console.log('🎤 Microphone streaming setup complete');
+    } catch (error) {
+      console.error('Error setting up microphone streaming:', error);
+      this.addSystemMessage('Microphone setup failed. Please check permissions.');
+    }
+  }
+
+  private setupScriptProcessor(audioContext: AudioContext, source: MediaStreamAudioSourceNode): void {
+    const processor = audioContext.createScriptProcessor(4096, 1, 1);
+    
+    processor.onaudioprocess = (event) => {
+      if (!this.session || !this.voiceSessionSubject.value.isRecording) return;
+      
+      const inputBuffer = event.inputBuffer;
+      const inputData = inputBuffer.getChannelData(0);
+      
+      // Convert Float32Array to 16-bit PCM for Gemini
+      const pcmData = this.convertToPCM16(inputData);
+      const base64Audio = btoa(String.fromCharCode(...pcmData));
+      
+      // Send to Gemini Live API
+      try {
+        this.session.sendClientContent({
+          turns: [{ parts: [{ inlineData: { mimeType: 'audio/pcm', data: base64Audio } }] }]
+        });
+      } catch (error) {
+        console.error('Error sending audio to Gemini:', error);
+      }
+    };
+    
+    source.connect(processor);
+    processor.connect(audioContext.destination);
+  }
+
+  private setupAudioWorklet(audioContext: AudioContext, source: MediaStreamAudioSourceNode): void {
+    // For now, use the script processor as AudioWorklet requires separate files
+    this.setupScriptProcessor(audioContext, source);
+  }
+
+  private convertToPCM16(floatSamples: Float32Array): Uint8Array {
+    const buffer = new ArrayBuffer(floatSamples.length * 2);
     const view = new DataView(buffer);
     
-    for (let i = 0; i < audioData.length; i++) {
-      const sample = Math.max(-1, Math.min(1, audioData[i]));
+    for (let i = 0; i < floatSamples.length; i++) {
+      // Clamp to [-1, 1] and convert to 16-bit signed integer
+      const sample = Math.max(-1, Math.min(1, floatSamples[i]));
       view.setInt16(i * 2, sample * 0x7FFF, true);
     }
     
-    // Convert to base64
-    const bytes = new Uint8Array(buffer);
-    let binary = '';
-    for (let i = 0; i < bytes.byteLength; i++) {
-      binary += String.fromCharCode(bytes[i]);
-    }
-    return btoa(binary);
+    return new Uint8Array(buffer);
   }
 
   private handleModelTurn(message: LiveServerMessage): void {
     if (message.serverContent?.modelTurn?.parts) {
-      const part = message.serverContent.modelTurn.parts[0];
+      for (const part of message.serverContent.modelTurn.parts) {
+        if (part?.text) {
+          const aiMessage: ChatMessage = {
+            id: this.generateId(),
+            content: part.text,
+            isUser: false,
+            timestamp: new Date(),
+            type: 'text'
+          };
+          this.addMessage(aiMessage);
+        }
 
-      if (part?.text) {
-        const aiMessage: ChatMessage = {
-          id: this.generateId(),
-          content: part.text,
-          isUser: false,
-          timestamp: new Date(),
-          type: 'text'
-        };
-        this.addMessage(aiMessage);
-      }
-
-      if (part?.inlineData) {
-        this.audioParts.push(part.inlineData.data ?? '');
-        this.playAudioResponse();
-        
-        // Don't add "[Voice Response]" to chat during voice conversations
-        // The user can hear the response, no need to clutter the chat
+        if (part?.inlineData?.data) {
+          // Each part contains a complete audio chunk, play immediately
+          this.playAudioChunk(part.inlineData.data);
+        }
       }
     }
   }
 
-  private playAudioResponse(): void {
-    if (this.audioParts.length === 0) return;
-    
+  private playAudioChunk(base64AudioData: string): void {
     try {
-      // Combine all audio parts
-      const combinedAudioData = this.audioParts.join('');
-      
-      // Decode base64 audio data
-      const binaryString = atob(combinedAudioData);
+      // Gemini Live API returns audio as base64 encoded PCM
+      const binaryString = atob(base64AudioData);
       const bytes = new Uint8Array(binaryString.length);
       for (let i = 0; i < binaryString.length; i++) {
         bytes[i] = binaryString.charCodeAt(i);
       }
       
-      // Create audio blob - Gemini returns PCM audio data
-      const audioBlob = new Blob([bytes], { type: 'audio/pcm' });
-      const audioUrl = URL.createObjectURL(audioBlob);
-      
-      // Create and configure audio element
-      const audio = new Audio();
-      audio.src = audioUrl;
-      audio.volume = 0.8; // Set reasonable volume
-      
-      // Handle audio playback
-      audio.play().then(() => {
-        console.log('Playing AI voice response');
-        this.updateVoiceSession({ isProcessing: false });
-      }).catch(error => {
-        console.error('Error playing audio:', error);
-        
-        // Try alternative audio format if PCM doesn't work
-        this.tryAlternativeAudioPlayback(bytes);
-      });
-      
-      // Clean up when audio ends
-      audio.addEventListener('ended', () => {
-        URL.revokeObjectURL(audioUrl);
-        console.log('Audio playback completed');
-      });
-      
-      audio.addEventListener('error', (e) => {
-        console.error('Audio playback error:', e);
-        URL.revokeObjectURL(audioUrl);
-        this.tryAlternativeAudioPlayback(bytes);
-      });
-      
-      // Clear audio parts after processing
-      this.audioParts = [];
-      
-    } catch (error) {
-      console.error('Error processing audio data:', error);
-      this.addSystemMessage('Unable to play voice response. Please check audio settings.');
-    }
-  }
-
-  private tryAlternativeAudioPlayback(audioData: Uint8Array): void {
-    try {
-      // Try creating WAV format
-      const wavBlob = this.createWavBlob(audioData);
+      // Create proper WAV file for browser compatibility
+      const wavBlob = this.createWavFile(bytes);
       const audioUrl = URL.createObjectURL(wavBlob);
+      
       const audio = new Audio(audioUrl);
+      audio.volume = 0.9;
       
       audio.play().then(() => {
-        console.log('Playing AI voice response (WAV format)');
+        console.log('🔊 Playing audio chunk');
       }).catch(error => {
-        console.error('Alternative audio playback failed:', error);
-        this.addSystemMessage('Voice response received but could not be played. Please check browser audio settings.');
+        console.error('Audio playback failed:', error);
       });
       
+      // Clean up when done
       audio.addEventListener('ended', () => {
         URL.revokeObjectURL(audioUrl);
       });
       
     } catch (error) {
-      console.error('Alternative audio processing failed:', error);
+      console.error('Error processing audio chunk:', error);
     }
   }
 
-  private createWavBlob(audioData: Uint8Array): Blob {
-    const sampleRate = 24000; // Common sample rate for AI voice
-    const numChannels = 1; // Mono
+  private createWavFile(pcmData: Uint8Array): Blob {
+    // Audio format parameters for Gemini Live API
+    const sampleRate = 24000;
+    const numChannels = 1;
     const bitsPerSample = 16;
+    const bytesPerSample = bitsPerSample / 8;
+    const byteRate = sampleRate * numChannels * bytesPerSample;
+    const blockAlign = numChannels * bytesPerSample;
     
-    const dataSize = audioData.length;
-    const fileSize = 44 + dataSize; // WAV header is 44 bytes
+    // WAV file structure
+    const headerSize = 44;
+    const dataSize = pcmData.length;
+    const fileSize = headerSize + dataSize;
     
     const buffer = new ArrayBuffer(fileSize);
     const view = new DataView(buffer);
     
-    // WAV header
-    const writeString = (offset: number, string: string) => {
-      for (let i = 0; i < string.length; i++) {
-        view.setUint8(offset + i, string.charCodeAt(i));
+    // Helper function to write strings
+    let offset = 0;
+    const writeString = (str: string) => {
+      for (let i = 0; i < str.length; i++) {
+        view.setUint8(offset++, str.charCodeAt(i));
       }
     };
     
-    writeString(0, 'RIFF');
-    view.setUint32(4, fileSize - 8, true);
-    writeString(8, 'WAVE');
-    writeString(12, 'fmt ');
-    view.setUint32(16, 16, true); // Subchunk size
-    view.setUint16(20, 1, true); // Audio format (PCM)
-    view.setUint16(22, numChannels, true);
-    view.setUint32(24, sampleRate, true);
-    view.setUint32(28, sampleRate * numChannels * bitsPerSample / 8, true);
-    view.setUint16(32, numChannels * bitsPerSample / 8, true);
-    view.setUint16(34, bitsPerSample, true);
-    writeString(36, 'data');
-    view.setUint32(40, dataSize, true);
+    // RIFF header
+    writeString('RIFF');
+    view.setUint32(offset, fileSize - 8, true); offset += 4;
+    writeString('WAVE');
     
-    // Copy audio data
-    const dataView = new Uint8Array(buffer, 44);
-    dataView.set(audioData);
+    // fmt chunk
+    writeString('fmt ');
+    view.setUint32(offset, 16, true); offset += 4; // Subchunk size
+    view.setUint16(offset, 1, true); offset += 2;  // Audio format (PCM)
+    view.setUint16(offset, numChannels, true); offset += 2;
+    view.setUint32(offset, sampleRate, true); offset += 4;
+    view.setUint32(offset, byteRate, true); offset += 4;
+    view.setUint16(offset, blockAlign, true); offset += 2;
+    view.setUint16(offset, bitsPerSample, true); offset += 2;
+    
+    // data chunk
+    writeString('data');
+    view.setUint32(offset, dataSize, true); offset += 4;
+    
+    // Copy PCM data
+    const dataView = new Uint8Array(buffer, offset);
+    dataView.set(pcmData);
     
     return new Blob([buffer], { type: 'audio/wav' });
   }
