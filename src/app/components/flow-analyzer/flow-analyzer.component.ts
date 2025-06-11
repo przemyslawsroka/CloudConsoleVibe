@@ -1,6 +1,6 @@
 import { Component, OnInit, ChangeDetectorRef, ViewChild, ElementRef } from '@angular/core';
 import { FormBuilder, FormGroup, FormControl } from '@angular/forms';
-import { FlowAnalyzerService, FlowLogEntry, FlowMetrics, FilterOptions, MetricType, AggregationPeriod, FlowAnalysisResult } from '../../services/flow-analyzer.service';
+import { FlowAnalyzerService, FlowLogEntry, FlowMetrics, FilterOptions, MetricType, AggregationPeriod, FlowAnalysisResult, FilterAttribute, OrganizeAttribute } from '../../services/flow-analyzer.service';
 import { ProjectService, Project } from '../../services/project.service';
 import { Chart, registerables } from 'chart.js';
 import 'chartjs-adapter-date-fns';
@@ -27,192 +27,207 @@ Chart.register(...registerables);
       </div>
 
       <!-- Query Section -->
-      <mat-card class="query-section">
-        <mat-card-header>
-          <mat-card-title>
+      <div class="query-section">
+        <!-- Header with Query Title and Traffic Aggregation -->
+        <div class="query-header">
+          <div class="query-title">
             <mat-icon>tune</mat-icon>
-            Query
-          </mat-card-title>
-          <mat-card-subtitle>Configure filters and SQL query for VPC Flow Logs analysis</mat-card-subtitle>
-          <div class="card-header-actions">
-            <!-- Data Source Selection Button -->
-            <button mat-stroked-button (click)="openDataSourceDialog()" class="data-source-button">
-              <mat-icon>storage</mat-icon>
-              <span>Source bucket: {{ getDataSourceDisplayName() }}</span>
-              <mat-icon>expand_more</mat-icon>
+            <span>Query</span>
+            <button mat-button color="primary" class="compose-button">
+              <mat-icon>edit</mat-icon>
+              Compose a Cloud Assist Query
             </button>
           </div>
-        </mat-card-header>
-        <mat-card-content>
-          <!-- Toggle between Basic and SQL Filters -->
-          <div class="filter-mode-toggle">
-            <mat-button-toggle-group [(value)]="filterMode" (change)="onFilterModeChange()">
-              <mat-button-toggle value="basic">
-                <mat-icon>filter_list</mat-icon>
-                Basic filters
-              </mat-button-toggle>
-              <mat-button-toggle value="sql">
-                <mat-icon>code</mat-icon>
-                SQL filters
-              </mat-button-toggle>
-            </mat-button-toggle-group>
+          <div class="query-header-actions">
+            <!-- Data Source Selection -->
+            <button mat-stroked-button (click)="openDataSourceDialog()" class="source-bucket-button">
+              <mat-icon class="warning-icon">warning</mat-icon>
+              <span>Source bucket: {{ getDataSourceDisplayName() }}</span>
+              <mat-icon>arrow_drop_down</mat-icon>
+            </button>
+            <!-- Toggle between Basic and SQL Filters -->
+            <div class="filter-mode-toggle">
+              <mat-button-toggle-group [(value)]="filterMode" (change)="onFilterModeChange()">
+                <mat-button-toggle value="basic">Basic filters</mat-button-toggle>
+                <mat-button-toggle value="sql">SQL filters</mat-button-toggle>
+              </mat-button-toggle-group>
+            </div>
+            <!-- Traffic Aggregation -->
+            <div class="traffic-aggregation">
+              <span class="aggregation-label">Traffic aggregation</span>
+              <mat-select [(value)]="selectedTrafficAggregation" class="aggregation-select">
+                <mat-option value="source-destination">Source → destination (directional)</mat-option>
+                <mat-option value="client-server">Client ⇄ server (bidirectional)</mat-option>
+              </mat-select>
+              <button mat-icon-button matTooltip="Traffic aggregation help">
+                <mat-icon>help_outline</mat-icon>
+              </button>
+            </div>
           </div>
+        </div>
 
-          <!-- Basic Filters -->
-          <div *ngIf="filterMode === 'basic'" class="basic-filters">
-            <form [formGroup]="filtersForm" class="filters-form">
-              <!-- Source Filters -->
-              <div class="filter-row">
-                <mat-card class="filter-card">
-                  <mat-card-content>
-                    <h4>
-                      <mat-icon>source</mat-icon>
-                      Source
-                    </h4>
-                    <div class="filter-fields">
-                      <mat-form-field appearance="outline">
-                        <mat-label>Source IP</mat-label>
-                        <input matInput formControlName="sourceIp" placeholder="e.g., 10.128.0.3">
-                      </mat-form-field>
-                      <mat-form-field appearance="outline">
-                        <mat-label>VPC network project</mat-label>
-                        <mat-select formControlName="vpcNetworkProject">
-                          <mat-option value="">All projects</mat-option>
-                          <mat-option *ngFor="let project of availableProjects" [value]="project">
-                            {{ project }}
-                          </mat-option>
-                        </mat-select>
-                      </mat-form-field>
-                      <mat-form-field appearance="outline">
-                        <mat-label>VPC network</mat-label>
-                        <mat-select formControlName="vpcNetwork">
-                          <mat-option value="">All networks</mat-option>
-                          <mat-option *ngFor="let network of availableNetworks" [value]="network">
-                            {{ network }}
-                          </mat-option>
-                        </mat-select>
-                      </mat-form-field>
-                    </div>
-                  </mat-card-content>
-                </mat-card>
+        <!-- Compact Filter Sections -->
+        <div *ngIf="filterMode === 'basic'" class="compact-filters">
+          <form [formGroup]="filtersForm" class="filters-form">
+            <!-- Source Section -->
+            <div class="filter-section">
+              <div class="section-header">
+                <span class="section-title">Source</span>
+                <span class="section-subtitle">Filter</span>
+                <mat-form-field class="multiselect-field" appearance="outline">
+                  <mat-label>Add filter</mat-label>
+                  <mat-select multiple [(value)]="selectedSourceFilters">
+                    <mat-optgroup *ngFor="let category of sourceFilterCategories" [label]="category.label">
+                      <mat-option *ngFor="let attr of category.attributes" [value]="attr.value" [matTooltip]="attr.description">
+                        {{ attr.displayName }}
+                      </mat-option>
+                    </mat-optgroup>
+                  </mat-select>
+                </mat-form-field>
+                <span class="organize-label">Organize flows by</span>
+                <mat-form-field class="multiselect-field organize-field" appearance="outline">
+                  <mat-label>Select attributes</mat-label>
+                  <mat-select multiple [(value)]="selectedSourceOrganize">
+                    <mat-optgroup *ngFor="let category of sourceOrganizeCategories" [label]="category.label">
+                      <mat-option *ngFor="let attr of category.attributes" [value]="attr.value" [matTooltip]="attr.description">
+                        {{ attr.displayName }}
+                      </mat-option>
+                    </mat-optgroup>
+                  </mat-select>
+                </mat-form-field>
+                <button mat-icon-button matTooltip="Organize flows help">
+                  <mat-icon>help_outline</mat-icon>
+                </button>
+                <button mat-icon-button>
+                  <mat-icon>close</mat-icon>
+                </button>
               </div>
+            </div>
 
-              <!-- Destination Filters -->
-              <div class="filter-row">
-                <mat-card class="filter-card">
-                  <mat-card-content>
-                    <h4>
-                      <mat-icon>my_location</mat-icon>
-                      Destination
-                    </h4>
-                    <div class="filter-fields">
-                      <mat-form-field appearance="outline">
-                        <mat-label>Destination IP</mat-label>
-                        <input matInput formControlName="destinationIp" placeholder="e.g., 104.209.224.181">
-                      </mat-form-field>
-                    </div>
-                  </mat-card-content>
-                </mat-card>
+            <!-- Destination Section -->
+            <div class="filter-section">
+              <div class="section-header">
+                <span class="section-title">Destination</span>
+                <span class="section-subtitle">Filter</span>
+                <mat-form-field class="multiselect-field" appearance="outline">
+                  <mat-label>Add filter</mat-label>
+                  <mat-select multiple [(value)]="selectedDestinationFilters">
+                    <mat-optgroup *ngFor="let category of destinationFilterCategories" [label]="category.label">
+                      <mat-option *ngFor="let attr of category.attributes" [value]="attr.value" [matTooltip]="attr.description">
+                        {{ attr.displayName }}
+                      </mat-option>
+                    </mat-optgroup>
+                  </mat-select>
+                </mat-form-field>
+                <span class="organize-label">Organize flows by</span>
+                <mat-form-field class="multiselect-field organize-field" appearance="outline">
+                  <mat-label>Select attributes</mat-label>
+                  <mat-select multiple [(value)]="selectedDestinationOrganize">
+                    <mat-optgroup *ngFor="let category of destinationOrganizeCategories" [label]="category.label">
+                      <mat-option *ngFor="let attr of category.attributes" [value]="attr.value" [matTooltip]="attr.description">
+                        {{ attr.displayName }}
+                      </mat-option>
+                    </mat-optgroup>
+                  </mat-select>
+                </mat-form-field>
+                <button mat-icon-button matTooltip="Organize flows help">
+                  <mat-icon>help_outline</mat-icon>
+                </button>
+                <button mat-icon-button>
+                  <mat-icon>close</mat-icon>
+                </button>
               </div>
+            </div>
 
-              <!-- Flow Parameters -->
-              <div class="filter-row">
-                <mat-card class="filter-card">
-                  <mat-card-content>
-                    <h4>
-                      <mat-icon>settings_ethernet</mat-icon>
-                      Flow Parameters
-                    </h4>
-                    <div class="filter-fields">
-                      <mat-form-field appearance="outline">
-                        <mat-label>Protocol</mat-label>
-                        <mat-select formControlName="protocol">
-                          <mat-option value="">All protocols</mat-option>
-                          <mat-option *ngFor="let protocol of availableProtocols" [value]="protocol">
-                            {{ protocol }}
-                          </mat-option>
-                        </mat-select>
-                      </mat-form-field>
-                      <mat-form-field appearance="outline">
-                        <mat-label>Port</mat-label>
-                        <input matInput formControlName="port" placeholder="e.g., 443, 80">
-                      </mat-form-field>
-                    </div>
-                  </mat-card-content>
-                </mat-card>
+            <!-- Flow Parameters Section -->
+            <div class="filter-section">
+              <div class="section-header">
+                <span class="section-title">Flow Parameters</span>
+                <span class="section-subtitle">Filter</span>
+                <mat-form-field class="multiselect-field" appearance="outline">
+                  <mat-label>Add filter</mat-label>
+                  <mat-select multiple [(value)]="selectedFlowParameterFilters">
+                    <mat-optgroup *ngFor="let category of flowParameterFilterCategories" [label]="category.label">
+                      <mat-option *ngFor="let attr of category.attributes" [value]="attr.value" [matTooltip]="attr.description">
+                        {{ attr.displayName }}
+                      </mat-option>
+                    </mat-optgroup>
+                  </mat-select>
+                </mat-form-field>
+                <span class="organize-label">Organize flows by</span>
+                <mat-form-field class="multiselect-field organize-field" appearance="outline">
+                  <mat-label>Select attributes</mat-label>
+                  <mat-select multiple [(value)]="selectedFlowParameterOrganize">
+                    <mat-optgroup *ngFor="let category of flowParameterOrganizeCategories" [label]="category.label">
+                      <mat-option *ngFor="let attr of category.attributes" [value]="attr.value" [matTooltip]="attr.description">
+                        {{ attr.displayName }}
+                      </mat-option>
+                    </mat-optgroup>
+                  </mat-select>
+                </mat-form-field>
+                <button mat-icon-button matTooltip="Organize flows help">
+                  <mat-icon>help_outline</mat-icon>
+                </button>
+                <button mat-icon-button>
+                  <mat-icon>close</mat-icon>
+                </button>
               </div>
+            </div>
+          </form>
 
-              <!-- Time Range -->
-              <div class="filter-row">
-                <mat-card class="filter-card">
-                  <mat-card-content>
-                    <h4>
-                      <mat-icon>schedule</mat-icon>
-                      Time Range
-                    </h4>
-                    <div class="time-range-fields">
-                      <mat-form-field appearance="outline">
-                        <mat-label>Start time</mat-label>
-                        <input matInput type="datetime-local" formControlName="startTime">
-                      </mat-form-field>
-                      <mat-form-field appearance="outline">
-                        <mat-label>End time</mat-label>
-                        <input matInput type="datetime-local" formControlName="endTime">
-                      </mat-form-field>
-                      <div class="quick-time-buttons">
-                        <button mat-button type="button" (click)="setQuickTimeRange('1h')">Last 1 hour</button>
-                        <button mat-button type="button" (click)="setQuickTimeRange('6h')">Last 6 hours</button>
-                        <button mat-button type="button" (click)="setQuickTimeRange('1d')">Last 1 day</button>
-                      </div>
-                    </div>
-                  </mat-card-content>
-                </mat-card>
-              </div>
-            </form>
+          <!-- Filter Actions -->
+          <div class="filter-actions">
+            <button mat-stroked-button class="hide-filters-button">
+              <mat-icon>keyboard_arrow_up</mat-icon>
+              Hide Filters
+            </button>
+            <button mat-raised-button color="primary" (click)="runQuery()" [disabled]="isLoading" class="run-query-button">
+              <mat-icon>refresh</mat-icon>
+              {{ isLoading ? 'Running...' : 'Run new query' }}
+            </button>
           </div>
+        </div>
 
-          <!-- SQL Filters -->
-          <div *ngIf="filterMode === 'sql'" class="sql-filters">
-            <div class="sql-query-section">
-              <div class="sql-header">
-                <h4>WHERE</h4>
-                <div class="sql-info">
-                  <span>SQL filter query in BigQuery SQL Syntax</span>
-                  <button mat-icon-button matTooltip="Expression syntax and examples">
-                    <mat-icon>help_outline</mat-icon>
-                  </button>
-                </div>
+        <!-- SQL Filters -->
+        <div *ngIf="filterMode === 'sql'" class="sql-filters">
+          <div class="sql-section">
+            <div class="sql-where-section">
+              <div class="sql-where-header">
+                <span class="where-label">WHERE</span>
+                <span class="where-description">e.g. src_gcp_zone <> dest_gcp_zone</span>
               </div>
-              <mat-form-field appearance="outline" class="sql-field">
-                <textarea
-                  matInput
-                  [formControl]="customSqlQueryControl"
-                  placeholder="Example: src_ip = '10.0.0.1' OR dest_ip = '10.0.0.2'"
-                  rows="6"
-                  cdkTextareaAutosize
-                  cdkAutosizeMinRows="3"
-                  cdkAutosizeMaxRows="10">
-                </textarea>
-              </mat-form-field>
-              <div class="sql-organize">
-                <p><strong>Organize flows by:</strong> Source IP, Source VPC network project, Source VPC network, and Destination IP</p>
+              <div class="sql-ready-indicator">
+                <mat-icon class="ready-icon">check_circle</mat-icon>
+                <span>Ready to run</span>
               </div>
+            </div>
+            <div class="sql-organize-section">
+              <span class="organize-title">Organize flows by</span>
+              <mat-select class="sql-organize-select" value="source-ip-vpc">
+                <mat-option value="source-ip-vpc">Source IP, Source VPC network project, Source VPC network, and Destination IP</mat-option>
+              </mat-select>
+              <button mat-icon-button matTooltip="Organize flows help">
+                <mat-icon>help_outline</mat-icon>
+              </button>
+              <button mat-icon-button>
+                <mat-icon>close</mat-icon>
+              </button>
             </div>
           </div>
 
-          <!-- Action Buttons -->
-          <div class="query-actions">
-            <button mat-raised-button color="primary" (click)="runQuery()" [disabled]="isLoading">
-              <mat-icon>play_arrow</mat-icon>
+          <!-- Filter Actions -->
+          <div class="filter-actions">
+            <button mat-stroked-button class="hide-filters-button">
+              <mat-icon>keyboard_arrow_up</mat-icon>
+              Hide Filters
+            </button>
+            <button mat-raised-button color="primary" (click)="runQuery()" [disabled]="isLoading" class="run-query-button">
+              <mat-icon>play_circle</mat-icon>
               {{ isLoading ? 'Running...' : 'Run new query' }}
             </button>
-            <button mat-stroked-button (click)="clearFilters()">
-              <mat-icon>clear</mat-icon>
-              Clear filters
-            </button>
           </div>
-        </mat-card-content>
-      </mat-card>
+        </div>
+      </div>
 
       <!-- Error Section -->
       <div *ngIf="analysisResult?.error" class="error-section">
@@ -280,6 +295,20 @@ Chart.register(...registerables);
                 <p class="time-range-display">{{ getTimeRangeDisplay() }}</p>
               </div>
               <div class="chart-controls">
+                <!-- Visualization Mode Toggle -->
+                <div class="visualization-mode">
+                  <mat-button-toggle-group [(value)]="visualizationMode" (change)="onVisualizationModeChange()">
+                    <mat-button-toggle value="chart">
+                      <mat-icon>show_chart</mat-icon>
+                      Chart
+                    </mat-button-toggle>
+                    <mat-button-toggle value="sankey">
+                      <mat-icon>account_tree</mat-icon>
+                      Sankey Diagram
+                    </mat-button-toggle>
+                  </mat-button-toggle-group>
+                </div>
+                
                 <!-- Display Options Panel -->
                 <div class="display-options">
                   <h4>Display options</h4>
@@ -293,7 +322,7 @@ Chart.register(...registerables);
                         <mat-option value="latency">Latency (RTT)</mat-option>
                       </mat-select>
                     </mat-form-field>
-                    <mat-form-field appearance="outline">
+                    <mat-form-field appearance="outline" *ngIf="visualizationMode === 'chart'">
                       <mat-label>Aggregation period (chart)</mat-label>
                       <mat-select [(value)]="selectedAggregationPeriod" (selectionChange)="onAggregationPeriodChange()">
                         <mat-option value="1m">Automatic (1 min)</mat-option>
@@ -315,8 +344,13 @@ Chart.register(...registerables);
           </mat-card-header>
           <mat-card-content>
             <!-- Chart Canvas -->
-            <div class="chart-container">
+            <div *ngIf="visualizationMode === 'chart'" class="chart-container">
               <canvas #chartCanvas></canvas>
+            </div>
+            
+            <!-- Sankey Diagram -->
+            <div *ngIf="visualizationMode === 'sankey'" class="sankey-container">
+              <div #sankeyContainer class="sankey-diagram"></div>
             </div>
             
             <!-- Query Stats -->
@@ -513,148 +547,357 @@ Chart.register(...registerables);
 
     .query-section {
       margin-bottom: 24px;
-      background: var(--surface-color);
+      background: white;
       border-radius: 8px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-      border: 1px solid var(--border-color);
+      box-shadow: 0 1px 2px 0 rgba(60,64,67,.3), 0 1px 3px 1px rgba(60,64,67,.15);
+      border: 1px solid #dadce0;
+      padding: 0;
     }
 
-    .card-header-actions {
-      display: flex;
-      align-items: center;
-      margin-top: 8px;
-    }
-
-    .data-source-button {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 16px;
-      border: 1px solid var(--border-color);
-      background: var(--surface-color);
-      color: var(--text-color);
-      font-size: 14px;
-      border-radius: 4px;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-
-    .data-source-button:hover {
-      background: var(--hover-color);
-      border-color: var(--text-secondary-color);
-    }
-
-    .data-source-button mat-icon {
-      font-size: 18px;
-      width: 18px;
-      height: 18px;
-    }
-
-    .data-source-button span {
-      font-weight: 500;
-    }
-
-    .filter-mode-toggle {
-      margin-bottom: 24px;
-    }
-
-    .filter-mode-toggle mat-button-toggle-group {
-      border: 1px solid var(--border-color);
-      border-radius: 4px;
-    }
-
-    .basic-filters {
-      margin-bottom: 24px;
-    }
-
-    .filter-row {
-      margin-bottom: 16px;
-    }
-
-    .filter-card {
-      border: 1px solid var(--border-color);
-      box-shadow: none;
-      background: var(--surface-color);
-      color: var(--text-color);
-    }
-
-    .filter-card h4 {
-      margin: 0 0 16px 0;
-      color: var(--text-color);
-      font-size: 16px;
-      font-weight: 500;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .filter-fields {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 16px;
-    }
-
-    .time-range-fields {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px;
-      align-items: start;
-    }
-
-    .quick-time-buttons {
-      grid-column: 1 / -1;
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
-    .sql-filters {
-      margin-bottom: 24px;
-    }
-
-    .sql-query-section {
-      border: 1px solid var(--border-color);
-      border-radius: 4px;
-      padding: 16px;
-      background: var(--hover-color);
-    }
-
-    .sql-header {
+    .query-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 16px;
+      padding: 16px 20px;
+      border-bottom: 1px solid #e8eaed;
+      background: white;
     }
 
-    .sql-header h4 {
-      margin: 0;
+    .query-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
       font-size: 16px;
       font-weight: 500;
       color: var(--text-color);
     }
 
-    .sql-info {
+    .query-title mat-icon {
+      color: var(--primary-color);
+    }
+
+    .compose-button {
+      margin-left: 16px;
+      font-size: 14px;
+    }
+
+    .query-header-actions {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .source-bucket-button {
       display: flex;
       align-items: center;
       gap: 8px;
-      color: var(--text-secondary-color);
+      padding: 8px 12px;
+      border: 1px solid #fdd663;
+      background: #fef7e0;
+      color: #3c4043;
       font-size: 14px;
+      border-radius: 4px;
+      min-width: 250px;
+      cursor: pointer;
+      transition: background-color 0.2s;
     }
 
-    .sql-field {
-      width: 100%;
-      margin-bottom: 16px;
+    .source-bucket-button:hover {
+      background: #fef0c7;
     }
 
-    .sql-organize {
-      color: var(--text-secondary-color);
+    .warning-icon {
+      color: #f9ab00;
+      font-size: 16px;
+      width: 16px;
+      height: 16px;
+    }
+
+    .filter-mode-toggle mat-button-toggle-group {
+      border: 1px solid #dadce0;
+      border-radius: 4px;
+      height: 36px;
+      background: white;
+    }
+
+    .filter-mode-toggle .mat-button-toggle {
+      border: none;
+      color: #5f6368;
       font-size: 14px;
+      font-weight: 500;
     }
 
-    .query-actions {
+    .filter-mode-toggle .mat-button-toggle-checked {
+      background: #e8f0fe;
+      color: #1976d2;
+    }
+
+    .traffic-aggregation {
       display: flex;
-      gap: 12px;
       align-items: center;
+      gap: 8px;
+    }
+
+    .aggregation-label {
+      font-size: 14px;
+      color: var(--text-color);
+      font-weight: 500;
+    }
+
+    .aggregation-select {
+      min-width: 200px;
+      font-size: 14px;
+    }
+
+    .compact-filters {
+      padding: 0;
+    }
+
+    .filter-section {
+      display: flex;
+      align-items: center;
+      padding: 12px 20px;
+      border-bottom: 1px solid var(--border-color);
+      background: var(--surface-color);
+      min-height: 64px;
+    }
+
+    .filter-section:last-child {
+      border-bottom: none;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .section-title {
+      background: #f8f9fa;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-weight: 500;
+      font-size: 14px;
+      min-width: 140px;
+      text-align: center;
+      color: #3c4043;
+      border: 1px solid #e8eaed;
+    }
+
+    .section-subtitle {
+      color: #5f6368;
+      font-size: 14px;
+      font-weight: 500;
+      margin-left: 8px;
+    }
+
+    .multiselect-field {
+      min-width: 200px;
+      max-width: 300px;
+      flex: 1;
+    }
+
+    .organize-field {
+      min-width: 250px;
+      max-width: 350px;
+      flex: 1;
+    }
+
+    .multiselect-field .mat-form-field-wrapper {
+      padding-bottom: 8px;
+    }
+
+    .multiselect-field .mat-form-field-outline {
+      color: #dadce0;
+    }
+
+    .multiselect-field .mat-form-field-outline-thick {
+      color: #1976d2;
+    }
+
+    .organize-label {
+      color: #5f6368;
+      font-size: 14px;
+      font-weight: 500;
+      margin-left: auto;
+      margin-right: 8px;
+      white-space: nowrap;
+    }
+
+    .add-filter-button {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      font-size: 14px;
+      color: #1976d2;
+      border: none;
+      background: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    .add-filter-button:hover {
+      background-color: #f1f3f4;
+    }
+
+    .add-filter-button mat-icon {
+      font-size: 16px;
+      width: 16px;
+      height: 16px;
+    }
+
+    .section-header button[mat-icon-button] {
+      width: 32px;
+      height: 32px;
+      margin-left: 8px;
+    }
+
+    .section-header button[mat-icon-button] mat-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+      color: #5f6368;
+    }
+
+    .section-header button[mat-icon-button]:hover {
+      background-color: #f1f3f4;
+    }
+
+    .sql-filters {
+      padding: 16px 20px;
+    }
+
+    .sql-section {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .sql-where-section {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      background: var(--hover-color);
+      border-radius: 4px;
+      border: 1px solid var(--border-color);
+    }
+
+    .sql-where-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .where-label {
+      font-weight: 600;
+      font-size: 14px;
+      color: var(--text-color);
+    }
+
+    .where-description {
+      color: var(--text-secondary-color);
+      font-size: 14px;
+      font-style: italic;
+    }
+
+    .sql-ready-indicator {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: #4caf50;
+      font-size: 14px;
+    }
+
+    .ready-icon {
+      color: #4caf50;
+      font-size: 18px;
+    }
+
+    .sql-organize-section {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .organize-title {
+      font-weight: 500;
+      font-size: 14px;
+      color: var(--text-color);
+    }
+
+    .sql-organize-select {
+      font-size: 14px;
+      min-width: 400px;
+    }
+
+    .filter-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 20px;
+      background: #f8f9fa;
+      border-top: 1px solid #e8eaed;
+    }
+
+    .hide-filters-button {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: #1976d2;
+      font-size: 14px;
+      font-weight: 500;
+      border: none;
+      background: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    .hide-filters-button:hover {
+      background-color: #e3f2fd;
+    }
+
+    .hide-filters-button mat-icon {
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+    }
+
+    .run-query-button {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 24px;
+      font-size: 14px;
+      font-weight: 500;
+      background: #1976d2;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    .run-query-button:hover:not(:disabled) {
+      background: #1565c0;
+    }
+
+    .run-query-button:disabled {
+      background: #e0e0e0;
+      color: #9e9e9e;
+      cursor: not-allowed;
+    }
+
+    .run-query-button mat-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
     }
 
     .results-section {
@@ -690,6 +933,35 @@ Chart.register(...registerables);
       font-size: 14px;
     }
 
+    .visualization-mode {
+      margin-right: 24px;
+      margin-bottom: 16px;
+    }
+
+    .visualization-mode mat-button-toggle-group {
+      border: 1px solid #dadce0;
+      border-radius: 4px;
+      background: white;
+    }
+
+    .visualization-mode .mat-button-toggle {
+      border: none;
+      color: #5f6368;
+      font-size: 14px;
+      font-weight: 500;
+      padding: 8px 16px;
+    }
+
+    .visualization-mode .mat-button-toggle-checked {
+      background: #e8f0fe;
+      color: #1976d2;
+    }
+
+    .visualization-mode .mat-button-toggle mat-icon {
+      margin-right: 8px;
+      font-size: 18px;
+    }
+
     .display-options {
       min-width: 300px;
       border-left: 1px solid var(--border-color);
@@ -717,6 +989,17 @@ Chart.register(...registerables);
       height: 400px;
       margin: 24px 0;
       position: relative;
+    }
+
+    .sankey-container {
+      width: 100%;
+      min-height: 600px;
+      margin: 24px 0;
+    }
+
+    .sankey-diagram {
+      width: 100%;
+      height: 100%;
     }
 
     .query-stats {
@@ -1166,6 +1449,7 @@ Chart.register(...registerables);
 })
 export class FlowAnalyzerComponent implements OnInit {
   @ViewChild('chartCanvas', { static: false }) chartCanvas!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('sankeyContainer', { static: false }) sankeyContainer!: ElementRef<HTMLDivElement>;
 
   // Form controls
   filtersForm: FormGroup;
@@ -1176,6 +1460,7 @@ export class FlowAnalyzerComponent implements OnInit {
   analysisResult: FlowAnalysisResult | null = null;
   isLoading = false;
   projectId: string | null = null;
+  selectedTrafficAggregation = 'source-destination';
 
   // Chart
   chart: Chart | null = null;
@@ -1183,6 +1468,7 @@ export class FlowAnalyzerComponent implements OnInit {
   // Display Configuration
   selectedMetricType: MetricType = 'bytes';
   selectedAggregationPeriod: AggregationPeriod = '5m';
+  visualizationMode: 'chart' | 'sankey' = 'chart';
 
   // Data Source Configuration
   selectedLogBucket = '_Default';
@@ -1194,6 +1480,33 @@ export class FlowAnalyzerComponent implements OnInit {
   availableProjects: string[] = [];
   availableNetworks: string[] = [];
   availableProtocols: string[] = [];
+  
+  // Filter and Organize attributes
+    sourceFilterAttributes: FilterAttribute[] = [];
+  destinationFilterAttributes: FilterAttribute[] = [];
+  flowParameterAttributes: FilterAttribute[] = [];
+
+  sourceOrganizeAttributes: OrganizeAttribute[] = [];
+  destinationOrganizeAttributes: OrganizeAttribute[] = [];
+  flowParameterOrganizeAttributes: OrganizeAttribute[] = [];
+
+  // Pre-calculated categories to avoid infinite loops
+  sourceFilterCategories: { label: string; attributes: FilterAttribute[] }[] = [];
+  destinationFilterCategories: { label: string; attributes: FilterAttribute[] }[] = [];
+  flowParameterFilterCategories: { label: string; attributes: FilterAttribute[] }[] = [];
+
+  sourceOrganizeCategories: { label: string; attributes: OrganizeAttribute[] }[] = [];
+  destinationOrganizeCategories: { label: string; attributes: OrganizeAttribute[] }[] = [];
+  flowParameterOrganizeCategories: { label: string; attributes: OrganizeAttribute[] }[] = [];
+
+  // Selected filters and organize options
+  selectedSourceFilters: string[] = [];
+  selectedDestinationFilters: string[] = [];
+  selectedFlowParameterFilters: string[] = [];
+
+  selectedSourceOrganize: string[] = [];
+  selectedDestinationOrganize: string[] = [];
+  selectedFlowParameterOrganize: string[] = [];
 
   // Environment
   isDevelopment = window.location.hostname === 'localhost';
@@ -1222,6 +1535,7 @@ export class FlowAnalyzerComponent implements OnInit {
 
     this.initializeDefaultTimeRange();
     this.loadAvailableOptions();
+    this.initializeFilterAttributes();
   }
 
   private createFiltersForm(): FormGroup {
@@ -1270,6 +1584,177 @@ export class FlowAnalyzerComponent implements OnInit {
 
     // Mock available projects (in real implementation, this would come from the API)
     this.availableProjects = ['przemekroka-joomla-service', 'other-project-1', 'other-project-2'];
+  }
+
+  private initializeFilterAttributes() {
+    // Initialize source filter attributes
+    this.sourceFilterAttributes = [
+      // Basic Network
+      { value: 'src_ip', displayName: 'Source IP', description: 'Source IP address', category: 'basic' },
+      { value: 'src_port', displayName: 'Source Port', description: 'Source port that can be used to identify known services', category: 'basic' },
+      
+      // VPC Network
+      { value: 'src_vpc_name', displayName: 'Source VPC Network', description: 'VPC network details', category: 'network' },
+      { value: 'src_vpc_project_id', displayName: 'Source VPC Project', description: 'VPC project details', category: 'network' },
+      { value: 'src_subnetwork_name', displayName: 'Source Subnetwork', description: 'VPC subnetwork details', category: 'network' },
+      
+      // Compute Instance
+      { value: 'src_instance_name', displayName: 'Source Instance', description: 'Instance name of the source VM', category: 'instance' },
+      { value: 'src_instance_project_id', displayName: 'Source Instance Project', description: 'ID of the project containing the source VM', category: 'instance' },
+      { value: 'src_instance_mig_name', displayName: 'Source MIG Name', description: 'The managed instance group name that the source VM belongs to', category: 'instance' },
+      { value: 'src_instance_mig_region', displayName: 'Source MIG Region', description: 'The managed instance group region that the source VM belongs to', category: 'instance' },
+      { value: 'src_instance_mig_zone', displayName: 'Source MIG Zone', description: 'The managed instance group zone that the source VM belongs to', category: 'instance' },
+      
+      // Geographic
+      { value: 'src_gcp_zone', displayName: 'Source Zone', description: 'Zone of the source VM', category: 'geographic' },
+      { value: 'src_gcp_region', displayName: 'Source Region', description: 'Region of the source VM', category: 'geographic' },
+      { value: 'src_city', displayName: 'Source City', description: 'If the source was external to the VPC, populated with source city', category: 'geographic' },
+      { value: 'src_continent', displayName: 'Source Continent', description: 'If the source was external to the VPC, populated with source continent', category: 'geographic' },
+      { value: 'src_country', displayName: 'Source Country', description: 'If the source was external to the VPC, populated with source country', category: 'geographic' },
+      { value: 'src_geo_region', displayName: 'Source Geo Region', description: 'If the source was external to the VPC, populated with source region', category: 'geographic' },
+      
+      // ASN
+      { value: 'src_asn', displayName: 'Source ASN', description: 'If the source was external to the VPC, populated with source ASN', category: 'asn' },
+      
+      // Gateway
+      { value: 'src_gateway_name', displayName: 'Source Gateway Name', description: 'If the source is on-prem via gateway, populated with gateway resource name', category: 'gateway' },
+      { value: 'src_gateway_type', displayName: 'Source Gateway Type', description: 'Type of gateway (IC_ATTACHMENT, VPN_TUNNEL, SD_WAN)', category: 'gateway' },
+      { value: 'src_gateway_project_id', displayName: 'Source Gateway Project', description: 'ID of the project containing the gateway', category: 'gateway' },
+      { value: 'src_gateway_location', displayName: 'Source Gateway Location', description: 'Location of the gateway', category: 'gateway' },
+      { value: 'src_gateway_interconnect_name', displayName: 'Source Gateway Interconnect Name', description: 'Interconnect name of the gateway', category: 'gateway' },
+      { value: 'src_gateway_interconnect_project_number', displayName: 'Source Gateway Interconnect Project', description: 'Interconnect project number of the gateway', category: 'gateway' },
+      { value: 'src_gateway_vpc_name', displayName: 'Source Gateway VPC Name', description: 'Name of the VPC network containing the gateway', category: 'gateway' },
+      { value: 'src_gateway_vpc_project_id', displayName: 'Source Gateway VPC Project', description: 'VPC project ID of the network containing the gateway', category: 'gateway' },
+      
+      // GKE
+      { value: 'src_gke_cluster_name', displayName: 'Source GKE Cluster Name', description: 'GKE cluster name', category: 'gke' },
+      { value: 'src_gke_cluster_location', displayName: 'Source GKE Cluster Location', description: 'Location of the GKE cluster', category: 'gke' },
+      { value: 'src_gke_pod_name', displayName: 'Source GKE Pod Name', description: 'Name of the Pod', category: 'gke' },
+      { value: 'src_gke_pod_namespace', displayName: 'Source GKE Pod Namespace', description: 'Namespace of the Pod', category: 'gke' },
+      { value: 'src_gke_service_name', displayName: 'Source GKE Service Name', description: 'Name of the Service', category: 'gke' },
+      { value: 'src_gke_service_namespace', displayName: 'Source GKE Service Namespace', description: 'Name of the Service Namespace', category: 'gke' },
+      { value: 'src_gke_workload_name', displayName: 'Source GKE Workload Name', description: 'Name of the workload', category: 'gke' },
+      { value: 'src_gke_workload_type', displayName: 'Source GKE Workload Type', description: 'Type of the workload', category: 'gke' },
+      
+      // Google Services
+      { value: 'src_google_service_type', displayName: 'Source Google Service Type', description: 'If source was a Google API, type of the service', category: 'google' }
+    ];
+
+    // Initialize destination filter attributes  
+    this.destinationFilterAttributes = [
+      // Basic Network
+      { value: 'dest_ip', displayName: 'Destination IP', description: 'Destination IP address', category: 'basic' },
+      { value: 'dest_port', displayName: 'Destination Port', description: 'Destination port that can be used to identify known services', category: 'basic' },
+      
+      // VPC Network
+      { value: 'dest_vpc_name', displayName: 'Destination VPC Network', description: 'VPC network details', category: 'network' },
+      { value: 'dest_vpc_project_id', displayName: 'Destination VPC Project', description: 'VPC project details', category: 'network' },
+      { value: 'dest_subnetwork_name', displayName: 'Destination Subnetwork', description: 'VPC subnetwork details', category: 'network' },
+      
+      // Compute Instance
+      { value: 'dest_instance_name', displayName: 'Destination Instance', description: 'Instance name of the destination VM', category: 'instance' },
+      { value: 'dest_instance_project_id', displayName: 'Destination Instance Project', description: 'ID of the project containing the destination VM', category: 'instance' },
+      { value: 'dest_instance_mig_name', displayName: 'Destination MIG Name', description: 'The managed instance group name that the destination VM belongs to', category: 'instance' },
+      { value: 'dest_instance_mig_region', displayName: 'Destination MIG Region', description: 'The managed instance group region that the destination VM belongs to', category: 'instance' },
+      { value: 'dest_instance_mig_zone', displayName: 'Destination MIG Zone', description: 'The managed instance group zone that the destination VM belongs to', category: 'instance' },
+      
+      // Geographic
+      { value: 'dest_gcp_zone', displayName: 'Destination Zone', description: 'Zone of the destination VM', category: 'geographic' },
+      { value: 'dest_gcp_region', displayName: 'Destination Region', description: 'Region of the destination VM', category: 'geographic' },
+      { value: 'dest_city', displayName: 'Destination City', description: 'If the destination was external to the VPC, populated with destination city', category: 'geographic' },
+      { value: 'dest_continent', displayName: 'Destination Continent', description: 'If the destination was external to the VPC, populated with destination continent', category: 'geographic' },
+      { value: 'dest_country', displayName: 'Destination Country', description: 'If the destination was external to the VPC, populated with destination country', category: 'geographic' },
+      { value: 'dest_geo_region', displayName: 'Destination Geo Region', description: 'If the destination was external to the VPC, populated with destination region', category: 'geographic' },
+      
+      // ASN
+      { value: 'dest_asn', displayName: 'Destination ASN', description: 'If the destination was external to the VPC, populated with destination ASN', category: 'asn' },
+      
+      // Gateway
+      { value: 'dest_gateway_name', displayName: 'Destination Gateway Name', description: 'If the destination is on-prem via gateway, populated with gateway resource name', category: 'gateway' },
+      { value: 'dest_gateway_type', displayName: 'Destination Gateway Type', description: 'Type of gateway (IC_ATTACHMENT, VPN_TUNNEL, SD_WAN)', category: 'gateway' },
+      { value: 'dest_gateway_project_id', displayName: 'Destination Gateway Project', description: 'ID of the project containing the gateway', category: 'gateway' },
+      { value: 'dest_gateway_location', displayName: 'Destination Gateway Location', description: 'Location of the gateway', category: 'gateway' },
+      { value: 'dest_gateway_interconnect_name', displayName: 'Destination Gateway Interconnect Name', description: 'Interconnect name of the gateway', category: 'gateway' },
+      { value: 'dest_gateway_interconnect_project_number', displayName: 'Destination Gateway Interconnect Project', description: 'Interconnect project number of the gateway', category: 'gateway' },
+      { value: 'dest_gateway_vpc_name', displayName: 'Destination Gateway VPC Name', description: 'Name of the VPC network containing the gateway', category: 'gateway' },
+      { value: 'dest_gateway_vpc_project_id', displayName: 'Destination Gateway VPC Project', description: 'VPC project ID of the network containing the gateway', category: 'gateway' },
+      
+      // GKE
+      { value: 'dest_gke_cluster_name', displayName: 'Destination GKE Cluster Name', description: 'GKE cluster name', category: 'gke' },
+      { value: 'dest_gke_cluster_location', displayName: 'Destination GKE Cluster Location', description: 'Location of the GKE cluster', category: 'gke' },
+      { value: 'dest_gke_pod_name', displayName: 'Destination GKE Pod Name', description: 'Name of the Pod', category: 'gke' },
+      { value: 'dest_gke_pod_namespace', displayName: 'Destination GKE Pod Namespace', description: 'Namespace of the Pod', category: 'gke' },
+      { value: 'dest_gke_service_name', displayName: 'Destination GKE Service Name', description: 'Name of the Service', category: 'gke' },
+      { value: 'dest_gke_service_namespace', displayName: 'Destination GKE Service Namespace', description: 'Name of the Service Namespace', category: 'gke' },
+      { value: 'dest_gke_workload_name', displayName: 'Destination GKE Workload Name', description: 'Name of the workload', category: 'gke' },
+      { value: 'dest_gke_workload_type', displayName: 'Destination GKE Workload Type', description: 'Type of the workload', category: 'gke' },
+      
+      // Google Services
+      { value: 'dest_google_service_type', displayName: 'Destination Google Service Type', description: 'If destination was a Google API, type of the service', category: 'google' }
+    ];
+
+    // Initialize flow parameter filter attributes
+    this.flowParameterAttributes = [
+      // Basic Flow
+      { value: 'protocol', displayName: 'Protocol', description: 'The IANA protocol number according to RFC791', category: 'basic' },
+      { value: 'bytes_sent', displayName: 'Bytes Sent', description: 'Amount of bytes sent from the source to the destination', category: 'basic' },
+      { value: 'packets_sent', displayName: 'Packets Sent', description: 'Number of packets sent from the source to the destination', category: 'basic' },
+      { value: 'reporter', displayName: 'Reporter', description: 'The side which reported the flow. Can be either SRC or DEST', category: 'basic' },
+      { value: 'start_time', displayName: 'Start Time', description: 'Timestamp of the first observed packet during the aggregated time interval', category: 'timing' },
+      { value: 'end_time', displayName: 'End Time', description: 'Timestamp of the last observed packet during the aggregated time interval', category: 'timing' },
+      { value: 'dscp', displayName: 'DSCP', description: 'Differentiated Services Code Points (DSCP) value', category: 'qos' },
+      
+      // AS Paths
+      { value: 'as_paths', displayName: 'AS Paths', description: 'List of egress AS paths', category: 'asn' },
+      
+      // Load Balancer
+      { value: 'lb_forwarding_rule_name', displayName: 'LB Forwarding Rule Name', description: 'Name of the forwarding rule', category: 'load_balancer' },
+      { value: 'lb_forwarding_rule_project_id', displayName: 'LB Forwarding Rule Project', description: 'Project id of the forwarding rule', category: 'load_balancer' },
+      { value: 'lb_reporter', displayName: 'LB Reporter', description: 'Reporter of the flow. Can be either CLIENT or BACKEND', category: 'load_balancer' },
+      { value: 'lb_scheme', displayName: 'LB Scheme', description: 'Load Balancer scheme type', category: 'load_balancer' },
+      { value: 'lb_type', displayName: 'LB Type', description: 'Load balancer type', category: 'load_balancer' },
+      { value: 'lb_url_map_name', displayName: 'LB URL Map Name', description: 'Name of the URL map', category: 'load_balancer' },
+      { value: 'lb_vpc_name', displayName: 'LB VPC Name', description: 'Name of the LB VPC network', category: 'load_balancer' },
+      { value: 'lb_vpc_project_id', displayName: 'LB VPC Project', description: 'Name of the LB VPC network project ID', category: 'load_balancer' },
+      { value: 'lb_vpc_subnetwork_name', displayName: 'LB VPC Subnetwork Name', description: 'Name of the LB VPC subnetwork', category: 'load_balancer' },
+      { value: 'lb_vpc_subnetwork_region', displayName: 'LB VPC Subnetwork Region', description: 'Name of the LB VPC subnetwork region', category: 'load_balancer' },
+      { value: 'lb_backend_group_location', displayName: 'LB Backend Group Location', description: 'Name of the backend group location', category: 'load_balancer' },
+      { value: 'lb_backend_group_name', displayName: 'LB Backend Group Name', description: 'Name of the backend group name', category: 'load_balancer' },
+      { value: 'lb_backend_group_type', displayName: 'LB Backend Group Type', description: 'Name of the backend group type', category: 'load_balancer' },
+      { value: 'lb_backend_service_name', displayName: 'LB Backend Service Name', description: 'Name of the backend service', category: 'load_balancer' },
+      
+      // Private Service Connect
+      { value: 'psc_attachment_project_id', displayName: 'PSC Attachment Project', description: 'PSC attachment project id', category: 'psc' },
+      { value: 'psc_attachment_region', displayName: 'PSC Attachment Region', description: 'PSC attachment region', category: 'psc' },
+      { value: 'psc_attachment_vpc_name', displayName: 'PSC Attachment VPC Name', description: 'PSC attachment VPC network name', category: 'psc' },
+      { value: 'psc_attachment_vpc_subnetwork_name', displayName: 'PSC Attachment VPC Subnetwork', description: 'PSC attachment VPC subnetwork name', category: 'psc' },
+      { value: 'psc_endpoint_connection_id', displayName: 'PSC Endpoint Connection ID', description: 'PSC endpoint connection id', category: 'psc' },
+      { value: 'psc_endpoint_project_id', displayName: 'PSC Endpoint Project', description: 'PSC endpoint project id', category: 'psc' },
+      { value: 'psc_endpoint_region', displayName: 'PSC Endpoint Region', description: 'PSC endpoint region', category: 'psc' },
+      { value: 'psc_endpoint_target_service_type', displayName: 'PSC Endpoint Target Service Type', description: 'PSC endpoint target service type', category: 'psc' },
+      { value: 'psc_endpoint_vpc_name', displayName: 'PSC Endpoint VPC Name', description: 'PSC endpoint VPC network name', category: 'psc' },
+      { value: 'psc_endpoint_vpc_subnetwork_name', displayName: 'PSC Endpoint VPC Subnetwork', description: 'PSC endpoint VPC subnetwork name', category: 'psc' },
+      { value: 'psc_reporter', displayName: 'PSC Reporter', description: 'Reporter of the flow. Can be either CONSUMER or PRODUCER', category: 'psc' }
+    ];
+
+    // Initialize organize attributes (same as filter attributes)
+    this.sourceOrganizeAttributes = [...this.sourceFilterAttributes];
+    this.destinationOrganizeAttributes = [...this.destinationFilterAttributes];
+    this.flowParameterOrganizeAttributes = [...this.flowParameterAttributes];
+
+    // Set default organize selections
+    this.selectedSourceOrganize = ['src_vpc_project_id', 'src_vpc_name', 'src_ip'];
+    this.selectedDestinationOrganize = ['dest_ip'];
+    this.selectedFlowParameterOrganize = [];
+
+    // Pre-calculate categories to avoid infinite loops in template
+    this.sourceFilterCategories = this.getFilterCategories(this.sourceFilterAttributes);
+    this.destinationFilterCategories = this.getFilterCategories(this.destinationFilterAttributes);
+    this.flowParameterFilterCategories = this.getFilterCategories(this.flowParameterAttributes);
+
+    this.sourceOrganizeCategories = this.getOrganizeCategories(this.sourceOrganizeAttributes);
+    this.destinationOrganizeCategories = this.getOrganizeCategories(this.destinationOrganizeAttributes);
+    this.flowParameterOrganizeCategories = this.getOrganizeCategories(this.flowParameterOrganizeAttributes);
   }
 
   onFilterModeChange() {
@@ -1360,10 +1845,14 @@ export class FlowAnalyzerComponent implements OnInit {
         this.isLoading = false;
         this.cdr.detectChanges();
         
-        // Only create chart if we have data and no errors
+        // Only create visualization if we have data and no errors
         if (result.timeSeriesData.length > 0 && !result.error) {
           setTimeout(() => {
-            this.createChart();
+            if (this.visualizationMode === 'chart') {
+              this.createChart();
+            } else {
+              this.createSankeyDiagram();
+            }
           }, 100);
         }
       },
@@ -1415,6 +1904,18 @@ export class FlowAnalyzerComponent implements OnInit {
   onAggregationPeriodChange() {
     if (this.analysisResult) {
       this.runQuery();
+    }
+  }
+
+  onVisualizationModeChange() {
+    if (this.analysisResult && this.analysisResult.timeSeriesData.length > 0 && !this.analysisResult.error) {
+      setTimeout(() => {
+        if (this.visualizationMode === 'chart') {
+          this.createChart();
+        } else {
+          this.createSankeyDiagram();
+        }
+      }, 100);
     }
   }
 
@@ -1703,4 +2204,319 @@ export class FlowAnalyzerComponent implements OnInit {
     }
     return this.selectedLogBucket;
   }
+
+  private createSankeyDiagram() {
+    if (!this.sankeyContainer || !this.analysisResult || !this.analysisResult.flowLogs) {
+      return;
+    }
+
+    const sankeyData = this.generateSankeyData(this.analysisResult.flowLogs);
+    this.renderSankey(sankeyData);
+  }
+
+  private generateSankeyData(flowLogs: FlowLogEntry[]): SankeyData {
+    const nodes = new Map<string, SankeyNode>();
+    const links: SankeyLink[] = [];
+    
+    // Create nodes and links from flow logs
+    flowLogs.forEach(flow => {
+      const sourceLabel = this.getNodeLabel(flow, 'source');
+      const destLabel = this.getNodeLabel(flow, 'destination');
+      
+      // Add source node
+      if (!nodes.has(sourceLabel)) {
+        nodes.set(sourceLabel, {
+          id: sourceLabel,
+          name: sourceLabel,
+          category: 'source'
+        });
+      }
+      
+      // Add destination node
+      if (!nodes.has(destLabel)) {
+        nodes.set(destLabel, {
+          id: destLabel,
+          name: destLabel,
+          category: 'destination'
+        });
+      }
+      
+      // Find or create link
+      const existingLink = links.find(link => 
+        link.source === sourceLabel && link.target === destLabel
+      );
+      
+      if (existingLink) {
+        existingLink.value += this.getSankeyValue(flow);
+        existingLink.flowCount += 1;
+      } else {
+        links.push({
+          source: sourceLabel,
+          target: destLabel,
+          value: this.getSankeyValue(flow),
+          flowCount: 1,
+          protocol: flow.protocol
+        });
+      }
+    });
+    
+    return {
+      nodes: Array.from(nodes.values()),
+      links: links
+    };
+  }
+
+  private getNodeLabel(flow: FlowLogEntry, type: 'source' | 'destination'): string {
+    if (type === 'source') {
+      if (flow.sourceInstanceName) {
+        return `${flow.sourceInstanceName} (${flow.sourceIp})`;
+      }
+      return flow.sourceVpcNetwork ? 
+        `${flow.sourceVpcNetwork}/${flow.sourceIp}` : 
+        flow.sourceIp;
+    } else {
+      if (flow.destinationInstanceName) {
+        return `${flow.destinationInstanceName} (${flow.destinationIp})`;
+      }
+      return flow.destinationVpcNetwork ? 
+        `${flow.destinationVpcNetwork}/${flow.destinationIp}` : 
+        flow.destinationIp;
+    }
+  }
+
+  private getSankeyValue(flow: FlowLogEntry): number {
+    switch (this.selectedMetricType) {
+      case 'bytes':
+        return flow.bytes;
+      case 'packets':
+        return flow.packets;
+      case 'connections':
+        return 1;
+      case 'latency':
+        return flow.rttMsec || 0;
+      default:
+        return flow.bytes;
+    }
+  }
+
+  private renderSankey(data: SankeyData) {
+    const container = this.sankeyContainer.nativeElement;
+    container.innerHTML = ''; // Clear previous content
+    
+    // Set up dimensions
+    const width = container.clientWidth;
+    const height = 600;
+    
+    // Create container div
+    const sankeyDiv = document.createElement('div');
+    sankeyDiv.style.width = '100%';
+    sankeyDiv.style.height = height + 'px';
+    sankeyDiv.style.position = 'relative';
+    sankeyDiv.style.background = '#f9f9f9';
+    sankeyDiv.style.border = '1px solid #e0e0e0';
+    sankeyDiv.style.borderRadius = '4px';
+    sankeyDiv.style.padding = '20px';
+    sankeyDiv.style.boxSizing = 'border-box';
+    
+    // Create header
+    const header = document.createElement('div');
+    header.style.marginBottom = '20px';
+    header.innerHTML = `
+      <h3 style="margin: 0 0 10px 0; color: #333; font-size: 18px;">Traffic Flow Diagram</h3>
+      <p style="margin: 0; color: #666; font-size: 14px;">
+        Showing top ${Math.min(data.links.length, 10)} traffic flows by ${this.selectedMetricType}
+      </p>
+    `;
+    sankeyDiv.appendChild(header);
+    
+    // Sort links by value and take top 10
+    const topLinks = data.links
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 10);
+    
+    if (topLinks.length === 0) {
+      const noDataDiv = document.createElement('div');
+      noDataDiv.style.textAlign = 'center';
+      noDataDiv.style.padding = '40px';
+      noDataDiv.style.color = '#666';
+      noDataDiv.textContent = 'No traffic flows to display';
+      sankeyDiv.appendChild(noDataDiv);
+      container.appendChild(sankeyDiv);
+      return;
+    }
+    
+    const maxValue = topLinks[0].value;
+    
+    // Create flow items
+    topLinks.forEach((link, index) => {
+      const flowDiv = document.createElement('div');
+      flowDiv.style.marginBottom = '12px';
+      flowDiv.style.padding = '12px 16px';
+      flowDiv.style.background = '#fff';
+      flowDiv.style.border = '1px solid #ddd';
+      flowDiv.style.borderRadius = '6px';
+      flowDiv.style.display = 'flex';
+      flowDiv.style.alignItems = 'center';
+      flowDiv.style.justifyContent = 'space-between';
+      flowDiv.style.transition = 'all 0.2s';
+      flowDiv.style.cursor = 'pointer';
+      
+      // Hover effect
+      flowDiv.addEventListener('mouseenter', () => {
+        flowDiv.style.backgroundColor = '#f5f5f5';
+        flowDiv.style.borderColor = '#1976d2';
+      });
+      flowDiv.addEventListener('mouseleave', () => {
+        flowDiv.style.backgroundColor = '#fff';
+        flowDiv.style.borderColor = '#ddd';
+      });
+      
+      // Flow text section
+      const flowText = document.createElement('div');
+      flowText.style.flex = '1';
+      flowText.innerHTML = `
+        <div style="font-weight: 500; color: #333; font-size: 14px; margin-bottom: 4px;">
+          ${this.truncateText(link.source, 40)} → ${this.truncateText(link.target, 40)}
+        </div>
+        <div style="font-size: 12px; color: #666;">
+          Protocol: ${link.protocol} | Flows: ${link.flowCount}
+        </div>
+      `;
+      
+      // Visual flow indicator
+      const flowIndicatorContainer = document.createElement('div');
+      flowIndicatorContainer.style.flex = '0 0 120px';
+      flowIndicatorContainer.style.margin = '0 20px';
+      
+      const flowIndicator = document.createElement('div');
+      flowIndicator.style.width = '100%';
+      flowIndicator.style.height = '6px';
+      flowIndicator.style.background = '#e0e0e0';
+      flowIndicator.style.borderRadius = '3px';
+      flowIndicator.style.overflow = 'hidden';
+      
+      const flowBar = document.createElement('div');
+      const percentage = (link.value / maxValue) * 100;
+      flowBar.style.width = percentage + '%';
+      flowBar.style.height = '100%';
+      flowBar.style.background = `hsl(${210 - index * 8}, 70%, 50%)`;
+      flowBar.style.borderRadius = '3px';
+      flowBar.style.transition = 'width 0.3s ease';
+      
+      flowIndicator.appendChild(flowBar);
+      flowIndicatorContainer.appendChild(flowIndicator);
+      
+      // Value section
+      const valueText = document.createElement('div');
+      valueText.style.flex = '0 0 auto';
+      valueText.style.fontWeight = 'bold';
+      valueText.style.color = '#1976d2';
+      valueText.style.fontSize = '14px';
+      valueText.style.textAlign = 'right';
+      valueText.textContent = this.formatSankeyValue(link.value);
+      
+      flowDiv.appendChild(flowText);
+      flowDiv.appendChild(flowIndicatorContainer);
+      flowDiv.appendChild(valueText);
+      sankeyDiv.appendChild(flowDiv);
+    });
+    
+    container.appendChild(sankeyDiv);
+  }
+
+  private truncateText(text: string, maxLength: number): string {
+    if (text.length <= maxLength) return text;
+    return text.substring(0, maxLength - 3) + '...';
+  }
+
+  private formatSankeyValue(value: number): string {
+    switch (this.selectedMetricType) {
+      case 'bytes':
+        return this.formatBytes(value);
+      case 'packets':
+        return value.toLocaleString() + ' packets';
+      case 'connections':
+        return value.toLocaleString() + ' connections';
+      case 'latency':
+        return value.toFixed(1) + ' ms';
+      default:
+        return value.toLocaleString();
+    }
+  }
+
+  getFilterCategories(attributes: FilterAttribute[]): { label: string; attributes: FilterAttribute[] }[] {
+    if (!attributes || attributes.length === 0) {
+      return [];
+    }
+    
+    const categories = attributes.reduce((acc, attr) => {
+      if (!acc[attr.category]) {
+        acc[attr.category] = [];
+      }
+      acc[attr.category].push(attr);
+      return acc;
+    }, {} as Record<string, FilterAttribute[]>);
+
+    return Object.entries(categories).map(([category, attrs]) => ({
+      label: this.getCategoryDisplayName(category),
+      attributes: attrs
+    }));
+  }
+
+  getOrganizeCategories(attributes: OrganizeAttribute[]): { label: string; attributes: OrganizeAttribute[] }[] {
+    if (!attributes || attributes.length === 0) {
+      return [];
+    }
+    
+    const categories = attributes.reduce((acc, attr) => {
+      if (!acc[attr.category]) {
+        acc[attr.category] = [];
+      }
+      acc[attr.category].push(attr);
+      return acc;
+    }, {} as Record<string, OrganizeAttribute[]>);
+
+    return Object.entries(categories).map(([category, attrs]) => ({
+      label: this.getCategoryDisplayName(category),
+      attributes: attrs
+    }));
+  }
+
+  private getCategoryDisplayName(category: string): string {
+    const categoryMap: Record<string, string> = {
+      'basic': 'Basic',
+      'network': 'VPC Network',
+      'instance': 'Compute Instance',
+      'gke': 'Google Kubernetes Engine',
+      'load_balancer': 'Load Balancer',
+      'gateway': 'Gateway',
+      'geographic': 'Geographic',
+      'psc': 'Private Service Connect',
+      'asn': 'ASN',
+      'google': 'Google Services',
+      'timing': 'Timing',
+      'qos': 'Quality of Service'
+    };
+    return categoryMap[category] || category;
+  }
+}
+
+// Interfaces for Sankey diagram
+interface SankeyNode {
+  id: string;
+  name: string;
+  category: 'source' | 'destination';
+}
+
+interface SankeyLink {
+  source: string;
+  target: string;
+  value: number;
+  flowCount: number;
+  protocol: string;
+}
+
+interface SankeyData {
+  nodes: SankeyNode[];
+  links: SankeyLink[];
 } 

@@ -103,6 +103,12 @@ export class FlowAnalyzerService {
     location?: string,
     logView?: string
   ): Observable<FlowAnalysisResult> {
+    // Return demo data in demo mode
+    if (this.authService.isDemoMode()) {
+      console.log('🎭 Demo mode: Generating mock Flow Analyzer data');
+      return of(this.generateDemoFlowData(filters, metricType, aggregationPeriod));
+    }
+    
     // Default Log Analytics bucket configuration
     const bucketName = logBucket || '_Default';
     const bucketLocation = location || 'global';
@@ -564,6 +570,18 @@ export class FlowAnalyzerService {
   }
 
   getAvailableVpcNetworks(projectId: string): Observable<string[]> {
+    // Return demo data in demo mode
+    if (this.authService.isDemoMode()) {
+      console.log('🎭 Demo mode: Using demo VPC networks');
+      return of([
+        'default',
+        'vpc-prod',
+        'vpc-dev',
+        'shared-vpc',
+        'management-vpc'
+      ]);
+    }
+    
     // This would normally query the Compute API for VPC networks
     return of([
       'default',
@@ -583,6 +601,15 @@ export class FlowAnalyzerService {
     location: string = 'global', 
     bucketName: string = '_Default'
   ): Promise<{ available: boolean; message: string; setupInstructions?: string[] }> {
+    // Return demo availability in demo mode
+    if (this.authService.isDemoMode()) {
+      console.log('🎭 Demo mode: Simulating Log Analytics availability');
+      return {
+        available: true,
+        message: 'Log Analytics is available in demo mode with sample data.'
+      };
+    }
+    
     try {
       const url = `${this.logAnalyticsBaseUrl}/projects/${projectId}/locations/${location}/buckets/${bucketName}`;
       
@@ -674,6 +701,43 @@ LIMIT 100
 
   // Log Buckets and Views API methods
   getLogBuckets(projectId: string, location: string = 'global'): Observable<LogBucket[]> {
+    // Return demo buckets in demo mode
+    if (this.authService.isDemoMode()) {
+      console.log('🎭 Demo mode: Using demo log buckets');
+      return of([
+        {
+          name: '_Default',
+          displayName: '_Default',
+          description: 'Default log bucket (Demo)',
+          location: location,
+          analyticsEnabled: true,
+          createTime: '2024-01-01T00:00:00Z',
+          updateTime: '2024-01-01T00:00:00Z',
+          resourceName: `projects/${projectId}/locations/${location}/buckets/_Default`
+        },
+        {
+          name: '_Required',
+          displayName: '_Required',
+          description: 'Required log bucket (Demo)',
+          location: location,
+          analyticsEnabled: false,
+          createTime: '2024-01-01T00:00:00Z',
+          updateTime: '2024-01-01T00:00:00Z',
+          resourceName: `projects/${projectId}/locations/${location}/buckets/_Required`
+        },
+        {
+          name: 'vpc-flow-logs',
+          displayName: 'VPC Flow Logs',
+          description: 'Dedicated bucket for VPC Flow Logs (Demo)',
+          location: location,
+          analyticsEnabled: true,
+          createTime: '2024-01-01T00:00:00Z',
+          updateTime: '2024-01-01T00:00:00Z',
+          resourceName: `projects/${projectId}/locations/${location}/buckets/vpc-flow-logs`
+        }
+      ]);
+    }
+    
     const baseUrl = this.isDevelopment ? this.proxyBaseUrl : 'https://logging.googleapis.com/v2';
     const url = `${baseUrl}/projects/${projectId}/locations/${location}/buckets`;
     
@@ -726,6 +790,40 @@ LIMIT 100
   }
 
   getLogViews(projectId: string, location: string = 'global', bucketName: string = '_Default'): Observable<LogView[]> {
+    // Return demo views in demo mode
+    if (this.authService.isDemoMode()) {
+      console.log('🎭 Demo mode: Using demo log views');
+      return of([
+        {
+          name: '_AllLogs',
+          displayName: '_AllLogs',
+          description: 'Access to all logs (Demo)',
+          filter: '',
+          createTime: '2024-01-01T00:00:00Z',
+          updateTime: '2024-01-01T00:00:00Z',
+          resourceName: `projects/${projectId}/locations/${location}/buckets/${bucketName}/views/_AllLogs`
+        },
+        {
+          name: '_Default',
+          displayName: '_Default',
+          description: 'Default view (Demo)',
+          filter: '',
+          createTime: '2024-01-01T00:00:00Z',
+          updateTime: '2024-01-01T00:00:00Z',
+          resourceName: `projects/${projectId}/locations/${location}/buckets/${bucketName}/views/_Default`
+        },
+        {
+          name: 'vpc-flows-only',
+          displayName: 'VPC Flows Only',
+          description: 'Filtered view for VPC Flow Logs only (Demo)',
+          filter: 'logName:"projects/' + projectId + '/logs/compute.googleapis.com%2Fvpc_flows"',
+          createTime: '2024-01-01T00:00:00Z',
+          updateTime: '2024-01-01T00:00:00Z',
+          resourceName: `projects/${projectId}/locations/${location}/buckets/${bucketName}/views/vpc-flows-only`
+        }
+      ]);
+    }
+    
     const baseUrl = this.isDevelopment ? this.proxyBaseUrl : 'https://logging.googleapis.com/v2';
     const url = `${baseUrl}/projects/${projectId}/locations/${location}/buckets/${bucketName}/views`;
     
@@ -857,6 +955,245 @@ LIMIT 100
     );
   }
 
+  private generateDemoFlowData(
+    filters: FilterOptions,
+    metricType: MetricType,
+    aggregationPeriod: AggregationPeriod
+  ): FlowAnalysisResult {
+    console.log('🎭 Generating demo flow data with filters:', filters);
+    
+    const endTime = filters.timeRange.end;
+    const startTime = filters.timeRange.start;
+    const timeSpanMs = endTime.getTime() - startTime.getTime();
+    const intervalMs = this.getAggregationWindowMs(aggregationPeriod);
+    
+    // Generate realistic VPC flow log entries
+    const flowLogs = this.generateDemoFlowLogEntries(filters, startTime, endTime);
+    
+    // Generate time series data from the flow logs
+    const timeSeriesData = this.generateTimeSeriesFromFlows(flowLogs, metricType, startTime, endTime, intervalMs);
+    
+    // Simulate query execution time
+    const queryExecutionTime = Math.floor(Math.random() * 500) + 200; // 200-700ms
+    
+    return {
+      timeSeriesData,
+      flowLogs,
+      totalRows: flowLogs.length,
+      queryExecutionTime,
+      error: undefined
+    };
+  }
+
+  private generateDemoFlowLogEntries(
+    filters: FilterOptions,
+    startTime: Date,
+    endTime: Date
+  ): FlowLogEntry[] {
+    const flows: FlowLogEntry[] = [];
+    const timeSpanMs = endTime.getTime() - startTime.getTime();
+    
+    // Generate 50-200 flow entries for a realistic dataset
+    const numFlows = Math.floor(Math.random() * 150) + 50;
+    
+    // Demo VPC networks and projects
+    const demoProjects = ['demo-project-prod', 'demo-project-dev', 'shared-vpc-host'];
+    const demoNetworks = ['default', 'vpc-prod', 'vpc-dev', 'shared-vpc', 'management-vpc'];
+    const demoRegions = ['us-central1', 'us-east1', 'europe-west1', 'asia-southeast1'];
+    const demoZones = ['us-central1-a', 'us-central1-b', 'us-east1-a', 'europe-west1-b'];
+    const protocols = ['TCP', 'UDP', 'ICMP', 'ESP'];
+    const commonPorts = [80, 443, 22, 3306, 5432, 6379, 8080, 9090, 3389, 53];
+    
+    // Generate realistic IP ranges
+    const internalIpRanges = [
+      '10.128.0.', '10.132.0.', '10.140.0.', '10.150.0.',
+      '172.16.0.', '172.17.0.', '172.18.0.',
+      '192.168.1.', '192.168.10.', '192.168.100.'
+    ];
+    
+    const externalIps = [
+      '8.8.8.8', '8.8.4.4', '1.1.1.1', '1.0.0.1',
+      '104.209.224.181', '142.250.191.14', '216.58.194.174',
+      '52.86.25.184', '34.102.136.180', '35.186.224.25'
+    ];
+    
+    for (let i = 0; i < numFlows; i++) {
+      const timestamp = new Date(startTime.getTime() + Math.random() * timeSpanMs);
+      const sourceProject = this.getRandomItem(demoProjects);
+      const sourceNetwork = this.getRandomItem(demoNetworks);
+      const protocol = this.getRandomItem(protocols);
+      const region = this.getRandomItem(demoRegions);
+      const zone = this.getRandomItem(demoZones);
+      
+      // Generate source IP (mostly internal)
+      const isSourceInternal = Math.random() > 0.3;
+      const sourceIp = isSourceInternal 
+        ? this.getRandomItem(internalIpRanges) + Math.floor(Math.random() * 254 + 1)
+        : this.getRandomItem(externalIps);
+      
+      // Generate destination IP (mix of internal and external)
+      const isDestInternal = Math.random() > 0.5;
+      const destinationIp = isDestInternal
+        ? this.getRandomItem(internalIpRanges) + Math.floor(Math.random() * 254 + 1)
+        : this.getRandomItem(externalIps);
+      
+      // Apply filters if specified
+      if (filters.sourceIp && !sourceIp.includes(filters.sourceIp)) continue;
+      if (filters.destinationIp && !destinationIp.includes(filters.destinationIp)) continue;
+      if (filters.vpcNetworkProject && sourceProject !== filters.vpcNetworkProject) continue;
+      if (filters.vpcNetwork && sourceNetwork !== filters.vpcNetwork) continue;
+      if (filters.protocol && protocol !== filters.protocol) continue;
+      
+      const sourcePort = protocol === 'TCP' || protocol === 'UDP' 
+        ? (Math.random() > 0.7 ? this.getRandomItem(commonPorts) : Math.floor(Math.random() * 65535))
+        : 0;
+      const destinationPort = protocol === 'TCP' || protocol === 'UDP'
+        ? (Math.random() > 0.5 ? this.getRandomItem(commonPorts) : Math.floor(Math.random() * 65535))
+        : 0;
+      
+      // Apply port filter
+      if (filters.port && destinationPort.toString() !== filters.port && sourcePort.toString() !== filters.port) continue;
+      
+      // Generate realistic traffic volumes
+      const bytes = this.generateTrafficVolume();
+      const packets = Math.floor(bytes / (Math.random() * 1000 + 500)); // Realistic packet sizes
+      const rttMsec = protocol === 'TCP' ? Math.floor(Math.random() * 100 + 5) : undefined;
+      
+      // Generate instance names for internal IPs
+      const sourceInstanceName = isSourceInternal && Math.random() > 0.3 
+        ? `instance-${Math.floor(Math.random() * 100)}-${sourceNetwork}` 
+        : undefined;
+      const destinationInstanceName = isDestInternal && Math.random() > 0.3
+        ? `instance-${Math.floor(Math.random() * 100)}-${this.getRandomItem(demoNetworks)}`
+        : undefined;
+      
+      const flow: FlowLogEntry = {
+        timestamp,
+        sourceIp,
+        sourceVpcNetworkProject: sourceProject,
+        sourceVpcNetwork: sourceNetwork,
+        destinationIp,
+        destinationVpcNetworkProject: isDestInternal ? this.getRandomItem(demoProjects) : undefined,
+        destinationVpcNetwork: isDestInternal ? this.getRandomItem(demoNetworks) : undefined,
+        protocol,
+        sourcePort,
+        destinationPort,
+        bytes,
+        packets,
+        rttMsec,
+        action: Math.random() > 0.05 ? 'ACCEPT' : 'REJECT', // 95% accept rate
+        region,
+        connection: this.generateConnectionId(),
+        sourceInstanceName,
+        destinationInstanceName,
+        sourceInstanceProjectId: sourceProject,
+        destinationInstanceProjectId: isDestInternal ? this.getRandomItem(demoProjects) : undefined,
+        sourceGcpZone: zone,
+        destinationGcpZone: isDestInternal ? this.getRandomItem(demoZones) : undefined,
+        metricValueSum: bytes
+      };
+      
+      flows.push(flow);
+    }
+    
+    // Sort by timestamp descending (most recent first)
+    return flows.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+  }
+
+  private generateTimeSeriesFromFlows(
+    flows: FlowLogEntry[],
+    metricType: MetricType,
+    startTime: Date,
+    endTime: Date,
+    intervalMs: number
+  ): FlowMetrics[] {
+    const timeSeriesData: FlowMetrics[] = [];
+    const buckets = new Map<number, FlowMetrics>();
+    
+    // Create time buckets
+    for (let time = startTime.getTime(); time < endTime.getTime(); time += intervalMs) {
+      const bucketKey = Math.floor(time / intervalMs) * intervalMs;
+      buckets.set(bucketKey, {
+        timestamp: new Date(bucketKey),
+        value: 0,
+        bytes: 0,
+        packets: 0,
+        rttMsec: 0
+      });
+    }
+    
+    // Aggregate flow data into time buckets
+    flows.forEach(flow => {
+      const flowTime = flow.timestamp.getTime();
+      const bucketKey = Math.floor(flowTime / intervalMs) * intervalMs;
+      const bucket = buckets.get(bucketKey);
+      
+      if (bucket) {
+        switch (metricType) {
+          case 'bytes':
+            bucket.value += flow.bytes;
+            break;
+          case 'packets':
+            bucket.value += flow.packets;
+            break;
+          case 'connections':
+            bucket.value += 1;
+            break;
+          case 'latency':
+            if (flow.rttMsec) {
+              bucket.value = Math.max(bucket.value, flow.rttMsec);
+            }
+            break;
+        }
+        bucket.bytes = (bucket.bytes || 0) + flow.bytes;
+        bucket.packets = (bucket.packets || 0) + flow.packets;
+        if (flow.rttMsec) {
+          bucket.rttMsec = Math.max(bucket.rttMsec || 0, flow.rttMsec);
+        }
+      }
+    });
+    
+    return Array.from(buckets.values()).sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
+  }
+
+  private generateTrafficVolume(): number {
+    // Generate realistic traffic volumes (bytes)
+    const patterns = [
+      () => Math.floor(Math.random() * 1000 + 100),      // Small packets (100B - 1KB)
+      () => Math.floor(Math.random() * 50000 + 1000),    // Medium packets (1KB - 50KB)
+      () => Math.floor(Math.random() * 500000 + 50000),  // Large packets (50KB - 500KB)
+      () => Math.floor(Math.random() * 5000000 + 500000) // Very large (500KB - 5MB)
+    ];
+    
+    // Weight towards smaller packets (more realistic)
+    const weights = [0.6, 0.25, 0.1, 0.05];
+    const rand = Math.random();
+    let cumulativeWeight = 0;
+    
+    for (let i = 0; i < patterns.length; i++) {
+      cumulativeWeight += weights[i];
+      if (rand <= cumulativeWeight) {
+        return patterns[i]();
+      }
+    }
+    
+    return patterns[0](); // Fallback
+  }
+
+  private generateConnectionId(): string {
+    // Generate realistic connection IDs
+    const chars = '0123456789abcdef';
+    let result = '';
+    for (let i = 0; i < 16; i++) {
+      result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return result;
+  }
+
+  private getRandomItem<T>(array: T[]): T {
+    return array[Math.floor(Math.random() * array.length)];
+  }
+
   private createEmptyResult(message: string): FlowAnalysisResult {
     return {
       timeSeriesData: [],
@@ -888,4 +1225,18 @@ export interface LogView {
   createTime: string;
   updateTime: string;
   resourceName: string;
-} 
+}
+
+export interface FilterAttribute {
+  value: string;
+  displayName: string;
+  description: string;
+  category: 'basic' | 'network' | 'instance' | 'gke' | 'load_balancer' | 'gateway' | 'geographic' | 'psc' | 'asn' | 'google' | 'timing' | 'qos';
+}
+
+export interface OrganizeAttribute {
+  value: string;
+  displayName: string;
+  description: string;
+  category: 'basic' | 'network' | 'instance' | 'gke' | 'load_balancer' | 'gateway' | 'geographic' | 'psc' | 'asn' | 'google' | 'timing' | 'qos';
+}
