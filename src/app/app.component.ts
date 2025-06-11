@@ -128,7 +128,16 @@ interface NavItem {
     }
     
     .project-picker-btn { 
-      margin-left: 16px; 
+      margin-left: 16px;
+      background-color: rgba(255, 255, 255, 0.1);
+      color: white;
+      border-color: rgba(255, 255, 255, 0.3);
+      font-weight: 500;
+    }
+    
+    .project-picker-btn:hover {
+      background-color: rgba(255, 255, 255, 0.2);
+      border-color: rgba(255, 255, 255, 0.5);
     }
     
     .demo-indicator {
@@ -304,6 +313,22 @@ interface NavItem {
       margin-right: 12px;
       font-size: 18px;
       color: inherit;
+    }
+    
+    /* Dark theme overrides */
+    :host-context(.dark-theme) .toolbar {
+      background: linear-gradient(135deg, #1f1f1f 0%, #2c2c2c 100%) !important;
+    }
+    
+    :host-context(.dark-theme) .project-picker-btn {
+      background-color: rgba(255, 255, 255, 0.08);
+      color: #e8eaed;
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+    
+    :host-context(.dark-theme) .project-picker-btn:hover {
+      background-color: rgba(255, 255, 255, 0.12);
+      border-color: rgba(255, 255, 255, 0.3);
     }
     `
   ]

@@ -57,7 +57,7 @@ http {
     }
 
     upstream backend {
-        server cloudconsolevibe-backend-vpi7bqw4kq-uc.a.run.app:443;
+        server cloudconsolevibe-backend-hash-uc.a.run.app:443;
         keepalive 32;
     }
 

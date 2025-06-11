@@ -251,7 +251,8 @@ $dark-theme: mat.define-dark-theme((
 // Dark theme specific overrides
 .dark-theme {
   .mat-toolbar.mat-primary {
-    background: linear-gradient(135deg, #1565c0 0%, #1976d2 100%);
+    background: linear-gradient(135deg, #1f1f1f 0%, #2c2c2c 100%) !important;
+    color: #e8eaed !important;
   }
   
   .mat-raised-button.mat-primary {
@@ -265,6 +266,17 @@ $dark-theme: mat.define-dark-theme((
   .mat-stroked-button.mat-primary {
     color: #4285f4;
     border-color: #4285f4;
+  }
+  
+  .mat-stroked-button.mat-accent {
+    background-color: rgba(255, 255, 255, 0.08);
+    color: #e8eaed;
+    border-color: rgba(255, 255, 255, 0.2);
+    
+    &:hover:not([disabled]) {
+      background-color: rgba(255, 255, 255, 0.12);
+      border-color: rgba(255, 255, 255, 0.3);
+    }
   }
   
   .mat-button.mat-primary {
