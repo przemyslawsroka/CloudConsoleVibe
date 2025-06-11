@@ -48,6 +48,31 @@ export class GeminiAiService {
 
   constructor() {
     this.addSystemMessage('Hello! I\'m your Google Cloud Console AI assistant. I can help you navigate the console, explain GCP services, and provide guidance. Click "Share your screen" to start a voice conversation!');
+    
+    // Initialize audio context to make this tab appear in Chrome's sharing list
+    this.initializeAudioContext();
+  }
+
+  private initializeAudioContext(): void {
+    try {
+      // Create a silent audio context to make Chrome recognize this tab as audio-capable
+      const audioContext = new AudioContext();
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      // Silent audio
+      gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+      oscillator.frequency.setValueAtTime(440, audioContext.currentTime);
+      oscillator.start();
+      oscillator.stop(audioContext.currentTime + 0.1);
+      
+      console.log('🔊 Audio context initialized for tab recognition');
+    } catch (error) {
+      console.log('Audio context initialization failed (this is normal on some browsers):', error);
+    }
   }
 
   async sendTextMessage(message: string): Promise<void> {
@@ -198,17 +223,21 @@ export class GeminiAiService {
 
   async shareScreen(): Promise<void> {
     try {
-      // Request screen sharing with audio
+      const currentUrl = window.location.href;
+      console.log('🌐 Current URL for screen sharing:', currentUrl);
+      
+      this.addSystemMessage('📺 IMPORTANT: Select "Chrome Tab" (not Screen/Window) in the sharing dialog to enable microphone access. Choose this current tab from the list.');
+      
+      // Add a small delay to ensure audio context is established
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Request screen sharing with audio - user must select browser tab for microphone access
       const screenStream = await navigator.mediaDevices.getDisplayMedia({
         video: {
           width: { ideal: 1280 },
           height: { ideal: 720 }
         },
-        audio: {
-          echoCancellation: true,
-          noiseSuppression: true,
-          sampleRate: 44100
-        }
+        audio: true // Request audio - only works with browser tab sharing
       });
 
       // Also request microphone for voice input with optimal settings
