@@ -76,6 +76,10 @@ export class FlowAnalyzerService {
   // Use proxy URLs for development to avoid CORS issues
   private isDevelopment = window.location.hostname === 'localhost';
   private proxyBaseUrl = '/api/logging/v2';
+  
+  // Demo data cache for consistent results
+  private demoDataCache: FlowAnalysisResult | null = null;
+  private lastDemoQuery: string | null = null;
 
   constructor(
     private http: HttpClient,
@@ -106,7 +110,27 @@ export class FlowAnalyzerService {
     // Return demo data in demo mode
     if (this.authService.isDemoMode()) {
       console.log('🎭 Demo mode: Generating mock Flow Analyzer data');
-      return of(this.generateDemoFlowData(filters, metricType, aggregationPeriod));
+      
+      // Create a cache key based on the query parameters
+      const queryKey = JSON.stringify({
+        filters: filters,
+        metricType: metricType,
+        aggregationPeriod: aggregationPeriod,
+        customQuery: customQuery
+      });
+      
+      // Return cached data if the query hasn't changed
+      if (this.demoDataCache && this.lastDemoQuery === queryKey) {
+        console.log('🎭 Demo mode: Using cached data for consistency');
+        return of(this.demoDataCache);
+      }
+      
+      // Generate new demo data and cache it
+      const newDemoData = this.generateDemoFlowData(filters, metricType, aggregationPeriod);
+      this.demoDataCache = newDemoData;
+      this.lastDemoQuery = queryKey;
+      
+      return of(newDemoData);
     }
     
     // Default Log Analytics bucket configuration
@@ -1202,6 +1226,12 @@ LIMIT 100
       queryExecutionTime: 0,
       error: message
     };
+  }
+
+  clearDemoCache(): void {
+    this.demoDataCache = null;
+    this.lastDemoQuery = null;
+    console.log('🎭 Demo data cache cleared');
   }
 }
 

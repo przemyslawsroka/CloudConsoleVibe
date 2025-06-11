@@ -91,7 +91,7 @@ Chart.register(...registerables);
                 <span class="organize-label">Organize flows by</span>
                 <mat-form-field class="multiselect-field organize-field" appearance="outline">
                   <mat-label>Select attributes</mat-label>
-                  <mat-select multiple [(value)]="selectedSourceOrganize">
+                  <mat-select multiple [(value)]="selectedSourceOrganize" (selectionChange)="onOrganizeSettingsChange()">
                     <mat-optgroup *ngFor="let category of sourceOrganizeCategories" [label]="category.label">
                       <mat-option *ngFor="let attr of category.attributes" [value]="attr.value" [matTooltip]="attr.description">
                         {{ attr.displayName }}
@@ -126,7 +126,7 @@ Chart.register(...registerables);
                 <span class="organize-label">Organize flows by</span>
                 <mat-form-field class="multiselect-field organize-field" appearance="outline">
                   <mat-label>Select attributes</mat-label>
-                  <mat-select multiple [(value)]="selectedDestinationOrganize">
+                  <mat-select multiple [(value)]="selectedDestinationOrganize" (selectionChange)="onOrganizeSettingsChange()">
                     <mat-optgroup *ngFor="let category of destinationOrganizeCategories" [label]="category.label">
                       <mat-option *ngFor="let attr of category.attributes" [value]="attr.value" [matTooltip]="attr.description">
                         {{ attr.displayName }}
@@ -161,7 +161,7 @@ Chart.register(...registerables);
                 <span class="organize-label">Organize flows by</span>
                 <mat-form-field class="multiselect-field organize-field" appearance="outline">
                   <mat-label>Select attributes</mat-label>
-                  <mat-select multiple [(value)]="selectedFlowParameterOrganize">
+                  <mat-select multiple [(value)]="selectedFlowParameterOrganize" (selectionChange)="onOrganizeSettingsChange()">
                     <mat-optgroup *ngFor="let category of flowParameterOrganizeCategories" [label]="category.label">
                       <mat-option *ngFor="let attr of category.attributes" [value]="attr.value" [matTooltip]="attr.description">
                         {{ attr.displayName }}
@@ -1512,6 +1512,7 @@ export class FlowAnalyzerComponent implements OnInit {
 
   // Data and State
   analysisResult: FlowAnalysisResult | null = null;
+  processedFlowData: ProcessedFlowData | null = null;
   isLoading = false;
   projectId: string | null = null;
   selectedTrafficAggregation = 'source-destination';
@@ -1881,6 +1882,10 @@ export class FlowAnalyzerComponent implements OnInit {
 
     this.isLoading = true;
     this.analysisResult = null; // Clear previous results
+    this.processedFlowData = null; // Clear processed data
+
+    // Clear demo cache to generate fresh data
+    this.flowAnalyzerService.clearDemoCache();
 
     const filters = this.buildFilterOptions();
     const customQuery = this.filterMode === 'sql' ? this.generateSqlFromFilters() : undefined;
@@ -1898,6 +1903,12 @@ export class FlowAnalyzerComponent implements OnInit {
       next: (result) => {
         this.analysisResult = result;
         this.isLoading = false;
+        
+        // Process data according to "Organize flows by" settings
+        if (result.flowLogs.length > 0 && !result.error) {
+          this.processedFlowData = this.processFlowData(result);
+        }
+        
         this.cdr.detectChanges();
         
         // Only create visualization if we have data and no errors
@@ -1952,13 +1963,37 @@ export class FlowAnalyzerComponent implements OnInit {
 
   onMetricTypeChange() {
     if (this.analysisResult) {
-      this.runQuery();
+      // Reprocess data with new metric type
+      this.reprocessData();
     }
   }
 
   onAggregationPeriodChange() {
     if (this.analysisResult) {
-      this.runQuery();
+      // Reprocess data with new aggregation period
+      this.reprocessData();
+    }
+  }
+
+  onOrganizeSettingsChange() {
+    if (this.analysisResult) {
+      // Reprocess data when organize settings change
+      this.reprocessData();
+    }
+  }
+
+  private reprocessData() {
+    if (this.analysisResult && this.analysisResult.flowLogs.length > 0 && !this.analysisResult.error) {
+      this.processedFlowData = this.processFlowData(this.analysisResult);
+      
+      // Recreate visualizations
+      setTimeout(() => {
+        if (this.visualizationMode === 'chart') {
+          this.createChart();
+        } else {
+          this.createSankeyDiagram();
+        }
+      }, 100);
     }
   }
 
@@ -1976,6 +2011,142 @@ export class FlowAnalyzerComponent implements OnInit {
 
   toggleFilters() {
     this.filtersVisible = !this.filtersVisible;
+  }
+
+  private processFlowData(result: FlowAnalysisResult): ProcessedFlowData {
+    const organizeSettings: OrganizeSettings = {
+      source: this.selectedSourceOrganize,
+      destination: this.selectedDestinationOrganize,
+      flowParameters: this.selectedFlowParameterOrganize
+    };
+
+    // Group flows by the organize settings
+    const flowGroups = this.groupFlowsByOrganizeSettings(result.flowLogs, organizeSettings);
+    
+    // Aggregate flows and get top 10
+    const aggregatedFlows = this.aggregateFlowGroups(flowGroups);
+    const topFlows = aggregatedFlows
+      .sort((a, b) => {
+        switch (this.selectedMetricType) {
+          case 'bytes': return b.totalBytes - a.totalBytes;
+          case 'packets': return b.totalPackets - a.totalPackets;
+          case 'connections': return b.totalConnections - a.totalConnections;
+          case 'latency': return b.avgLatency - a.avgLatency;
+          default: return b.totalBytes - a.totalBytes;
+        }
+      })
+      .slice(0, 10);
+
+    // Generate time series data from top flows
+    const timeSeriesData = this.generateTimeSeriesFromTopFlows(topFlows, result.timeSeriesData);
+
+    return {
+      topFlows,
+      timeSeriesData,
+      organizedBy: organizeSettings
+    };
+  }
+
+  private groupFlowsByOrganizeSettings(flowLogs: FlowLogEntry[], organizeSettings: OrganizeSettings): Map<string, FlowLogEntry[]> {
+    const groups = new Map<string, FlowLogEntry[]>();
+
+    flowLogs.forEach(flow => {
+      const sourceLabel = this.buildOrganizedLabel(flow, 'source', organizeSettings.source);
+      const destinationLabel = this.buildOrganizedLabel(flow, 'destination', organizeSettings.destination);
+      const key = `${sourceLabel} → ${destinationLabel}`;
+
+      if (!groups.has(key)) {
+        groups.set(key, []);
+      }
+      groups.get(key)!.push(flow);
+    });
+
+    return groups;
+  }
+
+  private buildOrganizedLabel(flow: FlowLogEntry, type: 'source' | 'destination', organizeBy: string[]): string {
+    if (organizeBy.length === 0) {
+      // Default to IP if no organize settings
+      return type === 'source' ? flow.sourceIp : flow.destinationIp;
+    }
+
+    const parts: string[] = [];
+    
+    organizeBy.forEach(attribute => {
+      let value = '';
+      
+      if (type === 'source') {
+        switch (attribute) {
+          case 'source_ip': value = flow.sourceIp; break;
+          case 'source_vpc_network': value = flow.sourceVpcNetwork || ''; break;
+          case 'source_vpc_project': value = flow.sourceVpcNetworkProject || ''; break;
+          case 'source_instance_name': value = flow.sourceInstanceName || ''; break;
+          case 'source_zone': value = flow.sourceGcpZone || ''; break;
+        }
+      } else {
+        switch (attribute) {
+          case 'destination_ip': value = flow.destinationIp; break;
+          case 'destination_vpc_network': value = flow.destinationVpcNetwork || ''; break;
+          case 'destination_vpc_project': value = flow.destinationVpcNetworkProject || ''; break;
+          case 'destination_instance_name': value = flow.destinationInstanceName || ''; break;
+          case 'destination_zone': value = flow.destinationGcpZone || ''; break;
+        }
+      }
+      
+      if (value) {
+        parts.push(value);
+      }
+    });
+
+    return parts.length > 0 ? parts.join('/') : (type === 'source' ? flow.sourceIp : flow.destinationIp);
+  }
+
+  private aggregateFlowGroups(flowGroups: Map<string, FlowLogEntry[]>): AggregatedFlow[] {
+    const aggregatedFlows: AggregatedFlow[] = [];
+
+    flowGroups.forEach((flows, key) => {
+      const [sourceLabel, destinationLabel] = key.split(' → ');
+      
+      let totalBytes = 0;
+      let totalPackets = 0;
+      let totalConnections = flows.length;
+      let totalLatency = 0;
+      let latencyCount = 0;
+      const protocols = new Set<string>();
+
+      flows.forEach(flow => {
+        totalBytes += flow.bytes;
+        totalPackets += flow.packets;
+        protocols.add(flow.protocol);
+        
+        if (flow.rttMsec) {
+          totalLatency += flow.rttMsec;
+          latencyCount++;
+        }
+      });
+
+      const avgLatency = latencyCount > 0 ? totalLatency / latencyCount : 0;
+
+      aggregatedFlows.push({
+        sourceLabel,
+        destinationLabel,
+        totalBytes,
+        totalPackets,
+        totalConnections,
+        avgLatency,
+        protocol: Array.from(protocols).join(', '),
+        flowLogs: flows
+      });
+    });
+
+    return aggregatedFlows;
+  }
+
+  private generateTimeSeriesFromTopFlows(topFlows: AggregatedFlow[], originalTimeSeriesData: FlowMetrics[]): FlowMetrics[] {
+    // For now, return the original time series data
+    // In a more sophisticated implementation, we could filter and aggregate
+    // the time series data based on the top flows
+    return originalTimeSeriesData.slice(0, 50); // Limit for performance
   }
 
   private createChart() {
@@ -2040,48 +2211,78 @@ export class FlowAnalyzerComponent implements OnInit {
   }
 
   private createChartDatasets(): any[] {
-    if (!this.analysisResult) return [];
-
-    // Group data by source-destination pairs
-    const dataGroups = new Map<string, FlowMetrics[]>();
-    
-    this.analysisResult.timeSeriesData.forEach(metric => {
-      const key = `${metric.sourceIp} → ${metric.destinationIp}`;
-      if (!dataGroups.has(key)) {
-        dataGroups.set(key, []);
-      }
-      dataGroups.get(key)!.push(metric);
-    });
+    if (!this.processedFlowData || !this.analysisResult) return [];
 
     const colors = [
       '#1f77b4', '#ff7f0e', '#2ca02c', '#d62728',
-      '#9467bd', '#8c564b', '#e377c2', '#7f7f7f'
+      '#9467bd', '#8c564b', '#e377c2', '#7f7f7f',
+      '#bcbd22', '#17becf'
     ];
 
     const datasets: any[] = [];
-    let colorIndex = 0;
 
-    dataGroups.forEach((metrics, label) => {
-      const color = colors[colorIndex % colors.length];
+    // Use the top 10 flows from processed data
+    this.processedFlowData.topFlows.forEach((flow, index) => {
+      const color = colors[index % colors.length];
+      const label = `${flow.sourceLabel} → ${flow.destinationLabel}`;
       
-      const data = metrics.map(metric => ({
-        x: metric.timestamp,
-        y: metric.value
-      }));
+      // Create time series data for this specific flow
+      const data = this.generateTimeSeriesForFlow(flow);
 
-      datasets.push({
-        label: label,
-        data: data,
-        borderColor: color,
-        backgroundColor: color + '20',
-        fill: this.selectedMetricType !== 'latency',
-        tension: 0.1
-      });
-
-      colorIndex++;
+      if (data.length > 0) {
+        datasets.push({
+          label: label,
+          data: data,
+          borderColor: color,
+          backgroundColor: color + '20',
+          fill: this.selectedMetricType !== 'latency',
+          tension: 0.1
+        });
+      }
     });
 
     return datasets;
+  }
+
+  private generateTimeSeriesForFlow(flow: AggregatedFlow): { x: Date; y: number }[] {
+    if (!this.analysisResult) return [];
+
+    // Group flow logs by time buckets and aggregate values
+    const timeBuckets = new Map<number, number>();
+    const intervalMs = this.getAggregationIntervalMs();
+    
+    flow.flowLogs.forEach(flowLog => {
+      const bucketTime = Math.floor(flowLog.timestamp.getTime() / intervalMs) * intervalMs;
+      const currentValue = timeBuckets.get(bucketTime) || 0;
+      
+      let valueToAdd = 0;
+      switch (this.selectedMetricType) {
+        case 'bytes': valueToAdd = flowLog.bytes; break;
+        case 'packets': valueToAdd = flowLog.packets; break;
+        case 'connections': valueToAdd = 1; break;
+        case 'latency': valueToAdd = flowLog.rttMsec || 0; break;
+      }
+      
+      timeBuckets.set(bucketTime, currentValue + valueToAdd);
+    });
+
+    // Convert to chart data format
+    return Array.from(timeBuckets.entries())
+      .map(([timestamp, value]) => ({
+        x: new Date(timestamp),
+        y: value
+      }))
+      .sort((a, b) => a.x.getTime() - b.x.getTime());
+  }
+
+  private getAggregationIntervalMs(): number {
+    switch (this.selectedAggregationPeriod) {
+      case '1m': return 60 * 1000;
+      case '5m': return 5 * 60 * 1000;
+      case '15m': return 15 * 60 * 1000;
+      case '1h': return 60 * 60 * 1000;
+      default: return 5 * 60 * 1000;
+    }
   }
 
   private getYAxisLabel(): string {
@@ -2265,22 +2466,22 @@ export class FlowAnalyzerComponent implements OnInit {
   }
 
   private createSankeyDiagram() {
-    if (!this.sankeyContainer || !this.analysisResult || !this.analysisResult.flowLogs) {
+    if (!this.sankeyContainer || !this.processedFlowData) {
       return;
     }
 
-    const sankeyData = this.generateSankeyData(this.analysisResult.flowLogs);
+    const sankeyData = this.generateSankeyDataFromProcessed(this.processedFlowData);
     this.renderSankey(sankeyData);
   }
 
-  private generateSankeyData(flowLogs: FlowLogEntry[]): SankeyData {
+  private generateSankeyDataFromProcessed(processedData: ProcessedFlowData): SankeyData {
     const nodes = new Map<string, SankeyNode>();
     const links: SankeyLink[] = [];
     
-    // Create nodes and links from flow logs
-    flowLogs.forEach(flow => {
-      const sourceLabel = this.getNodeLabel(flow, 'source');
-      const destLabel = this.getNodeLabel(flow, 'destination');
+    // Use the top 10 flows from processed data
+    processedData.topFlows.forEach(flow => {
+      const sourceLabel = flow.sourceLabel;
+      const destLabel = flow.destinationLabel;
       
       // Add source node
       if (!nodes.has(sourceLabel)) {
@@ -2300,23 +2501,23 @@ export class FlowAnalyzerComponent implements OnInit {
         });
       }
       
-      // Find or create link
-      const existingLink = links.find(link => 
-        link.source === sourceLabel && link.target === destLabel
-      );
-      
-      if (existingLink) {
-        existingLink.value += this.getSankeyValue(flow);
-        existingLink.flowCount += 1;
-      } else {
-        links.push({
-          source: sourceLabel,
-          target: destLabel,
-          value: this.getSankeyValue(flow),
-          flowCount: 1,
-          protocol: flow.protocol
-        });
+      // Create link with aggregated values
+      let value = 0;
+      switch (this.selectedMetricType) {
+        case 'bytes': value = flow.totalBytes; break;
+        case 'packets': value = flow.totalPackets; break;
+        case 'connections': value = flow.totalConnections; break;
+        case 'latency': value = flow.avgLatency; break;
+        default: value = flow.totalBytes;
       }
+      
+      links.push({
+        source: sourceLabel,
+        target: destLabel,
+        value: value,
+        flowCount: flow.totalConnections,
+        protocol: flow.protocol
+      });
     });
     
     return {
@@ -2395,10 +2596,8 @@ export class FlowAnalyzerComponent implements OnInit {
           .nodePadding(10)
           .extent([[1, 1], [width - 1, height - 6]]);
 
-        // Take top 15 links to avoid overcrowding
-        const topLinks = data.links
-          .sort((a, b) => b.value - a.value)
-          .slice(0, 15);
+        // Use all links since we already have top 10 from processed data
+        const topLinks = data.links;
 
         // Build nodes and links for D3 Sankey
         const nodeMap = new Map();
@@ -2654,4 +2853,27 @@ interface SankeyLink {
 interface SankeyData {
   nodes: SankeyNode[];
   links: SankeyLink[];
+}
+
+interface ProcessedFlowData {
+  topFlows: AggregatedFlow[];
+  timeSeriesData: FlowMetrics[];
+  organizedBy: OrganizeSettings;
+}
+
+interface AggregatedFlow {
+  sourceLabel: string;
+  destinationLabel: string;
+  totalBytes: number;
+  totalPackets: number;
+  totalConnections: number;
+  avgLatency: number;
+  protocol: string;
+  flowLogs: FlowLogEntry[];
+}
+
+interface OrganizeSettings {
+  source: string[];
+  destination: string[];
+  flowParameters: string[];
 } 
