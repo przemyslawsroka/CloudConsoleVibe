@@ -136,45 +136,89 @@ import { ProjectService, Project } from '../../services/project.service';
     </mat-dialog-content>
   `,
   styles: [`
-    .search-bar { margin-bottom: 16px; }
-    .full-width { width: 100%; }
-    .project-table { width: 100%; border-collapse: collapse; }
-    .project-table th, .project-table td { padding: 8px 12px; }
-    .project-table tr.selected { background: #e3f2fd; }
-    .project-table tr:hover { background: #f5f5f5; cursor: pointer; }
-    .actions { display: flex; align-items: center; margin-top: 16px; }
-    .spacer { flex: 1 1 auto; }
+    .search-bar { 
+      margin-bottom: 16px; 
+    }
+    
+    .full-width { 
+      width: 100%; 
+    }
+    
+    .project-table { 
+      width: 100%; 
+      border-collapse: collapse; 
+      color: var(--text-color);
+    }
+    
+    .project-table th, .project-table td { 
+      padding: 8px 12px; 
+      border-bottom: 1px solid var(--divider-color);
+    }
+    
+    .project-table th {
+      background-color: var(--surface-color);
+      color: var(--text-secondary-color);
+      font-weight: 500;
+      text-align: left;
+    }
+    
+    .project-table tr.selected { 
+      background-color: var(--selected-color) !important;
+      color: var(--text-color);
+    }
+    
+    .project-table tr:hover { 
+      background-color: var(--hover-color); 
+      cursor: pointer; 
+    }
+    
+    .actions { 
+      display: flex; 
+      align-items: center; 
+      margin-top: 16px; 
+    }
+    
+    .spacer { 
+      flex: 1 1 auto; 
+    }
+    
     .loading {
       display: flex;
       flex-direction: column;
       align-items: center;
       padding: 40px 20px;
-      color: #666;
+      color: var(--text-secondary-color);
     }
+    
     .loading span {
       margin-top: 16px;
     }
+    
     .no-projects {
       display: flex;
       flex-direction: column;
       align-items: center;
       padding: 40px 20px;
-      color: #666;
+      color: var(--text-secondary-color);
       text-align: center;
     }
+    
     .no-projects mat-icon {
       font-size: 48px;
       width: 48px;
       height: 48px;
-      color: #ccc;
+      color: var(--disabled-color);
       margin-bottom: 16px;
     }
+    
     .no-projects p {
       margin: 4px 0;
+      color: var(--text-color);
     }
+    
     .no-projects .hint {
       font-size: 14px;
-      color: #999;
+      color: var(--text-secondary-color);
     }
   `]
 })
