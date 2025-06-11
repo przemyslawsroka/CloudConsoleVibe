@@ -95,6 +95,15 @@ import { GeminiAiService, ChatMessage, VoiceSessionState } from '../../services/
           
           <button 
             mat-stroked-button 
+            color="warn" 
+            (click)="testMicrophone()"
+            class="test-mic-btn">
+            <mat-icon>mic</mat-icon>
+            Test Microphone
+          </button>
+          
+          <button 
+            mat-stroked-button 
             color="accent" 
             (click)="clearChat()"
             class="clear-chat-btn">
@@ -463,6 +472,10 @@ export class AiAssistantComponent implements OnInit, OnDestroy, AfterViewChecked
 
   async stopVoiceSession(): Promise<void> {
     await this.geminiService.stopVoiceSession();
+  }
+
+  testMicrophone(): void {
+    this.geminiService.testMicrophone();
   }
 
   clearChat(): void {

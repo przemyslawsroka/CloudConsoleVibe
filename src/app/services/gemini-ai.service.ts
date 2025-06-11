@@ -198,13 +198,14 @@ export class GeminiAiService {
         }
       });
 
-      // Also request microphone for voice input
+      // Also request microphone for voice input with optimal settings
       const micStream = await navigator.mediaDevices.getUserMedia({
         audio: {
-          echoCancellation: true,
-          noiseSuppression: true,
+          echoCancellation: false, // Disable for better raw audio capture
+          noiseSuppression: false, // Disable to capture all audio
           autoGainControl: true,
-          sampleRate: 16000
+          channelCount: 1,
+          sampleSize: 16
         }
       });
       
@@ -255,73 +256,101 @@ export class GeminiAiService {
 
   private setupMicrophoneStreaming(micStream: MediaStream): void {
     try {
-      const audioContext = new AudioContext({ sampleRate: 16000 });
+      // Create audio context with default sample rate for better compatibility
+      const audioContext = new AudioContext();
       const source = audioContext.createMediaStreamSource(micStream);
       
-      // Use AudioWorklet for modern browsers (fallback to ScriptProcessor if needed)
-      if (audioContext.audioWorklet) {
-        this.setupAudioWorklet(audioContext, source);
-      } else {
-        this.setupScriptProcessor(audioContext, source);
+      console.log(`🎤 Audio context created - Sample rate: ${audioContext.sampleRate}Hz`);
+      console.log(`🎤 Microphone stream tracks:`, micStream.getTracks().map(t => ({
+        kind: t.kind,
+        enabled: t.enabled,
+        muted: t.muted,
+        readyState: t.readyState
+      })));
+      
+      // Resume audio context if suspended (required by some browsers)
+      if (audioContext.state === 'suspended') {
+        audioContext.resume().then(() => {
+          console.log('🎤 Audio context resumed');
+        });
       }
       
+      // Always use ScriptProcessor for now (more reliable)
+      this.setupScriptProcessor(audioContext, source);
+      
       console.log('🎤 Microphone streaming setup complete');
+      this.addSystemMessage('🎤 Microphone connected - You can now speak!');
+      
     } catch (error) {
       console.error('Error setting up microphone streaming:', error);
-      this.addSystemMessage('Microphone setup failed. Please check permissions.');
+      this.addSystemMessage('❌ Microphone setup failed. Please check permissions and try again.');
     }
   }
 
   private setupScriptProcessor(audioContext: AudioContext, source: MediaStreamAudioSourceNode): void {
-    const processor = audioContext.createScriptProcessor(2048, 1, 1); // Smaller buffer for better responsiveness
-    const analyser = audioContext.createAnalyser();
-    analyser.fftSize = 256;
+    const processor = audioContext.createScriptProcessor(4096, 1, 1); 
     
-    source.connect(analyser);
-    analyser.connect(processor);
+    // Connect source directly to processor for better audio capture
+    source.connect(processor);
+    processor.connect(audioContext.destination);
     
     processor.onaudioprocess = (event) => {
       const inputBuffer = event.inputBuffer;
       const inputData = inputBuffer.getChannelData(0);
       
-      // Calculate microphone level for visualization
+      // Calculate microphone level with better sensitivity
       let sum = 0;
-      for (let i = 0; i < inputData.length; i++) {
-        sum += inputData[i] * inputData[i];
-      }
-      const rms = Math.sqrt(sum / inputData.length);
-      const micLevel = Math.min(100, Math.floor(rms * 1000)); // Scale to 0-100
+      let maxAmplitude = 0;
       
-      // Update microphone status
-      const isMicDetected = micLevel > 1; // Threshold for detecting input
+      for (let i = 0; i < inputData.length; i++) {
+        const sample = Math.abs(inputData[i]);
+        sum += sample * sample;
+        maxAmplitude = Math.max(maxAmplitude, sample);
+      }
+      
+      const rms = Math.sqrt(sum / inputData.length);
+      const micLevel = Math.min(100, Math.floor(rms * 10000)); // More sensitive scaling
+      const peakLevel = Math.floor(maxAmplitude * 100);
+      
+      // Use lower thresholds for better detection
+      const isMicDetected = micLevel > 0.1 || peakLevel > 1; // Much lower threshold
+      
+      // Debug logging
+      if (micLevel > 0 || peakLevel > 0) {
+        console.log(`🎤 Audio detected - RMS: ${rms.toFixed(4)}, Level: ${micLevel}, Peak: ${peakLevel}`);
+      }
+      
       this.updateVoiceSession({ 
-        microphoneLevel: micLevel, 
+        microphoneLevel: Math.max(micLevel, peakLevel), // Use higher of RMS or peak
         isMicrophoneDetected: isMicDetected 
       });
       
-      // Only send audio if recording and there's actual input
+      // Send audio if recording and above very low threshold
       if (!this.session || !this.voiceSessionSubject.value.isRecording) return;
       
-      // Only send if there's meaningful audio (above noise threshold)
-      if (micLevel > 5) {
+      // Send if there's any meaningful audio (much lower threshold)
+      if (micLevel > 0.5 || peakLevel > 2) {
         try {
           // Convert Float32Array to 16-bit PCM for Gemini
           const pcmData = this.convertToPCM16(inputData);
           const base64Audio = btoa(String.fromCharCode(...pcmData));
           
-          // Send to Gemini Live API
+          // Send to Gemini Live API with proper format
           this.session.sendClientContent({
             turns: [{ parts: [{ inlineData: { mimeType: 'audio/pcm', data: base64Audio } }] }]
           });
           
-          console.log(`🎤 Sending audio to Gemini (level: ${micLevel})`);
+          console.log(`🎤 Sending audio to Gemini (RMS: ${micLevel}, Peak: ${peakLevel})`);
         } catch (error) {
           console.error('Error sending audio to Gemini:', error);
         }
       }
     };
     
-    processor.connect(audioContext.destination);
+    // Add error handling
+    processor.addEventListener('error', (e) => {
+      console.error('Audio processor error:', e);
+    });
   }
 
   private setupAudioWorklet(audioContext: AudioContext, source: MediaStreamAudioSourceNode): void {
@@ -504,5 +533,45 @@ export class GeminiAiService {
   clearMessages(): void {
     this.messagesSubject.next([]);
     this.addSystemMessage('Chat cleared. How can I help you with Google Cloud Console?');
+  }
+
+  // Debug method to test microphone input
+  testMicrophone(): void {
+    navigator.mediaDevices.getUserMedia({ audio: true })
+      .then((stream) => {
+        console.log('🎤 Microphone test - Stream obtained:', stream);
+        const audioContext = new AudioContext();
+        const source = audioContext.createMediaStreamSource(stream);
+        const analyser = audioContext.createAnalyser();
+        
+        source.connect(analyser);
+        analyser.fftSize = 256;
+        
+        const dataArray = new Uint8Array(analyser.frequencyBinCount);
+        
+        const checkAudio = () => {
+          analyser.getByteFrequencyData(dataArray);
+          const average = dataArray.reduce((a, b) => a + b) / dataArray.length;
+          
+          if (average > 0) {
+            console.log(`🎤 Audio level detected: ${average.toFixed(2)}`);
+            this.addSystemMessage(`🎤 Microphone test successful! Audio level: ${average.toFixed(2)}`);
+            
+            // Stop test after 5 seconds
+            setTimeout(() => {
+              stream.getTracks().forEach(track => track.stop());
+              this.addSystemMessage('🎤 Microphone test completed.');
+            }, 5000);
+          } else {
+            requestAnimationFrame(checkAudio);
+          }
+        };
+        
+        checkAudio();
+      })
+      .catch((error) => {
+        console.error('🎤 Microphone test failed:', error);
+        this.addSystemMessage('❌ Microphone test failed: ' + error.message);
+      });
   }
 } 
