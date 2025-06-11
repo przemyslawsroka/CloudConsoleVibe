@@ -1278,13 +1278,6 @@ gcloud services enable monitoring.googleapis.com</code></pre>
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
       }
       
-      .doc-nav li.active a {
-        background: #4285f4;
-        color: #ffffff;
-        font-weight: 600;
-        box-shadow: 0 2px 4px rgba(66, 133, 244, 0.3);
-      }
-      
       .doc-nav a:hover {
         background: rgba(255, 255, 255, 0.1);
         color: #e8eaed;
@@ -1312,6 +1305,14 @@ gcloud services enable monitoring.googleapis.com</code></pre>
         background: var(--hover-color);
         color: #ff7043;
       }
+    }
+
+    /* Dark theme navigation active state - high specificity */
+    :host-context(.dark-theme) .doc-nav li.active a {
+      background: #4285f4 !important;
+      color: #ffffff !important;
+      font-weight: 600 !important;
+      box-shadow: 0 2px 4px rgba(66, 133, 244, 0.3) !important;
     }
 
     /* Material component overrides for dark theme */
