@@ -54,10 +54,10 @@ interface NavItem {
         </button>
         
         <button mat-icon-button 
-                routerLink="/documentation" 
-                matTooltip="Documentation"
+                (click)="toggleDocumentation()"
+                [matTooltip]="isDocumentationRoute ? 'Back to Console' : 'Documentation'"
                 class="doc-button">
-          <mat-icon>description</mat-icon>
+          <mat-icon>{{ isDocumentationRoute ? 'arrow_back' : 'description' }}</mat-icon>
         </button>
         <button mat-button *ngIf="!(isAuthenticated$ | async)" (click)="login()">
           <mat-icon>login</mat-icon>
@@ -558,5 +558,15 @@ export class AppComponent implements OnInit {
 
   toggleTheme() {
     this.themeService.toggleTheme();
+  }
+
+  toggleDocumentation() {
+    if (this.isDocumentationRoute) {
+      // Navigate back to console (default route)
+      this.router.navigate(['/']);
+    } else {
+      // Navigate to documentation
+      this.router.navigate(['/documentation']);
+    }
   }
 } 
