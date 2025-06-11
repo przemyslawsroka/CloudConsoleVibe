@@ -1279,9 +1279,15 @@ gcloud services enable monitoring.googleapis.com</code></pre>
       }
       
       .doc-nav li.active a {
-        background: rgba(66, 133, 244, 0.4);
+        background: #4285f4;
         color: #ffffff;
-        font-weight: 500;
+        font-weight: 600;
+        box-shadow: 0 2px 4px rgba(66, 133, 244, 0.3);
+      }
+      
+      .doc-nav a:hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: #e8eaed;
       }
       
       .demo-notice {
