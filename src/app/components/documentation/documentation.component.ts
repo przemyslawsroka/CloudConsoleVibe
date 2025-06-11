@@ -1246,15 +1246,24 @@ gcloud services enable monitoring.googleapis.com</code></pre>
     /* Dark theme specific adjustments */
     :host-context(.dark-theme) {
       .documentation-header {
-        background: linear-gradient(135deg, #1565c0, #0d47a1);
+        background: linear-gradient(135deg, #1f1f1f 0%, #2c2c2c 100%);
       }
       
       .documentation-header h1 {
-        color: white !important;
+        color: #e8eaed !important;
       }
       
       .documentation-header p {
-        color: rgba(255, 255, 255, 0.9) !important;
+        color: rgba(232, 234, 237, 0.8) !important;
+      }
+      
+      .back-button {
+        background: rgba(232, 234, 237, 0.1) !important;
+        color: #e8eaed !important;
+      }
+      
+      .back-button:hover {
+        background: rgba(232, 234, 237, 0.2) !important;
       }
       
       .doc-section {
@@ -1267,6 +1276,11 @@ gcloud services enable monitoring.googleapis.com</code></pre>
 
       .doc-nav {
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+      }
+      
+      .doc-nav li.active a {
+        background: rgba(66, 133, 244, 0.24);
+        color: #e8eaed;
       }
       
       .demo-notice {
