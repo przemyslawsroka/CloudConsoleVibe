@@ -37,6 +37,10 @@ Chart.register(...registerables);
               <mat-icon>edit</mat-icon>
               Compose a Cloud Assist Query
             </button>
+            <button mat-stroked-button class="toggle-filters-button" (click)="toggleFilters()">
+              <mat-icon>{{ filtersVisible ? 'keyboard_arrow_up' : 'keyboard_arrow_down' }}</mat-icon>
+              {{ filtersVisible ? 'Hide Filters' : 'Show Filters' }}
+            </button>
           </div>
           <div class="query-header-actions">
             <!-- Data Source Selection -->
@@ -67,7 +71,7 @@ Chart.register(...registerables);
         </div>
 
         <!-- Compact Filter Sections -->
-        <div *ngIf="filterMode === 'basic'" class="compact-filters">
+        <div *ngIf="filterMode === 'basic' && filtersVisible" class="compact-filters">
           <form [formGroup]="filtersForm" class="filters-form">
             <!-- Source Section -->
             <div class="filter-section">
@@ -177,9 +181,9 @@ Chart.register(...registerables);
 
           <!-- Filter Actions -->
           <div class="filter-actions">
-            <button mat-stroked-button class="hide-filters-button">
-              <mat-icon>keyboard_arrow_up</mat-icon>
-              Hide Filters
+            <button mat-stroked-button class="hide-filters-button" (click)="toggleFilters()">
+              <mat-icon>{{ filtersVisible ? 'keyboard_arrow_up' : 'keyboard_arrow_down' }}</mat-icon>
+              {{ filtersVisible ? 'Hide Filters' : 'Show Filters' }}
             </button>
             <button mat-raised-button color="primary" (click)="runQuery()" [disabled]="isLoading" class="run-query-button">
               <mat-icon>refresh</mat-icon>
@@ -189,7 +193,7 @@ Chart.register(...registerables);
         </div>
 
         <!-- SQL Filters -->
-        <div *ngIf="filterMode === 'sql'" class="sql-filters">
+        <div *ngIf="filterMode === 'sql' && filtersVisible" class="sql-filters">
           <div class="sql-section">
             <div class="sql-where-section">
               <div class="sql-where-header">
@@ -217,9 +221,9 @@ Chart.register(...registerables);
 
           <!-- Filter Actions -->
           <div class="filter-actions">
-            <button mat-stroked-button class="hide-filters-button">
-              <mat-icon>keyboard_arrow_up</mat-icon>
-              Hide Filters
+            <button mat-stroked-button class="hide-filters-button" (click)="toggleFilters()">
+              <mat-icon>{{ filtersVisible ? 'keyboard_arrow_up' : 'keyboard_arrow_down' }}</mat-icon>
+              {{ filtersVisible ? 'Hide Filters' : 'Show Filters' }}
             </button>
             <button mat-raised-button color="primary" (click)="runQuery()" [disabled]="isLoading" class="run-query-button">
               <mat-icon>play_circle</mat-icon>
@@ -287,74 +291,44 @@ Chart.register(...registerables);
       <!-- Results Section -->
       <div *ngIf="analysisResult && !analysisResult.error" class="results-section">
         <!-- Chart Section -->
-        <mat-card class="chart-section">
-          <mat-card-header>
-            <div class="chart-header">
-              <div class="chart-title">
-                <h3>{{ getChartTitle() }}</h3>
-                <p class="time-range-display">{{ getTimeRangeDisplay() }}</p>
-              </div>
-              <div class="chart-controls">
-                <!-- Visualization Mode Toggle -->
-                <div class="visualization-mode">
-                  <mat-button-toggle-group [(value)]="visualizationMode" (change)="onVisualizationModeChange()">
-                    <mat-button-toggle value="chart">
-                      <mat-icon>show_chart</mat-icon>
-                      Chart
-                    </mat-button-toggle>
-                    <mat-button-toggle value="sankey">
-                      <mat-icon>account_tree</mat-icon>
-                      Sankey Diagram
-                    </mat-button-toggle>
-                  </mat-button-toggle-group>
+        <div class="results-layout">
+          <mat-card class="chart-section">
+            <mat-card-header>
+              <div class="chart-header">
+                <div class="chart-title">
+                  <h3>{{ getChartTitle() }}</h3>
+                  <p class="time-range-display">{{ getTimeRangeDisplay() }}</p>
                 </div>
-                
-                <!-- Display Options Panel -->
-                <div class="display-options">
-                  <h4>Display options</h4>
-                  <div class="metric-controls">
-                    <mat-form-field appearance="outline">
-                      <mat-label>Metric type (chart and table)</mat-label>
-                      <mat-select [(value)]="selectedMetricType" (selectionChange)="onMetricTypeChange()">
-                        <mat-option value="bytes">Bytes sent</mat-option>
-                        <mat-option value="packets">Packets sent</mat-option>
-                        <mat-option value="connections">Connections</mat-option>
-                        <mat-option value="latency">Latency (RTT)</mat-option>
-                      </mat-select>
-                    </mat-form-field>
-                    <mat-form-field appearance="outline" *ngIf="visualizationMode === 'chart'">
-                      <mat-label>Aggregation period (chart)</mat-label>
-                      <mat-select [(value)]="selectedAggregationPeriod" (selectionChange)="onAggregationPeriodChange()">
-                        <mat-option value="1m">Automatic (1 min)</mat-option>
-                        <mat-option value="5m">Automatic (5 min)</mat-option>
-                        <mat-option value="15m">Automatic (15 min)</mat-option>
-                        <mat-option value="1h">Automatic (1 hour)</mat-option>
-                      </mat-select>
-                    </mat-form-field>
-                    <mat-form-field appearance="outline">
-                      <mat-label>Sampling points (chart and table)</mat-label>
-                      <mat-select>
-                        <mat-option value="source">Source endpoint</mat-option>
-                      </mat-select>
-                    </mat-form-field>
+                <div class="chart-controls">
+                  <!-- Visualization Mode Toggle -->
+                  <div class="visualization-mode">
+                    <mat-button-toggle-group [(value)]="visualizationMode" (change)="onVisualizationModeChange()">
+                      <mat-button-toggle value="chart">
+                        <mat-icon>show_chart</mat-icon>
+                        Chart
+                      </mat-button-toggle>
+                      <mat-button-toggle value="sankey">
+                        <mat-icon>account_tree</mat-icon>
+                        Sankey Diagram
+                      </mat-button-toggle>
+                    </mat-button-toggle-group>
                   </div>
                 </div>
               </div>
-            </div>
-          </mat-card-header>
-          <mat-card-content>
-            <!-- Chart Canvas -->
-            <div *ngIf="visualizationMode === 'chart'" class="chart-container">
-              <canvas #chartCanvas></canvas>
-            </div>
+            </mat-card-header>
+            <mat-card-content>
+              <!-- Chart Canvas -->
+              <div *ngIf="visualizationMode === 'chart'" class="chart-container">
+                <canvas #chartCanvas></canvas>
+              </div>
+              
+              <!-- Sankey Diagram -->
+              <div *ngIf="visualizationMode === 'sankey'" class="sankey-container">
+                <div #sankeyContainer class="sankey-diagram"></div>
+              </div>
             
-            <!-- Sankey Diagram -->
-            <div *ngIf="visualizationMode === 'sankey'" class="sankey-container">
-              <div #sankeyContainer class="sankey-diagram"></div>
-            </div>
-            
-            <!-- Query Stats -->
-            <div class="query-stats">
+                          <!-- Query Stats -->
+              <div class="query-stats">
               <span class="stat-item">
                 <strong>{{ analysisResult.totalRows }}</strong> data flows
               </span>
@@ -366,8 +340,44 @@ Chart.register(...registerables);
                 View the query in Log Analytics
               </button>
             </div>
-          </mat-card-content>
-        </mat-card>
+            </mat-card-content>
+          </mat-card>
+
+          <!-- Display Options Panel -->
+          <mat-card class="display-options-panel">
+            <mat-card-header>
+              <mat-card-title>Display options</mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+              <div class="metric-controls">
+                <mat-form-field appearance="outline">
+                  <mat-label>Metric type (chart and table)</mat-label>
+                  <mat-select [(value)]="selectedMetricType" (selectionChange)="onMetricTypeChange()">
+                    <mat-option value="bytes">Bytes sent</mat-option>
+                    <mat-option value="packets">Packets sent</mat-option>
+                    <mat-option value="connections">Connections</mat-option>
+                    <mat-option value="latency">Latency (RTT)</mat-option>
+                  </mat-select>
+                </mat-form-field>
+                <mat-form-field appearance="outline" *ngIf="visualizationMode === 'chart'">
+                  <mat-label>Aggregation period (chart)</mat-label>
+                  <mat-select [(value)]="selectedAggregationPeriod" (selectionChange)="onAggregationPeriodChange()">
+                    <mat-option value="1m">Automatic (1 min)</mat-option>
+                    <mat-option value="5m">Automatic (5 min)</mat-option>
+                    <mat-option value="15m">Automatic (15 min)</mat-option>
+                    <mat-option value="1h">Automatic (1 hour)</mat-option>
+                  </mat-select>
+                </mat-form-field>
+                <mat-form-field appearance="outline">
+                  <mat-label>Sampling points (chart and table)</mat-label>
+                  <mat-select>
+                    <mat-option value="source">Source endpoint</mat-option>
+                  </mat-select>
+                </mat-form-field>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        </div>
 
         <!-- Flow Logs Table -->
         <mat-card class="table-section">
@@ -674,6 +684,22 @@ Chart.register(...registerables);
       flex-wrap: wrap;
     }
 
+    @media (min-width: 1200px) {
+      .section-header {
+        flex-wrap: nowrap;
+      }
+      
+      .multiselect-field {
+        min-width: 250px;
+        max-width: 400px;
+      }
+      
+      .organize-field {
+        min-width: 300px;
+        max-width: 450px;
+      }
+    }
+
     .section-title {
       background: #f8f9fa;
       padding: 8px 16px;
@@ -900,10 +926,21 @@ Chart.register(...registerables);
       height: 18px;
     }
 
+    .toggle-filters-button {
+      margin-left: 16px;
+      font-size: 14px;
+    }
+
     .results-section {
       display: flex;
       flex-direction: column;
       gap: 24px;
+    }
+
+    .results-layout {
+      display: flex;
+      gap: 24px;
+      align-items: flex-start;
     }
 
     .chart-section {
@@ -911,6 +948,8 @@ Chart.register(...registerables);
       border-radius: 8px;
       box-shadow: 0 1px 3px rgba(0,0,0,0.1);
       border: 1px solid var(--border-color);
+      flex: 1;
+      min-width: 0;
     }
 
     .chart-header {
@@ -962,14 +1001,17 @@ Chart.register(...registerables);
       font-size: 18px;
     }
 
-    .display-options {
-      min-width: 300px;
-      border-left: 1px solid var(--border-color);
-      padding-left: 24px;
+    .display-options-panel {
+      flex: 0 0 320px;
+      position: sticky;
+      top: 24px;
+      background: var(--surface-color);
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      border: 1px solid var(--border-color);
     }
 
-    .display-options h4 {
-      margin: 0 0 16px 0;
+    .display-options-panel mat-card-title {
       font-size: 16px;
       font-weight: 500;
       color: var(--text-color);
@@ -983,6 +1025,18 @@ Chart.register(...registerables);
 
     .metric-controls mat-form-field {
       width: 100%;
+    }
+
+    @media (max-width: 1199px) {
+      .results-layout {
+        flex-direction: column;
+      }
+      
+      .display-options-panel {
+        flex: 1;
+        position: static;
+        order: -1;
+      }
     }
 
     .chart-container {
@@ -1475,6 +1529,7 @@ export class FlowAnalyzerComponent implements OnInit {
   selectedLogView = '_AllLogs';
   selectedLocation = 'global';
   enableVpcFlowLogsFilter = true;
+  filtersVisible = true;
 
   // Available Options
   availableProjects: string[] = [];
@@ -1919,6 +1974,10 @@ export class FlowAnalyzerComponent implements OnInit {
     }
   }
 
+  toggleFilters() {
+    this.filtersVisible = !this.filtersVisible;
+  }
+
   private createChart() {
     if (!this.chartCanvas || !this.analysisResult) return;
 
@@ -2304,124 +2363,200 @@ export class FlowAnalyzerComponent implements OnInit {
     container.innerHTML = ''; // Clear previous content
     
     // Set up dimensions
-    const width = container.clientWidth;
-    const height = 600;
+    const margin = { top: 20, right: 20, bottom: 20, left: 20 };
+    const width = container.clientWidth - margin.left - margin.right;
+    const height = 600 - margin.top - margin.bottom;
     
-    // Create container div
-    const sankeyDiv = document.createElement('div');
-    sankeyDiv.style.width = '100%';
-    sankeyDiv.style.height = height + 'px';
-    sankeyDiv.style.position = 'relative';
-    sankeyDiv.style.background = '#f9f9f9';
-    sankeyDiv.style.border = '1px solid #e0e0e0';
-    sankeyDiv.style.borderRadius = '4px';
-    sankeyDiv.style.padding = '20px';
-    sankeyDiv.style.boxSizing = 'border-box';
-    
-    // Create header
-    const header = document.createElement('div');
-    header.style.marginBottom = '20px';
-    header.innerHTML = `
-      <h3 style="margin: 0 0 10px 0; color: #333; font-size: 18px;">Traffic Flow Diagram</h3>
-      <p style="margin: 0; color: #666; font-size: 14px;">
-        Showing top ${Math.min(data.links.length, 10)} traffic flows by ${this.selectedMetricType}
-      </p>
-    `;
-    sankeyDiv.appendChild(header);
-    
-    // Sort links by value and take top 10
-    const topLinks = data.links
-      .sort((a, b) => b.value - a.value)
-      .slice(0, 10);
-    
-    if (topLinks.length === 0) {
+    if (data.links.length === 0) {
       const noDataDiv = document.createElement('div');
       noDataDiv.style.textAlign = 'center';
       noDataDiv.style.padding = '40px';
       noDataDiv.style.color = '#666';
       noDataDiv.textContent = 'No traffic flows to display';
-      sankeyDiv.appendChild(noDataDiv);
-      container.appendChild(sankeyDiv);
+      container.appendChild(noDataDiv);
       return;
     }
-    
-    const maxValue = topLinks[0].value;
-    
-    // Create flow items
-    topLinks.forEach((link, index) => {
-      const flowDiv = document.createElement('div');
-      flowDiv.style.marginBottom = '12px';
-      flowDiv.style.padding = '12px 16px';
-      flowDiv.style.background = '#fff';
-      flowDiv.style.border = '1px solid #ddd';
-      flowDiv.style.borderRadius = '6px';
-      flowDiv.style.display = 'flex';
-      flowDiv.style.alignItems = 'center';
-      flowDiv.style.justifyContent = 'space-between';
-      flowDiv.style.transition = 'all 0.2s';
-      flowDiv.style.cursor = 'pointer';
-      
-      // Hover effect
-      flowDiv.addEventListener('mouseenter', () => {
-        flowDiv.style.backgroundColor = '#f5f5f5';
-        flowDiv.style.borderColor = '#1976d2';
+
+    // Import D3 and create the Sankey diagram
+    import('d3').then(d3 => {
+      import('d3-sankey').then(d3Sankey => {
+        // Create SVG
+        const svg = d3.select(container)
+          .append('svg')
+          .attr('width', width + margin.left + margin.right)
+          .attr('height', height + margin.top + margin.bottom);
+
+        const g = svg.append('g')
+          .attr('transform', `translate(${margin.left},${margin.top})`);
+
+        // Create Sankey generator
+        const sankey = d3Sankey.sankey()
+          .nodeWidth(15)
+          .nodePadding(10)
+          .extent([[1, 1], [width - 1, height - 6]]);
+
+        // Take top 15 links to avoid overcrowding
+        const topLinks = data.links
+          .sort((a, b) => b.value - a.value)
+          .slice(0, 15);
+
+        // Build nodes and links for D3 Sankey
+        const nodeMap = new Map();
+        const sankeyNodes: any[] = [];
+        const sankeyLinks: any[] = [];
+
+        // Create unique nodes
+        topLinks.forEach(link => {
+          if (!nodeMap.has(link.source)) {
+            nodeMap.set(link.source, { 
+              id: link.source, 
+              name: this.truncateText(link.source, 25),
+              fullName: link.source,
+              category: 'source'
+            });
+            sankeyNodes.push(nodeMap.get(link.source));
+          }
+          if (!nodeMap.has(link.target)) {
+            nodeMap.set(link.target, { 
+              id: link.target, 
+              name: this.truncateText(link.target, 25),
+              fullName: link.target,
+              category: 'target'
+            });
+            sankeyNodes.push(nodeMap.get(link.target));
+          }
+        });
+
+        // Create links
+        topLinks.forEach(link => {
+          sankeyLinks.push({
+            source: nodeMap.get(link.source),
+            target: nodeMap.get(link.target),
+            value: link.value,
+            flowCount: link.flowCount,
+            protocol: link.protocol,
+            formattedValue: this.formatSankeyValue(link.value)
+          });
+        });
+
+        const sankeyGraph = {
+          nodes: sankeyNodes,
+          links: sankeyLinks
+        };
+
+        // Generate the Sankey layout
+        sankey(sankeyGraph);
+
+        // Color scale
+        const colorScale = d3.scaleOrdinal<string>()
+          .domain(['source', 'target'])
+          .range(['#1976d2', '#43a047']);
+
+        // Draw links (flows)
+        const link = g.append('g')
+          .selectAll('.link')
+          .data(sankeyGraph.links)
+          .enter().append('path')
+          .attr('class', 'link')
+          .attr('d', (d3Sankey as any).sankeyLinkHorizontal())
+          .style('stroke', (d: any) => {
+            // Create gradient colors based on value
+            const intensity = Math.min(d.value / Math.max(...sankeyLinks.map(l => l.value)), 1);
+            return d3.interpolateBlues(0.3 + intensity * 0.6);
+          })
+          .style('stroke-opacity', 0.6)
+          .style('stroke-width', (d: any) => Math.max(1, d.width))
+          .style('fill', 'none');
+
+        // Add tooltips to links
+        link.append('title')
+          .text((d: any) => `${d.source.name} → ${d.target.name}\n${d.formattedValue}\nProtocol: ${d.protocol}\nFlows: ${d.flowCount}`);
+
+        // Draw nodes
+        const node = g.append('g')
+          .selectAll('.node')
+          .data(sankeyGraph.nodes)
+          .enter().append('g')
+          .attr('class', 'node')
+          .attr('transform', (d: any) => `translate(${d.x0},${d.y0})`);
+
+        // Node rectangles
+        node.append('rect')
+          .attr('height', (d: any) => d.y1 - d.y0)
+          .attr('width', sankey.nodeWidth())
+          .style('fill', (d: any) => colorScale(d.category) as string)
+          .style('stroke', '#000')
+          .style('stroke-width', 1)
+          .style('opacity', 0.8);
+
+        // Node labels
+        node.append('text')
+          .attr('x', (d: any) => d.x0 < width / 2 ? sankey.nodeWidth() + 6 : -6)
+          .attr('y', (d: any) => (d.y1 + d.y0) / 2)
+          .attr('dy', '0.35em')
+          .attr('text-anchor', (d: any) => d.x0 < width / 2 ? 'start' : 'end')
+          .style('font-family', 'Arial, sans-serif')
+          .style('font-size', '12px')
+          .style('fill', '#333')
+          .text((d: any) => d.name);
+
+        // Add node tooltips
+        node.append('title')
+          .text((d: any) => d.fullName);
+
+        // Add title
+        svg.append('text')
+          .attr('x', (width + margin.left + margin.right) / 2)
+          .attr('y', margin.top / 2)
+          .attr('text-anchor', 'middle')
+          .style('font-size', '16px')
+          .style('font-weight', 'bold')
+          .style('fill', '#333')
+          .text(`Traffic Flow Diagram - Top ${topLinks.length} flows by ${this.selectedMetricType}`);
+
+        // Add hover effects
+        link
+          .on('mouseover', function(event: any, d: any) {
+            d3.select(this)
+              .style('stroke-opacity', 0.8)
+              .style('stroke-width', Math.max(2, d.width + 1));
+          })
+          .on('mouseout', function(event: any, d: any) {
+            d3.select(this)
+              .style('stroke-opacity', 0.6)
+              .style('stroke-width', Math.max(1, d.width));
+          });
+
+        node.select('rect')
+          .on('mouseover', function() {
+            d3.select(this).style('opacity', 1);
+          })
+          .on('mouseout', function() {
+            d3.select(this).style('opacity', 0.8);
+          });
+
+      }).catch(error => {
+        console.error('Error loading d3-sankey:', error);
+        this.showFallbackSankey(container, data);
       });
-      flowDiv.addEventListener('mouseleave', () => {
-        flowDiv.style.backgroundColor = '#fff';
-        flowDiv.style.borderColor = '#ddd';
-      });
-      
-      // Flow text section
-      const flowText = document.createElement('div');
-      flowText.style.flex = '1';
-      flowText.innerHTML = `
-        <div style="font-weight: 500; color: #333; font-size: 14px; margin-bottom: 4px;">
-          ${this.truncateText(link.source, 40)} → ${this.truncateText(link.target, 40)}
-        </div>
-        <div style="font-size: 12px; color: #666;">
-          Protocol: ${link.protocol} | Flows: ${link.flowCount}
-        </div>
-      `;
-      
-      // Visual flow indicator
-      const flowIndicatorContainer = document.createElement('div');
-      flowIndicatorContainer.style.flex = '0 0 120px';
-      flowIndicatorContainer.style.margin = '0 20px';
-      
-      const flowIndicator = document.createElement('div');
-      flowIndicator.style.width = '100%';
-      flowIndicator.style.height = '6px';
-      flowIndicator.style.background = '#e0e0e0';
-      flowIndicator.style.borderRadius = '3px';
-      flowIndicator.style.overflow = 'hidden';
-      
-      const flowBar = document.createElement('div');
-      const percentage = (link.value / maxValue) * 100;
-      flowBar.style.width = percentage + '%';
-      flowBar.style.height = '100%';
-      flowBar.style.background = `hsl(${210 - index * 8}, 70%, 50%)`;
-      flowBar.style.borderRadius = '3px';
-      flowBar.style.transition = 'width 0.3s ease';
-      
-      flowIndicator.appendChild(flowBar);
-      flowIndicatorContainer.appendChild(flowIndicator);
-      
-      // Value section
-      const valueText = document.createElement('div');
-      valueText.style.flex = '0 0 auto';
-      valueText.style.fontWeight = 'bold';
-      valueText.style.color = '#1976d2';
-      valueText.style.fontSize = '14px';
-      valueText.style.textAlign = 'right';
-      valueText.textContent = this.formatSankeyValue(link.value);
-      
-      flowDiv.appendChild(flowText);
-      flowDiv.appendChild(flowIndicatorContainer);
-      flowDiv.appendChild(valueText);
-      sankeyDiv.appendChild(flowDiv);
+    }).catch(error => {
+      console.error('Error loading d3:', error);
+      this.showFallbackSankey(container, data);
     });
-    
-    container.appendChild(sankeyDiv);
+  }
+
+  private showFallbackSankey(container: HTMLElement, data: SankeyData) {
+    container.innerHTML = '';
+    const fallbackDiv = document.createElement('div');
+    fallbackDiv.style.textAlign = 'center';
+    fallbackDiv.style.padding = '40px';
+    fallbackDiv.style.color = '#666';
+    fallbackDiv.innerHTML = `
+      <h3>Sankey Diagram</h3>
+      <p>D3.js library not available. Showing ${data.links.length} traffic flows.</p>
+      <p>Please ensure D3.js is properly installed for full Sankey visualization.</p>
+    `;
+    container.appendChild(fallbackDiv);
   }
 
   private truncateText(text: string, maxLength: number): string {
