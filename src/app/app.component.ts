@@ -59,6 +59,14 @@ interface NavItem {
                 class="doc-button">
           <mat-icon>{{ isDocumentationRoute ? 'arrow_back' : 'description' }}</mat-icon>
         </button>
+        
+        <button mat-icon-button 
+                (click)="toggleAiAssistant()"
+                [matTooltip]="isAiPanelOpen ? 'Close AI Assistant' : 'Google Gemini AI'"
+                class="ai-button"
+                [class.active]="isAiPanelOpen">
+          <mat-icon>smart_toy</mat-icon>
+        </button>
         <button mat-button *ngIf="!(isAuthenticated$ | async)" (click)="login()">
           <mat-icon>login</mat-icon>
           Sign In
@@ -102,10 +110,13 @@ interface NavItem {
           </div>
         </mat-sidenav>
 
-        <mat-sidenav-content class="content" [class.full-width]="isDocumentationRoute">
+        <mat-sidenav-content class="content" [class.full-width]="isDocumentationRoute" [class.with-ai-panel]="isAiPanelOpen">
           <router-outlet></router-outlet>
         </mat-sidenav-content>
       </mat-sidenav-container>
+      
+      <!-- AI Assistant Panel -->
+      <app-ai-assistant *ngIf="isAiPanelOpen"></app-ai-assistant>
     </div>
   `,
   styles: [
@@ -182,6 +193,21 @@ interface NavItem {
       background-color: rgba(255, 255, 255, 0.1);
     }
     
+    .ai-button {
+      margin-right: 8px;
+      color: white;
+      transition: all 0.3s ease;
+    }
+    
+    .ai-button:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+    
+    .ai-button.active {
+      background-color: rgba(255, 255, 255, 0.2);
+      color: #4285f4;
+    }
+    
     .sidenav-container { 
       flex: 1; 
       margin-top: 64px; 
@@ -208,6 +234,10 @@ interface NavItem {
       padding: 0;
       margin: 0;
       width: 100%;
+    }
+    
+    .content.with-ai-panel {
+      margin-right: 400px;
     }
     
     .nav-header {
@@ -349,6 +379,7 @@ export class AppComponent implements OnInit {
   isDemoMode$: Observable<boolean>;
   currentProject$: Observable<Project | null>;
   isDocumentationRoute = false;
+  isAiPanelOpen = false;
   currentTheme$: Observable<Theme>;
 
   navCategories: NavCategory[] = [
@@ -456,6 +487,11 @@ export class AppComponent implements OnInit {
           this.sidenav.open();
         }
       }
+    });
+
+    // Listen for AI panel close events
+    window.addEventListener('closeAiPanel', () => {
+      this.isAiPanelOpen = false;
     });
 
     // Load projects immediately if authenticated (but not in demo mode)
@@ -568,5 +604,9 @@ export class AppComponent implements OnInit {
       // Navigate to documentation
       this.router.navigate(['/documentation']);
     }
+  }
+
+  toggleAiAssistant() {
+    this.isAiPanelOpen = !this.isAiPanelOpen;
   }
 } 
