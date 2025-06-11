@@ -128,15 +128,16 @@ export class GeminiAiService {
           onopen: () => {
             console.debug('Voice session opened');
             this.updateVoiceSession({ isActive: true, isRecording: true, isProcessing: false });
-            this.addSystemMessage('Voice session started! You can now speak to me.');
+            this.addSystemMessage('🎤 Voice session started! You can now speak to me.');
           },
           onmessage: (message: LiveServerMessage) => {
+            console.log('Received message from Gemini:', message);
             this.responseQueue.push(message);
             this.handleModelTurn(message);
           },
           onerror: (e: ErrorEvent) => {
             console.error('Voice session error:', e.message);
-            this.addSystemMessage(`Voice session error: ${e.message}`);
+            this.addSystemMessage(`❌ Voice session error: ${e.message}`);
             this.stopVoiceSession();
           },
           onclose: (e: CloseEvent) => {
@@ -301,39 +302,127 @@ export class GeminiAiService {
         this.audioParts.push(part.inlineData.data ?? '');
         this.playAudioResponse();
         
-        const aiMessage: ChatMessage = {
-          id: this.generateId(),
-          content: '[Voice Response]',
-          isUser: false,
-          timestamp: new Date(),
-          type: 'audio'
-        };
-        this.addMessage(aiMessage);
+        // Don't add "[Voice Response]" to chat during voice conversations
+        // The user can hear the response, no need to clutter the chat
       }
     }
   }
 
   private playAudioResponse(): void {
-    // Convert audio parts to playable audio
+    if (this.audioParts.length === 0) return;
+    
     try {
-      const audioData = this.audioParts.join('');
-      const audioBlob = new Blob([Uint8Array.from(atob(audioData), c => c.charCodeAt(0))], 
-        { type: 'audio/wav' });
-      const audioUrl = URL.createObjectURL(audioBlob);
-      const audio = new Audio(audioUrl);
+      // Combine all audio parts
+      const combinedAudioData = this.audioParts.join('');
       
-      audio.play().catch(error => {
+      // Decode base64 audio data
+      const binaryString = atob(combinedAudioData);
+      const bytes = new Uint8Array(binaryString.length);
+      for (let i = 0; i < binaryString.length; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
+      
+      // Create audio blob - Gemini returns PCM audio data
+      const audioBlob = new Blob([bytes], { type: 'audio/pcm' });
+      const audioUrl = URL.createObjectURL(audioBlob);
+      
+      // Create and configure audio element
+      const audio = new Audio();
+      audio.src = audioUrl;
+      audio.volume = 0.8; // Set reasonable volume
+      
+      // Handle audio playback
+      audio.play().then(() => {
+        console.log('Playing AI voice response');
+        this.updateVoiceSession({ isProcessing: false });
+      }).catch(error => {
         console.error('Error playing audio:', error);
+        
+        // Try alternative audio format if PCM doesn't work
+        this.tryAlternativeAudioPlayback(bytes);
       });
       
-      audio.onended = () => {
+      // Clean up when audio ends
+      audio.addEventListener('ended', () => {
         URL.revokeObjectURL(audioUrl);
-      };
+        console.log('Audio playback completed');
+      });
       
-      this.audioParts = []; // Clear after playing
+      audio.addEventListener('error', (e) => {
+        console.error('Audio playback error:', e);
+        URL.revokeObjectURL(audioUrl);
+        this.tryAlternativeAudioPlayback(bytes);
+      });
+      
+      // Clear audio parts after processing
+      this.audioParts = [];
+      
     } catch (error) {
-      console.error('Error processing audio:', error);
+      console.error('Error processing audio data:', error);
+      this.addSystemMessage('Unable to play voice response. Please check audio settings.');
     }
+  }
+
+  private tryAlternativeAudioPlayback(audioData: Uint8Array): void {
+    try {
+      // Try creating WAV format
+      const wavBlob = this.createWavBlob(audioData);
+      const audioUrl = URL.createObjectURL(wavBlob);
+      const audio = new Audio(audioUrl);
+      
+      audio.play().then(() => {
+        console.log('Playing AI voice response (WAV format)');
+      }).catch(error => {
+        console.error('Alternative audio playback failed:', error);
+        this.addSystemMessage('Voice response received but could not be played. Please check browser audio settings.');
+      });
+      
+      audio.addEventListener('ended', () => {
+        URL.revokeObjectURL(audioUrl);
+      });
+      
+    } catch (error) {
+      console.error('Alternative audio processing failed:', error);
+    }
+  }
+
+  private createWavBlob(audioData: Uint8Array): Blob {
+    const sampleRate = 24000; // Common sample rate for AI voice
+    const numChannels = 1; // Mono
+    const bitsPerSample = 16;
+    
+    const dataSize = audioData.length;
+    const fileSize = 44 + dataSize; // WAV header is 44 bytes
+    
+    const buffer = new ArrayBuffer(fileSize);
+    const view = new DataView(buffer);
+    
+    // WAV header
+    const writeString = (offset: number, string: string) => {
+      for (let i = 0; i < string.length; i++) {
+        view.setUint8(offset + i, string.charCodeAt(i));
+      }
+    };
+    
+    writeString(0, 'RIFF');
+    view.setUint32(4, fileSize - 8, true);
+    writeString(8, 'WAVE');
+    writeString(12, 'fmt ');
+    view.setUint32(16, 16, true); // Subchunk size
+    view.setUint16(20, 1, true); // Audio format (PCM)
+    view.setUint16(22, numChannels, true);
+    view.setUint32(24, sampleRate, true);
+    view.setUint32(28, sampleRate * numChannels * bitsPerSample / 8, true);
+    view.setUint16(32, numChannels * bitsPerSample / 8, true);
+    view.setUint16(34, bitsPerSample, true);
+    writeString(36, 'data');
+    view.setUint32(40, dataSize, true);
+    
+    // Copy audio data
+    const dataView = new Uint8Array(buffer, 44);
+    dataView.set(audioData);
+    
+    return new Blob([buffer], { type: 'audio/wav' });
   }
 
   private generateResponse(userMessage: string): string {
