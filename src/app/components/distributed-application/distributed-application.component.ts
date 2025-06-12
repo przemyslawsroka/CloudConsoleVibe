@@ -46,7 +46,7 @@ interface WizardStep {
                   <input matInput formControlName="applicationName" placeholder="my-distributed-app">
                   <mat-hint>Name for your distributed application resources</mat-hint>
                 </mat-form-field>
-              </div>
+          </div>
 
               <div class="config-section">
                 <h3>Network Architecture Pattern</h3>
@@ -86,8 +86,8 @@ interface WizardStep {
                       </ul>
                     </mat-card-content>
                   </mat-card>
-                </div>
-              </div>
+          </div>
+        </div>
             </form>
           </div>
 
@@ -109,7 +109,7 @@ interface WizardStep {
                     <mat-option value="asia-east1">asia-east1 (Taiwan)</mat-option>
                   </mat-select>
                 </mat-form-field>
-              </div>
+        </div>
 
               <div class="config-section">
                 <h3>Network CIDR Configuration</h3>
@@ -237,7 +237,7 @@ interface WizardStep {
                     <mat-icon>add</mat-icon>
                     Add Workload
                   </button>
-                </div>
+                      </div>
 
                 <div formArrayName="workloads" class="workloads-list">
                   <mat-card *ngFor="let workload of workloadsArray.controls; let i = index" 
@@ -261,17 +261,17 @@ interface WizardStep {
                             <mat-option value="compute-engine">Compute Engine VMs</mat-option>
                             <mat-option value="gke">Google Kubernetes Engine</mat-option>
                             <mat-option value="cloud-run">Cloud Run</mat-option>
-                          </mat-select>
-                        </mat-form-field>
+                      </mat-select>
+                    </mat-form-field>
 
-                        <mat-form-field appearance="outline">
+                      <mat-form-field appearance="outline">
                           <mat-label>Region</mat-label>
-                          <mat-select formControlName="region">
-                            <mat-option value="us-central1">us-central1</mat-option>
-                            <mat-option value="us-east1">us-east1</mat-option>
-                            <mat-option value="europe-west1">europe-west1</mat-option>
-                          </mat-select>
-                        </mat-form-field>
+                        <mat-select formControlName="region">
+                          <mat-option value="us-central1">us-central1</mat-option>
+                          <mat-option value="us-east1">us-east1</mat-option>
+                          <mat-option value="europe-west1">europe-west1</mat-option>
+                        </mat-select>
+                      </mat-form-field>
 
                         <div class="scaling-config">
                           <mat-form-field appearance="outline">
@@ -279,11 +279,11 @@ interface WizardStep {
                             <input matInput type="number" formControlName="minInstances" min="1">
                           </mat-form-field>
 
-                          <mat-form-field appearance="outline">
+                      <mat-form-field appearance="outline">
                             <mat-label>Max Instances</mat-label>
                             <input matInput type="number" formControlName="maxInstances" min="1">
-                          </mat-form-field>
-                        </div>
+                      </mat-form-field>
+              </div>
 
                         <mat-form-field appearance="outline" *ngIf="workload.get('type')?.value === 'compute-engine'">
                           <mat-label>Machine Type</mat-label>
@@ -292,8 +292,8 @@ interface WizardStep {
                             <mat-option value="e2-small">e2-small (1 vCPU, 2GB RAM)</mat-option>
                             <mat-option value="e2-medium">e2-medium (1 vCPU, 4GB RAM)</mat-option>
                             <mat-option value="e2-standard-2">e2-standard-2 (2 vCPU, 8GB RAM)</mat-option>
-                          </mat-select>
-                        </mat-form-field>
+                    </mat-select>
+                  </mat-form-field>
                       </div>
                     </mat-card-content>
                   </mat-card>
@@ -388,25 +388,25 @@ interface WizardStep {
                   <div class="cost-total">
                     <span class="cost-amount">\${{ estimatedCost.monthly }}</span>
                     <span class="cost-period">per month</span>
-                  </div>
+                </div>
                   <div class="cost-breakdown">
                     <div class="cost-item">
                       <span>Infrastructure:</span>
                       <span>\${{ estimatedCost.breakdown.infrastructure }}</span>
-                    </div>
+                </div>
                     <div class="cost-item">
                       <span>Workloads:</span>
                       <span>\${{ estimatedCost.breakdown.workloads }}</span>
-                    </div>
+                </div>
                     <div class="cost-item">
                       <span>Connectivity:</span>
                       <span>\${{ estimatedCost.breakdown.connectivity }}</span>
-                    </div>
+                </div>
                   </div>
                 </mat-card-content>
               </mat-card>
-            </div>
-
+              </div>
+              
             <div class="terraform-section" *ngIf="generatedTerraform">
               <h3>Generated Terraform Configuration</h3>
               <mat-card class="terraform-card">
@@ -421,21 +421,21 @@ interface WizardStep {
                   <button mat-stroked-button (click)="copyTerraform()">
                     <mat-icon>content_copy</mat-icon>
                     Copy to Clipboard
-                  </button>
+              </button>
                 </mat-card-actions>
               </mat-card>
-            </div>
           </div>
         </div>
+      </div>
 
         <!-- Navigation Buttons -->
         <div class="wizard-navigation">
           <button mat-stroked-button 
                   [disabled]="currentStep === 0" 
                   (click)="previousStep()">
-            <mat-icon>arrow_back</mat-icon>
+          <mat-icon>arrow_back</mat-icon>
             Previous
-          </button>
+        </button>
           
           <div class="nav-spacer"></div>
           
@@ -445,8 +445,8 @@ interface WizardStep {
                   [disabled]="!isCurrentStepValid()"
                   (click)="nextStep()">
             Next
-            <mat-icon>arrow_forward</mat-icon>
-          </button>
+          <mat-icon>arrow_forward</mat-icon>
+        </button>
           
           <button mat-raised-button 
                   color="primary"

@@ -5,12 +5,13 @@ export interface GoogleWANConfig {
   projectId: string;
   applicationName: string;
   primaryRegion: string;
-  wanArchitecture: 'enterprise-backbone' | 'hybrid-cloud' | 'multi-cloud' | 'site-to-site';
+  wanArchitecture: 'ncc-hub-spoke' | 'site-to-site' | 'sd-wan-integration' | 'hybrid-multicloud';
   
   networkConfig: {
     hubRegion: string;
     enableGlobalRouting: boolean;
     enableRouteExchange: boolean;
+    topology?: 'full-mesh' | 'star' | 'segmented';
   };
   
   connectivityConfig: {
@@ -24,15 +25,15 @@ export interface GoogleWANConfig {
     multiCloudConnectivity: {
       enabled: boolean;
       providers?: {
-        aws: {
+        aws?: {
           enabled: boolean;
           regions: string[];
         };
-        azure: {
+        azure?: {
           enabled: boolean;
           regions: string[];
         };
-        oracle: {
+        oracle?: {
           enabled: boolean;
           regions: string[];
         };
@@ -57,6 +58,9 @@ export interface GoogleWANConfig {
     enableSSE?: boolean;
     sseProvider?: string;
     enableCustomRoutes?: boolean;
+    topology?: 'mesh' | 'star';
+    centerGroups?: string[];
+    edgeGroups?: string[];
   };
   
   securityConfig: {
@@ -64,12 +68,26 @@ export interface GoogleWANConfig {
     enableFirewallRules: boolean;
     enablePrivateGoogleAccess: boolean;
     enableCloudNAT: boolean;
+    enableMacsecEncryption?: boolean;
+    enableNetworkFirewallPolicies?: boolean;
   };
   
   operationsConfig: {
     enableNetworkIntelligence: boolean;
     enableFlowLogs: boolean;
     enableConnectivityTests: boolean;
+    enablePacketMirroring?: boolean;
+    enablePerformanceMonitoring?: boolean;
+  };
+
+  advancedConfig?: {
+    enableRouteFiltering?: boolean;
+    enableTrafficEngineering?: boolean;
+    enableLoadBalancing?: boolean;
+    multiRegionConfig?: {
+      enabled: boolean;
+      secondaryRegions: string[];
+    };
   };
 }
 
@@ -102,108 +120,67 @@ export interface WANCostEstimate {
 })
 export class GoogleWANService {
 
-  generateTerraformConfig(config: GoogleWANConfig): Observable<TerraformTemplate> {
-    const terraformContent = this.buildTerraformContent(config);
-    const variablesContent = this.buildVariablesContent(config);
-    const tfvarsContent = this.buildTfvarsContent(config);
-    const readmeContent = this.buildReadmeContent(config);
+  constructor() { }
 
+  generateTerraformConfig(config: GoogleWANConfig): Observable<{terraform: string, readme: string}> {
+    const terraform = this.buildTerraformContent(config);
+    const readme = this.buildReadmeContent(config);
+    
     return of({
-      name: config.applicationName,
-      description: `Google Wide Area Network infrastructure for ${config.applicationName}`,
-      content: terraformContent,
-      variables: {},
-      files: {
-        'main.tf': terraformContent,
-        'variables.tf': variablesContent,
-        'terraform.tfvars': tfvarsContent,
-        'README.md': readmeContent
-      }
+      terraform: terraform,
+      readme: readme
     });
-  }
-
-  generateCostEstimate(config: GoogleWANConfig): Observable<WANCostEstimate> {
-    let interconnectCost = 0;
-    let vpnCost = 0;
-    let nccCost = 0;
-    let dataTransferCost = 0;
-    let otherCost = 50; // Base infrastructure cost
-
-    // Calculate interconnect costs
-    if (config.connectivityConfig.onPremConnectivity.enabled) {
-      if (config.connectivityConfig.onPremConnectivity.type === 'dedicated-interconnect') {
-        interconnectCost = 1000; // Base dedicated interconnect cost
-      } else if (config.connectivityConfig.onPremConnectivity.type === 'partner-interconnect') {
-        interconnectCost = 500; // Base partner interconnect cost
-      }
-    }
-
-    // Calculate VPN costs
-    if (config.connectivityConfig.onPremConnectivity.enabled && 
-        config.connectivityConfig.onPremConnectivity.type === 'cloud-vpn') {
-      vpnCost = 100; // Base VPN cost
-    }
-
-    // Calculate NCC costs
-    if (config.nccConfig.enableNCC) {
-      nccCost = 200; // Base NCC cost
-      if (config.nccConfig.enableNCCGateway) {
-        nccCost += 150; // Additional gateway cost
-      }
-      if (config.nccConfig.enableSSE) {
-        nccCost += 300; // Additional SSE cost
-      }
-    }
-
-    // Calculate data transfer costs
-    if (config.connectivityConfig.siteToSiteConnectivity.enabled && 
-        config.connectivityConfig.siteToSiteConnectivity.enableDataTransfer) {
-      dataTransferCost = 200; // Base data transfer cost
-    }
-
-    const totalMonthlyCost = interconnectCost + vpnCost + nccCost + dataTransferCost + otherCost;
-
-    return of({
-      monthly: totalMonthlyCost,
-      breakdown: {
-        interconnect: interconnectCost,
-        vpn: vpnCost,
-        ncc: nccCost,
-        dataTransfer: dataTransferCost,
-        other: otherCost
-      }
-    });
-  }
-
-  downloadTerraformFiles(config: GoogleWANConfig): void {
-    this.generateTerraformConfig(config).subscribe(template => {
-      if (template.files) {
-        Object.entries(template.files).forEach(([fileName, content]) => {
-          this.downloadFile(fileName, content);
-        });
-      }
-    });
-  }
-
-  private downloadFile(filename: string, content: string): void {
-    const blob = new Blob([content], { type: 'text/plain' });
-    const url = window.URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = filename;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    window.URL.revokeObjectURL(url);
   }
 
   private buildTerraformContent(config: GoogleWANConfig): string {
+    let terraformContent = this.buildBaseTerraform(config);
+    
+    // Add architecture-specific resources
+    switch (config.wanArchitecture) {
+      case 'ncc-hub-spoke':
+        terraformContent += this.buildNCCResources(config);
+        break;
+      case 'site-to-site':
+        terraformContent += this.buildSiteToSiteResources(config);
+        break;
+      case 'sd-wan-integration':
+        terraformContent += this.buildSDWANResources(config);
+        break;
+      case 'hybrid-multicloud':
+        terraformContent += this.buildHybridMultiCloudResources(config);
+        break;
+    }
+    
+    // Add connectivity resources
+    if (config.connectivityConfig.onPremConnectivity.enabled) {
+      terraformContent += this.buildOnPremConnectivity(config);
+    }
+    
+    // Add security resources
+    if (config.securityConfig.enableFirewallRules) {
+      terraformContent += this.buildSecurityResources(config);
+    }
+    
+    // Add monitoring resources
+    if (config.operationsConfig.enableNetworkIntelligence) {
+      terraformContent += this.buildMonitoringResources(config);
+    }
+    
+    // Add outputs
+    terraformContent += this.buildOutputs(config);
+    
+    return terraformContent;
+  }
+
+  private buildBaseTerraform(config: GoogleWANConfig): string {
     return `# Google Wide Area Network Infrastructure
 # Project: ${config.projectId}
 # Application: ${config.applicationName}
 # Architecture: ${config.wanArchitecture}
+# Generated by CloudConsoleVibe WAN Wizard
 
 terraform {
+  required_version = ">= 1.0"
   required_providers {
     google = {
       source  = "hashicorp/google"
@@ -217,212 +194,921 @@ provider "google" {
   region  = var.primary_region
 }
 
-# Network Connectivity Center Hub
-${config.nccConfig.enableNCC ? `
-resource "google_network_connectivity_hub" "main_hub" {
-  name        = "${config.applicationName}-hub"
-  description = "Main NCC hub for ${config.applicationName}"
-  project     = var.project_id
-}
-` : ''}
-
-# VPC Networks
-resource "google_compute_network" "main_vpc" {
-  name                    = "${config.applicationName}-vpc"
-  auto_create_subnetworks = false
-  project                 = var.project_id
-}
-
-resource "google_compute_subnetwork" "main_subnet" {
-  name          = "${config.applicationName}-subnet"
-  ip_cidr_range = "10.0.0.0/24"
-  region        = var.primary_region
-  network       = google_compute_network.main_vpc.id
-  project       = var.project_id
-  
-  ${config.securityConfig.enablePrivateGoogleAccess ? `
-  private_ip_google_access = true
-  ` : ''}
-}
-
-${config.connectivityConfig.onPremConnectivity.enabled ? this.buildInterconnectResources(config) : ''}
-
-${config.securityConfig.enableFirewallRules ? this.buildFirewallRules(config) : ''}
-
-${config.securityConfig.enableCloudNAT ? this.buildCloudNAT(config) : ''}
-
-# Outputs
-output "hub_id" {
-  value = ${config.nccConfig.enableNCC ? 'google_network_connectivity_hub.main_hub.id' : 'null'}
-}
-
-output "vpc_network" {
-  value = google_compute_network.main_vpc.self_link
-}
-
-output "primary_subnet" {
-  value = google_compute_subnetwork.main_subnet.self_link
-}
-`;
-  }
-
-  private buildVariablesContent(config: GoogleWANConfig): string {
-    return `variable "project_id" {
-  description = "The Google Cloud project ID"
+# Variables
+variable "project_id" {
+  description = "Google Cloud Project ID"
   type        = string
   default     = "${config.projectId}"
 }
 
 variable "primary_region" {
-  description = "The primary region for resources"
+  description = "Primary region for resources"
   type        = string
   default     = "${config.primaryRegion}"
 }
 
 variable "application_name" {
-  description = "Name of the application"
+  description = "Application name prefix"
   type        = string
   default     = "${config.applicationName}"
 }
 
-variable "wan_architecture" {
-  description = "WAN architecture type"
-  type        = string
-  default     = "${config.wanArchitecture}"
+# Primary VPC Network
+resource "google_compute_network" "main_vpc" {
+  name                    = "\${var.application_name}-main-vpc"
+  auto_create_subnetworks = false
+  routing_mode           = "${config.networkConfig.enableGlobalRouting ? 'GLOBAL' : 'REGIONAL'}"
+  project                = var.project_id
 }
+
+resource "google_compute_subnetwork" "main_subnet" {
+  name          = "\${var.application_name}-main-subnet"
+  ip_cidr_range = "10.0.0.0/24"
+  region        = var.primary_region
+  network       = google_compute_network.main_vpc.id
+  project       = var.project_id
+  
+  ${config.securityConfig.enablePrivateGoogleAccess ? 'private_ip_google_access = true' : ''}
+}
+
 `;
   }
 
-  private buildTfvarsContent(config: GoogleWANConfig): string {
-    return `project_id = "${config.projectId}"
-primary_region = "${config.primaryRegion}"
-application_name = "${config.applicationName}"
-wan_architecture = "${config.wanArchitecture}"
-`;
-  }
-
-  private buildReadmeContent(config: GoogleWANConfig): string {
-    return `# Google Wide Area Network - ${config.applicationName}
-
-This Terraform configuration creates a Google Cloud Wide Area Network infrastructure with the following components:
-
-## Architecture: ${config.wanArchitecture}
-
-## Components Deployed:
-
-${config.nccConfig.enableNCC ? '- Network Connectivity Center Hub' : ''}
-- VPC Network with subnets
-${config.connectivityConfig.onPremConnectivity.enabled ? `- ${config.connectivityConfig.onPremConnectivity.type} connectivity` : ''}
-${config.securityConfig.enableFirewallRules ? '- Firewall rules' : ''}
-${config.securityConfig.enableCloudNAT ? '- Cloud NAT' : ''}
-
-## Deployment Instructions:
-
-1. Initialize Terraform:
-   \`\`\`bash
-   terraform init
-   \`\`\`
-
-2. Review the plan:
-   \`\`\`bash
-   terraform plan
-   \`\`\`
-
-3. Apply the configuration:
-   \`\`\`bash
-   terraform apply
-   \`\`\`
-
-## Configuration:
-
-- **Project ID**: ${config.projectId}
-- **Primary Region**: ${config.primaryRegion}
-- **Application Name**: ${config.applicationName}
-
-## Estimated Monthly Cost: 
-
-See cost breakdown in the wizard for detailed pricing information.
-`;
-  }
-
-  private buildInterconnectResources(config: GoogleWANConfig): string {
-    if (config.connectivityConfig.onPremConnectivity.type === 'cloud-vpn') {
-      return `
-# Cloud VPN Gateway
-resource "google_compute_vpn_gateway" "main_gateway" {
-  name    = "${config.applicationName}-vpn-gateway"
-  network = google_compute_network.main_vpc.id
-  region  = var.primary_region
-  project = var.project_id
-}
-
-# External IP for VPN Gateway
-resource "google_compute_address" "vpn_static_ip" {
-  name    = "${config.applicationName}-vpn-ip"
-  region  = var.primary_region
-  project = var.project_id
-}
-`;
-    }
+  private buildNCCResources(config: GoogleWANConfig): string {
+    const topology = config.nccConfig.topology || 'mesh';
+    const enableSSE = config.nccConfig.enableSSE || false;
     
     return `
-# Interconnect Attachment (placeholder - requires physical setup)
-# resource "google_compute_interconnect_attachment" "main_attachment" {
-#   name         = "${config.applicationName}-attachment"
-#   type         = "DEDICATED"
-#   region       = var.primary_region
-#   project      = var.project_id
-# }
+# Network Connectivity Center Hub
+resource "google_network_connectivity_hub" "main_hub" {
+  name            = "\${var.application_name}-ncc-hub"
+  description     = "Main NCC hub for ${config.applicationName}"
+  project         = var.project_id
+  preset_topology = "${topology.toUpperCase()}"
+  export_psc      = true
+  
+  labels = {
+    environment = "production"
+    managed_by  = "terraform"
+  }
+}
+
+${topology === 'star' ? this.buildStarTopologyGroups(config) : ''}
+
+# VPC Spoke - Main Network
+resource "google_network_connectivity_spoke" "main_vpc_spoke" {
+  name        = "\${var.application_name}-main-spoke"
+  location    = "global"
+  description = "Main VPC spoke for ${config.applicationName}"
+  hub         = google_network_connectivity_hub.main_hub.id
+  ${topology === 'star' ? 'group = google_network_connectivity_group.center.id' : ''}
+  
+  linked_vpc_network {
+    uri = google_compute_network.main_vpc.id
+  }
+  
+  labels = {
+    environment = "production"
+    spoke_type  = "vpc"
+  }
+}
+
+${config.nccConfig.enableNCCGateway ? this.buildNCCGateway(config) : ''}
 `;
   }
 
-  private buildFirewallRules(config: GoogleWANConfig): string {
+  private buildStarTopologyGroups(config: GoogleWANConfig): string {
     return `
-# Firewall Rules
+# NCC Center Group (for shared services)
+resource "google_network_connectivity_group" "center" {
+  hub         = google_network_connectivity_hub.main_hub.id
+  name        = "center-group"
+  description = "Center group for shared services"
+  
+  auto_accept {
+    auto_accept_projects = [var.project_id]
+  }
+}
+
+# NCC Edge Group (for isolated workloads)
+resource "google_network_connectivity_group" "edge" {
+  hub         = google_network_connectivity_hub.main_hub.id
+  name        = "edge-group"
+  description = "Edge group for isolated workloads"
+  
+  auto_accept {
+    auto_accept_projects = [var.project_id]
+  }
+}
+`;
+  }
+
+  private buildNCCGateway(config: GoogleWANConfig): string {
+    return `
+# NCC Gateway for Security Service Edge
+resource "google_network_connectivity_spoke" "ncc_gateway" {
+  name        = "\${var.application_name}-ncc-gateway"
+  location    = var.primary_region
+  description = "NCC Gateway spoke for SSE integration"
+  hub         = google_network_connectivity_hub.main_hub.id
+  
+  linked_router_appliance_instances {
+    instances {
+      virtual_machine = google_compute_instance.gateway_vm.self_link
+      ip_address      = google_compute_instance.gateway_vm.network_interface[0].network_ip
+    }
+  }
+}
+
+# Gateway VM Instance
+resource "google_compute_instance" "gateway_vm" {
+  name         = "\${var.application_name}-gateway-vm"
+  machine_type = "e2-standard-4"
+  zone         = "\${var.primary_region}-a"
+  project      = var.project_id
+  
+  boot_disk {
+    initialize_params {
+      image = "projects/ubuntu-os-cloud/global/images/family/ubuntu-2004-lts"
+      size  = 20
+      type  = "pd-standard"
+    }
+  }
+  
+  network_interface {
+    network    = google_compute_network.main_vpc.id
+    subnetwork = google_compute_subnetwork.main_subnet.id
+  }
+  
+  metadata = {
+    startup-script = <<-EOF
+      #!/bin/bash
+      # Configure as NCC Gateway
+      echo "Configuring NCC Gateway..."
+      # Add SSE provider configuration here
+    EOF
+  }
+  
+  tags = ["ncc-gateway", "allow-ssh"]
+}
+`;
+  }
+
+  private buildSiteToSiteResources(config: GoogleWANConfig): string {
+    return `
+# Cloud Router for Site-to-Site connectivity
+resource "google_compute_router" "main_router" {
+  name    = "\${var.application_name}-router"
+  region  = var.primary_region
+  network = google_compute_network.main_vpc.id
+  project = var.project_id
+  
+  bgp {
+    asn = 64512
+    advertise_mode = "CUSTOM"
+    
+    advertised_groups = ["ALL_SUBNETS"]
+    
+    ${config.nccConfig.enableCustomRoutes ? `
+    advertised_ip_ranges {
+      range = "10.0.0.0/8"
+      description = "Private networks"
+    }
+    ` : ''}
+  }
+}
+
+# Site-to-Site Data Transfer Configuration
+resource "google_network_connectivity_spoke" "site_to_site" {
+  name        = "\${var.application_name}-site-to-site"
+  location    = var.primary_region
+  description = "Site-to-site data transfer spoke"
+  hub         = google_network_connectivity_hub.main_hub.id
+  
+  # Enable data transfer between sites
+  linked_vpn_tunnels {
+    site_to_site_data_transfer = true
+    uris = [
+      google_compute_vpn_tunnel.tunnel_1.self_link,
+      google_compute_vpn_tunnel.tunnel_2.self_link
+    ]
+  }
+}
+`;
+  }
+
+  private buildSDWANResources(config: GoogleWANConfig): string {
+    return `
+# SD-WAN Router Appliance
+resource "google_compute_instance" "sdwan_appliance" {
+  name         = "\${var.application_name}-sdwan-appliance"
+  machine_type = "n1-standard-4"
+  zone         = "\${var.primary_region}-a"
+  project      = var.project_id
+  
+  boot_disk {
+    initialize_params {
+      image = "projects/click-to-deploy-images/global/images/family/pfsense"
+      size  = 50
+      type  = "pd-ssd"
+    }
+  }
+  
+  # Multiple network interfaces for SD-WAN
+  network_interface {
+    network    = google_compute_network.main_vpc.id
+    subnetwork = google_compute_subnetwork.main_subnet.id
+  }
+  
+  network_interface {
+    network    = google_compute_network.transit_vpc.id
+    subnetwork = google_compute_subnetwork.transit_subnet.id
+  }
+  
+  can_ip_forward = true
+  
+  metadata = {
+    startup-script = <<-EOF
+      #!/bin/bash
+      # Configure SD-WAN appliance
+      echo "Configuring SD-WAN appliance..."
+      # Add vendor-specific configuration
+    EOF
+  }
+  
+  tags = ["sdwan-appliance", "allow-bgp"]
+}
+
+# Transit VPC for SD-WAN
+resource "google_compute_network" "transit_vpc" {
+  name                    = "\${var.application_name}-transit-vpc"
+  auto_create_subnetworks = false
+  routing_mode           = "GLOBAL"
+  project                = var.project_id
+}
+
+resource "google_compute_subnetwork" "transit_subnet" {
+  name          = "\${var.application_name}-transit-subnet"
+  ip_cidr_range = "192.168.1.0/24"
+  region        = var.primary_region
+  network       = google_compute_network.transit_vpc.id
+  project       = var.project_id
+}
+
+# Router Appliance Spoke
+resource "google_network_connectivity_spoke" "sdwan_spoke" {
+  name        = "\${var.application_name}-sdwan-spoke"
+  location    = var.primary_region
+  description = "SD-WAN router appliance spoke"
+  hub         = google_network_connectivity_hub.main_hub.id
+  
+  linked_router_appliance_instances {
+    instances {
+      virtual_machine = google_compute_instance.sdwan_appliance.self_link
+      ip_address      = google_compute_instance.sdwan_appliance.network_interface[0].network_ip
+    }
+  }
+}
+`;
+  }
+
+  private buildHybridMultiCloudResources(config: GoogleWANConfig): string {
+    const secondaryRegions = config.advancedConfig?.multiRegionConfig?.secondaryRegions || [];
+    
+    return `
+# Multi-Cloud VPN Gateway
+resource "google_compute_ha_vpn_gateway" "multicloud_gateway" {
+  name    = "\${var.application_name}-multicloud-gateway"
+  region  = var.primary_region
+  network = google_compute_network.main_vpc.id
+  project = var.project_id
+}
+
+# External VPN Gateway (for AWS/Azure connectivity)
+resource "google_compute_external_vpn_gateway" "aws_gateway" {
+  name            = "\${var.application_name}-aws-gateway"
+  redundancy_type = "FOUR_IPS_REDUNDANCY"
+  project         = var.project_id
+  
+  interface {
+    id         = 0
+    ip_address = "203.0.113.12"  # Replace with actual AWS VPN endpoint
+  }
+  
+  interface {
+    id         = 1
+    ip_address = "203.0.113.13"  # Replace with actual AWS VPN endpoint
+  }
+}
+
+# Hybrid connectivity across multiple regions
+${secondaryRegions.map(region => `
+resource "google_compute_network" "secondary_vpc_${region.replace(/-/g, '_')}" {
+  name                    = "\${var.application_name}-vpc-${region}"
+  auto_create_subnetworks = false
+  routing_mode           = "GLOBAL"
+  project                = var.project_id
+}
+
+resource "google_compute_subnetwork" "secondary_subnet_${region.replace(/-/g, '_')}" {
+  name          = "\${var.application_name}-subnet-${region}"
+  ip_cidr_range = "10.${secondaryRegions.indexOf(region) + 1}.0.0/24"
+  region        = "${region}"
+  network       = google_compute_network.secondary_vpc_${region.replace(/-/g, '_')}.id
+  project       = var.project_id
+}
+
+resource "google_network_connectivity_spoke" "secondary_spoke_${region.replace(/-/g, '_')}" {
+  name        = "\${var.application_name}-spoke-${region}"
+  location    = "global"
+  description = "VPC spoke for ${region}"
+  hub         = google_network_connectivity_hub.main_hub.id
+  
+  linked_vpc_network {
+    uri = google_compute_network.secondary_vpc_${region.replace(/-/g, '_')}.id
+  }
+}
+`).join('')}
+`;
+  }
+
+  private buildOnPremConnectivity(config: GoogleWANConfig): string {
+    const connectionType = config.connectivityConfig.onPremConnectivity.type;
+    
+    switch (connectionType) {
+      case 'dedicated-interconnect':
+        return this.buildDedicatedInterconnect(config);
+      case 'partner-interconnect':
+        return this.buildPartnerInterconnect(config);
+      case 'ha-vpn':
+      default:
+        return this.buildHAVPN(config);
+    }
+  }
+
+  private buildHAVPN(config: GoogleWANConfig): string {
+    return `
+# HA VPN Gateway
+resource "google_compute_ha_vpn_gateway" "main_gateway" {
+  name    = "\${var.application_name}-ha-vpn-gateway"
+  region  = var.primary_region
+  network = google_compute_network.main_vpc.id
+  project = var.project_id
+}
+
+# External VPN Gateway (on-premises)
+resource "google_compute_external_vpn_gateway" "onprem_gateway" {
+  name            = "\${var.application_name}-onprem-gateway"
+  redundancy_type = "TWO_IPS_REDUNDANCY"
+  project         = var.project_id
+  
+  interface {
+    id         = 0
+    ip_address = "203.0.113.10"  # Replace with your on-premises IP
+  }
+  
+  interface {
+    id         = 1
+    ip_address = "203.0.113.11"  # Replace with your on-premises IP
+  }
+}
+
+# Cloud Router
+resource "google_compute_router" "vpn_router" {
+  name    = "\${var.application_name}-vpn-router"
+  region  = var.primary_region
+  network = google_compute_network.main_vpc.id
+  project = var.project_id
+  
+  bgp {
+    asn = 64512
+  }
+}
+
+# VPN Tunnels
+resource "google_compute_vpn_tunnel" "tunnel_1" {
+  name                            = "\${var.application_name}-tunnel-1"
+  region                          = var.primary_region
+  vpn_gateway                     = google_compute_ha_vpn_gateway.main_gateway.id
+  peer_external_gateway           = google_compute_external_vpn_gateway.onprem_gateway.id
+  peer_external_gateway_interface = 0
+  vpn_gateway_interface           = 0
+  router                          = google_compute_router.vpn_router.id
+  shared_secret                   = "your-shared-secret"  # Replace with actual secret
+  project                         = var.project_id
+}
+
+resource "google_compute_vpn_tunnel" "tunnel_2" {
+  name                            = "\${var.application_name}-tunnel-2"
+  region                          = var.primary_region
+  vpn_gateway                     = google_compute_ha_vpn_gateway.main_gateway.id
+  peer_external_gateway           = google_compute_external_vpn_gateway.onprem_gateway.id
+  peer_external_gateway_interface = 1
+  vpn_gateway_interface           = 1
+  router                          = google_compute_router.vpn_router.id
+  shared_secret                   = "your-shared-secret-2"  # Replace with actual secret
+  project                         = var.project_id
+}
+
+# BGP Peers
+resource "google_compute_router_interface" "interface_1" {
+  name       = "\${var.application_name}-interface-1"
+  router     = google_compute_router.vpn_router.name
+  region     = var.primary_region
+  ip_range   = "169.254.1.1/30"
+  vpn_tunnel = google_compute_vpn_tunnel.tunnel_1.name
+  project    = var.project_id
+}
+
+resource "google_compute_router_peer" "peer_1" {
+  name                      = "\${var.application_name}-peer-1"
+  router                    = google_compute_router.vpn_router.name
+  region                    = var.primary_region
+  peer_ip_address          = "169.254.1.2"
+  peer_asn                 = 65001
+  interface                = google_compute_router_interface.interface_1.name
+  advertised_route_priority = 100
+  project                  = var.project_id
+}
+
+resource "google_compute_router_interface" "interface_2" {
+  name       = "\${var.application_name}-interface-2"
+  router     = google_compute_router.vpn_router.name
+  region     = var.primary_region
+  ip_range   = "169.254.2.1/30"
+  vpn_tunnel = google_compute_vpn_tunnel.tunnel_2.name
+  project    = var.project_id
+}
+
+resource "google_compute_router_peer" "peer_2" {
+  name                      = "\${var.application_name}-peer-2"
+  router                    = google_compute_router.vpn_router.name
+  region                    = var.primary_region
+  peer_ip_address          = "169.254.2.2"
+  peer_asn                 = 65001
+  interface                = google_compute_router_interface.interface_2.name
+  advertised_route_priority = 100
+  project                  = var.project_id
+}
+
+# VPN Spoke for NCC
+resource "google_network_connectivity_spoke" "vpn_spoke" {
+  name        = "\${var.application_name}-vpn-spoke"
+  location    = var.primary_region
+  description = "VPN tunnels spoke for on-premises connectivity"
+  hub         = google_network_connectivity_hub.main_hub.id
+  
+  linked_vpn_tunnels {
+    site_to_site_data_transfer = ${config.connectivityConfig.siteToSiteConnectivity.enableDataTransfer}
+    uris = [
+      google_compute_vpn_tunnel.tunnel_1.self_link,
+      google_compute_vpn_tunnel.tunnel_2.self_link
+    ]
+  }
+}
+`;
+  }
+
+  private buildDedicatedInterconnect(config: GoogleWANConfig): string {
+    return `
+# Dedicated Interconnect
+resource "google_compute_interconnect" "dedicated" {
+  name                     = "\${var.application_name}-dedicated-interconnect"
+  location                 = "las-zone1-770"  # Replace with your location
+  link_type               = "LINK_TYPE_ETHERNET_10G_LR"
+  interconnect_type       = "DEDICATED"
+  admin_enabled           = true
+  noc_contact_email       = "network@company.com"  # Replace with your NOC email
+  customer_name           = var.application_name
+  requested_link_count    = 1
+  project                 = var.project_id
+  
+  ${config.securityConfig.enableMacsecEncryption ? `
+  macsec {
+    pre_shared_keys {
+      name     = "key-1"
+      start_time = "2024-01-01T00:00:00Z"
+    }
+  }
+  ` : ''}
+}
+
+# VLAN Attachment
+resource "google_compute_interconnect_attachment" "vlan_attachment" {
+  name                     = "\${var.application_name}-vlan-attachment"
+  region                   = var.primary_region
+  type                     = "DEDICATED"
+  interconnect            = google_compute_interconnect.dedicated.self_link
+  router                  = google_compute_router.interconnect_router.id
+  vlan_tag8021q           = 100
+  project                 = var.project_id
+}
+
+# Cloud Router for Interconnect
+resource "google_compute_router" "interconnect_router" {
+  name    = "\${var.application_name}-interconnect-router"
+  region  = var.primary_region
+  network = google_compute_network.main_vpc.id
+  project = var.project_id
+  
+  bgp {
+    asn = 64512
+  }
+}
+
+# Interconnect Spoke
+resource "google_network_connectivity_spoke" "interconnect_spoke" {
+  name        = "\${var.application_name}-interconnect-spoke"
+  location    = var.primary_region
+  description = "Dedicated Interconnect spoke"
+  hub         = google_network_connectivity_hub.main_hub.id
+  
+  linked_interconnect_attachments {
+    uris = [google_compute_interconnect_attachment.vlan_attachment.self_link]
+    site_to_site_data_transfer = ${config.connectivityConfig.siteToSiteConnectivity.enableDataTransfer}
+  }
+}
+`;
+  }
+
+  private buildPartnerInterconnect(config: GoogleWANConfig): string {
+    return `
+# Partner Interconnect VLAN Attachment
+resource "google_compute_interconnect_attachment" "partner_attachment" {
+  name                     = "\${var.application_name}-partner-attachment"
+  region                   = var.primary_region
+  type                     = "PARTNER"
+  router                   = google_compute_router.partner_router.id
+  edge_availability_domain = "AVAILABILITY_DOMAIN_1"
+  bandwidth               = "BPS_1G"
+  project                 = var.project_id
+  
+  # Partner-specific configuration
+  # pairing_key will be provided by your service provider
+}
+
+# Cloud Router for Partner Interconnect
+resource "google_compute_router" "partner_router" {
+  name    = "\${var.application_name}-partner-router"
+  region  = var.primary_region
+  network = google_compute_network.main_vpc.id
+  project = var.project_id
+  
+  bgp {
+    asn = 64512
+  }
+}
+
+# Partner Interconnect Spoke
+resource "google_network_connectivity_spoke" "partner_spoke" {
+  name        = "\${var.application_name}-partner-spoke"
+  location    = var.primary_region
+  description = "Partner Interconnect spoke"
+  hub         = google_network_connectivity_hub.main_hub.id
+  
+  linked_interconnect_attachments {
+    uris = [google_compute_interconnect_attachment.partner_attachment.self_link]
+    site_to_site_data_transfer = ${config.connectivityConfig.siteToSiteConnectivity.enableDataTransfer}
+  }
+}
+`;
+  }
+
+  private buildSecurityResources(config: GoogleWANConfig): string {
+    return `
+# Network Firewall Rules
 resource "google_compute_firewall" "allow_internal" {
-  name    = "${config.applicationName}-allow-internal"
+  name    = "\${var.application_name}-allow-internal"
   network = google_compute_network.main_vpc.name
   project = var.project_id
-
+  
   allow {
     protocol = "tcp"
     ports    = ["0-65535"]
   }
-
+  
   allow {
     protocol = "udp"
     ports    = ["0-65535"]
   }
-
+  
   allow {
     protocol = "icmp"
   }
-
-  source_ranges = ["10.0.0.0/8"]
-  target_tags   = ["internal"]
+  
+  source_ranges = ["10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16"]
+  
+  log_config {
+    metadata = "INCLUDE_ALL_METADATA"
+  }
 }
+
+resource "google_compute_firewall" "allow_ssh" {
+  name    = "\${var.application_name}-allow-ssh"
+  network = google_compute_network.main_vpc.name
+  project = var.project_id
+  
+  allow {
+    protocol = "tcp"
+    ports    = ["22"]
+  }
+  
+  source_ranges = ["0.0.0.0/0"]
+  target_tags   = ["allow-ssh"]
+}
+
+resource "google_compute_firewall" "allow_bgp" {
+  name    = "\${var.application_name}-allow-bgp"
+  network = google_compute_network.main_vpc.name
+  project = var.project_id
+  
+  allow {
+    protocol = "tcp"
+    ports    = ["179"]
+  }
+  
+  source_ranges = ["169.254.0.0/16"]
+  target_tags   = ["allow-bgp"]
+}
+
+${config.securityConfig.enableCloudNAT ? this.buildCloudNAT(config) : ''}
 `;
   }
 
   private buildCloudNAT(config: GoogleWANConfig): string {
     return `
-# Cloud Router for NAT
-resource "google_compute_router" "nat_router" {
-  name    = "${config.applicationName}-nat-router"
-  region  = var.primary_region
-  network = google_compute_network.main_vpc.id
-  project = var.project_id
-}
-
 # Cloud NAT
-resource "google_compute_router_nat" "nat_gateway" {
-  name                               = "${config.applicationName}-nat-gateway"
-  router                             = google_compute_router.nat_router.name
-  region                             = var.primary_region
-  project                            = var.project_id
+resource "google_compute_router_nat" "main_nat" {
+  name   = "\${var.application_name}-nat"
+  router = google_compute_router.vpn_router.name
+  region = var.primary_region
+  project = var.project_id
+  
   nat_ip_allocate_option             = "AUTO_ONLY"
   source_subnetwork_ip_ranges_to_nat = "ALL_SUBNETWORKS_ALL_IP_RANGES"
+  
+  log_config {
+    enable = true
+    filter = "ERRORS_ONLY"
+  }
 }
+`;
+  }
+
+  private buildMonitoringResources(config: GoogleWANConfig): string {
+    return `
+# Network Intelligence Center - Performance Dashboard
+resource "google_network_management_connectivity_test" "connectivity_test" {
+  name        = "\${var.application_name}-connectivity-test"
+  description = "Test connectivity across WAN"
+  project     = var.project_id
+  
+  source {
+    instance = google_compute_instance.test_vm.id
+  }
+  
+  destination {
+    ip_address = "8.8.8.8"
+    port       = 443
+  }
+  
+  protocol = "TCP"
+}
+
+# Test VM for connectivity tests
+resource "google_compute_instance" "test_vm" {
+  name         = "\${var.application_name}-test-vm"
+  machine_type = "e2-micro"
+  zone         = "\${var.primary_region}-a"
+  project      = var.project_id
+  
+  boot_disk {
+    initialize_params {
+      image = "projects/debian-cloud/global/images/family/debian-11"
+    }
+  }
+  
+  network_interface {
+    network    = google_compute_network.main_vpc.id
+    subnetwork = google_compute_subnetwork.main_subnet.id
+  }
+  
+  metadata = {
+    startup-script = <<-EOF
+      #!/bin/bash
+      apt-get update
+      apt-get install -y curl traceroute mtr-tiny
+    EOF
+  }
+  
+  tags = ["test-vm", "allow-ssh"]
+}
+
+${config.operationsConfig.enableFlowLogs ? `
+# VPC Flow Logs configuration is enabled in subnet creation above
+` : ''}
+`;
+  }
+
+  private buildOutputs(config: GoogleWANConfig): string {
+    return `
+# Outputs
+output "hub_id" {
+  description = "Network Connectivity Center Hub ID"
+  value       = google_network_connectivity_hub.main_hub.id
+}
+
+output "main_vpc_id" {
+  description = "Main VPC network ID"
+  value       = google_compute_network.main_vpc.id
+}
+
+output "main_subnet_id" {
+  description = "Main subnet ID"
+  value       = google_compute_subnetwork.main_subnet.id
+}
+
+${config.connectivityConfig.onPremConnectivity.enabled ? `
+output "vpn_gateway_ip" {
+  description = "VPN Gateway IP addresses"
+  value       = google_compute_ha_vpn_gateway.main_gateway.vpn_interfaces[*].ip_address
+}
+` : ''}
+
+output "estimated_monthly_cost" {
+  description = "Estimated monthly cost (USD)"
+  value = {
+    ncc_hub = "100"
+    ${config.connectivityConfig.onPremConnectivity.type === 'dedicated-interconnect' ? 'interconnect = "1600"' : ''}
+    ${config.connectivityConfig.onPremConnectivity.type === 'partner-interconnect' ? 'interconnect = "500"' : ''}
+    ${config.connectivityConfig.onPremConnectivity.type === 'ha-vpn' ? 'vpn = "100"' : ''}
+    total = "See cost calculator for accurate pricing"
+  }
+}
+`;
+  }
+
+  private buildReadmeContent(config: GoogleWANConfig): string {
+    const architectureName = {
+      'ncc-hub-spoke': 'Network Connectivity Center Hub-and-Spoke',
+      'site-to-site': 'Site-to-Site Data Transfer',
+      'sd-wan-integration': 'SD-WAN Integration',
+      'hybrid-multicloud': 'Hybrid & Multi-Cloud'
+    }[config.wanArchitecture];
+
+    const features = [];
+    if (config.nccConfig.enableNCC) features.push('Network Connectivity Center');
+    if (config.connectivityConfig.onPremConnectivity.enabled) features.push(`On-premises connectivity (${config.connectivityConfig.onPremConnectivity.type})`);
+    if (config.connectivityConfig.multiCloudConnectivity.enabled) features.push('Multi-cloud connectivity');
+    if (config.securityConfig.enableFirewallRules) features.push('Network security rules');
+    if (config.operationsConfig.enableNetworkIntelligence) features.push('Network Intelligence Center');
+
+    return `# Google Wide Area Network - ${config.applicationName}
+
+This Terraform configuration creates a ${architectureName} infrastructure for enterprise-grade WAN connectivity.
+
+## Architecture Overview
+
+**Pattern**: ${architectureName}
+**Primary Region**: ${config.primaryRegion}
+**Routing Mode**: ${config.networkConfig.enableGlobalRouting ? 'Global' : 'Regional'}
+
+## Components Deployed
+
+${features.map(feature => `- ${feature}`).join('\n')}
+
+## Key Features
+
+### Network Connectivity
+- **Topology**: ${config.networkConfig.topology || 'Full mesh'}
+- **Route Exchange**: ${config.networkConfig.enableRouteExchange ? 'Enabled' : 'Disabled'}
+- **Global Routing**: ${config.networkConfig.enableGlobalRouting ? 'Enabled' : 'Disabled'}
+
+### Security
+- **Private Google Access**: ${config.securityConfig.enablePrivateGoogleAccess ? 'Enabled' : 'Disabled'}
+- **Cloud NAT**: ${config.securityConfig.enableCloudNAT ? 'Enabled' : 'Disabled'}
+- **Firewall Rules**: ${config.securityConfig.enableFirewallRules ? 'Enabled' : 'Disabled'}
+${config.securityConfig.enableMacsecEncryption ? '- **MACsec Encryption**: Enabled' : ''}
+
+### Operations & Monitoring
+- **Network Intelligence**: ${config.operationsConfig.enableNetworkIntelligence ? 'Enabled' : 'Disabled'}
+- **Flow Logs**: ${config.operationsConfig.enableFlowLogs ? 'Enabled' : 'Disabled'}
+- **Connectivity Tests**: ${config.operationsConfig.enableConnectivityTests ? 'Enabled' : 'Disabled'}
+
+## Deployment Instructions
+
+### Prerequisites
+1. Google Cloud Project with billing enabled
+2. Terraform >= 1.0 installed
+3. Google Cloud SDK configured
+4. Required APIs enabled:
+   - Compute Engine API
+   - Network Connectivity API
+   - Cloud Resource Manager API
+
+### Deployment Steps
+
+1. **Initialize Terraform**:
+   \`\`\`bash
+   terraform init
+   \`\`\`
+
+2. **Review and customize variables**:
+   Edit the variables in the configuration or create a \`terraform.tfvars\` file:
+   \`\`\`hcl
+   project_id = "${config.projectId}"
+   primary_region = "${config.primaryRegion}"
+   application_name = "${config.applicationName}"
+   \`\`\`
+
+3. **Plan the deployment**:
+   \`\`\`bash
+   terraform plan
+   \`\`\`
+
+4. **Apply the configuration**:
+   \`\`\`bash
+   terraform apply
+   \`\`\`
+
+## Post-Deployment Configuration
+
+### On-Premises Connectivity
+${config.connectivityConfig.onPremConnectivity.enabled ? `
+You'll need to configure your on-premises equipment:
+
+**Connection Type**: ${config.connectivityConfig.onPremConnectivity.type}
+
+#### BGP Configuration
+- **Google ASN**: 64512
+- **Peer ASN**: 65001 (configure on your equipment)
+- **BGP Sessions**: Configure according to the connection type
+
+#### IP Ranges
+- **Cloud Router IP**: 169.254.1.1/30
+- **Peer IP**: 169.254.1.2/30 (configure on your equipment)
+` : 'On-premises connectivity is not configured in this deployment.'}
+
+### Network Connectivity Center
+${config.nccConfig.enableNCC ? `
+**Hub ID**: Available in Terraform outputs
+**Spoke Configuration**: VPC spokes are automatically configured
+${config.nccConfig.topology === 'star' ? '**Topology**: Star topology with center and edge groups' : '**Topology**: Full mesh connectivity'}
+` : 'NCC is not configured in this deployment.'}
+
+## Monitoring and Troubleshooting
+
+### Network Intelligence Center
+${config.operationsConfig.enableNetworkIntelligence ? `
+Access Network Intelligence Center in the Google Cloud Console to:
+- Monitor network performance
+- Analyze connectivity paths
+- Troubleshoot network issues
+- View network topology
+` : 'Network Intelligence Center is not enabled.'}
+
+### Connectivity Tests
+${config.operationsConfig.enableConnectivityTests ? `
+Automated connectivity tests are configured to verify:
+- End-to-end connectivity
+- Network path analysis
+- Performance metrics
+` : 'Connectivity tests are not configured.'}
+
+## Cost Optimization
+
+### Estimated Monthly Costs
+- Network Connectivity Center: ~$100/month
+${config.connectivityConfig.onPremConnectivity.type === 'dedicated-interconnect' ? '- Dedicated Interconnect: ~$1,600/month (10Gbps)' : ''}
+${config.connectivityConfig.onPremConnectivity.type === 'partner-interconnect' ? '- Partner Interconnect: ~$500/month (1Gbps)' : ''}
+${config.connectivityConfig.onPremConnectivity.type === 'ha-vpn' ? '- HA VPN: ~$100/month' : ''}
+
+*Note: Costs vary based on usage, bandwidth, and additional features. Use the Google Cloud Pricing Calculator for accurate estimates.*
+
+### Cost Optimization Tips
+1. **Right-size connections**: Choose appropriate bandwidth for your needs
+2. **Monitor usage**: Use Network Intelligence Center to identify optimization opportunities
+3. **Regional placement**: Deploy resources in regions close to your users
+4. **Committed use discounts**: Consider committed use discounts for predictable workloads
+
+## Security Considerations
+
+1. **Network Segmentation**: Use VPC subnets and firewall rules for isolation
+2. **Encryption**: Enable MACsec for Interconnect connections when required
+3. **Access Controls**: Implement IAM policies for network resource management
+4. **Monitoring**: Enable flow logs and monitoring for security analysis
+
+## Support and Documentation
+
+- [Network Connectivity Center Documentation](https://cloud.google.com/network-connectivity-center/docs)
+- [Cloud VPN Documentation](https://cloud.google.com/vpn/docs)
+- [Cloud Interconnect Documentation](https://cloud.google.com/interconnect/docs)
+- [Network Intelligence Center](https://cloud.google.com/network-intelligence-center/docs)
+
+## Generated by CloudConsoleVibe
+
+This configuration was generated by the CloudConsoleVibe Google WAN Wizard.
+For updates and support, visit: https://github.com/your-repo/CloudConsoleVibe
 `;
   }
 } 

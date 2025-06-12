@@ -111,7 +111,11 @@ import { CloudNatService } from './services/cloud-nat.service';
 import { GkeClusterService } from './services/gke-cluster.service';
 import { GeminiAiService } from './services/gemini-ai.service';
 import { GlobalFrontendService } from './services/global-frontend.service';
-import { GoogleWANService } from './services/google-wan.service';
+// import { GoogleWANService } from './services/google-wan.service';
+import { SecureWebProxyComponent } from './components/secure-web-proxy/secure-web-proxy.component';
+import { SecureWebProxyService } from './services/secure-web-proxy.service';
+import { VmInstancesComponent } from './components/vm-instances/vm-instances.component';
+import { ComputeEngineService } from './services/compute-engine.service';
 
 @NgModule({
   declarations: [
@@ -178,7 +182,9 @@ import { GoogleWANService } from './services/google-wan.service';
     AiAssistantComponent,
     NetworkConnectivityComponent,
     GlobalFrontendWizardComponent,
-    GoogleWANWizardComponent
+    GoogleWANWizardComponent,
+    SecureWebProxyComponent,
+    VmInstancesComponent
   ],
   imports: [
     BrowserModule,
@@ -206,7 +212,7 @@ import { GoogleWANService } from './services/google-wan.service';
     TextFieldModule,
     MatStepperModule
   ],
-  providers: [AuthService, GoogleAnalyticsService, VpcService, TPPIService, PacketMirroringService, NetworkHealthMonitorService, AppNetaService, CloudNatService, GkeClusterService, GeminiAiService, GlobalFrontendService, GoogleWANService],
+  providers: [AuthService, GoogleAnalyticsService, VpcService, TPPIService, PacketMirroringService, NetworkHealthMonitorService, AppNetaService, CloudNatService, GkeClusterService, GeminiAiService, GlobalFrontendService, SecureWebProxyService, ComputeEngineService],
   bootstrap: [AppComponent]
 })
 export class AppModule { } 

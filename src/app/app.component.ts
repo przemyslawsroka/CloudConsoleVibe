@@ -425,7 +425,8 @@ export class AppComponent implements OnInit {
         { name: 'Packet Mirroring', route: '/packet-mirroring', icon: 'visibility' },
         { name: 'Cloud Armor', route: '/cloud-armor-policies', icon: 'shield' },
         { name: 'TLS inspection policies', route: '/tls-inspection-policies', icon: 'security_scan' },
-        { name: 'Address groups', route: '/address-groups', icon: 'group_work' }
+        { name: 'Address groups', route: '/address-groups', icon: 'group_work' },
+        { name: 'Secure Web Proxy', route: '/secure-web-proxy', icon: 'security' }
       ]
     },
     {
@@ -448,6 +449,14 @@ export class AppComponent implements OnInit {
         { name: 'Dashboard', route: '/monitoring', icon: 'dashboard' },
         { name: 'Agent Management', route: '/monitoring/agents', icon: 'devices' },
         { name: 'Deploy Agents', route: '/monitoring/deploy', icon: 'cloud_upload' }
+      ]
+    },
+    {
+      name: 'Compute Engine',
+      icon: 'computer',
+      expanded: false,
+      items: [
+        { name: 'VM instances', route: '/vm-instances', icon: 'desktop_windows' }
       ]
     },
     {
