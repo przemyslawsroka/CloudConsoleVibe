@@ -127,7 +127,7 @@ import { Component } from '@angular/core';
               <a href="#" class="documentation-link">Documentation ↗</a>
               <div class="action-buttons">
                 <button mat-stroked-button class="preview-btn">Preview solution</button>
-                <button mat-raised-button color="primary" class="get-started-btn" routerLink="/distributed-application">Get started</button>
+                <button mat-raised-button color="primary" class="get-started-btn" routerLink="/distributed-application/wizard">Get started</button>
               </div>
             </div>
           </div>
@@ -177,7 +177,7 @@ import { Component } from '@angular/core';
               <a href="#" class="documentation-link">Documentation ↗</a>
               <div class="action-buttons">
                 <button mat-stroked-button class="preview-btn">Preview solution</button>
-                <button mat-raised-button color="primary" class="get-started-btn">Get started</button>
+                <button mat-raised-button color="primary" class="get-started-btn" routerLink="/global-frontend-wizard">Get started</button>
               </div>
             </div>
           </div>
@@ -234,48 +234,7 @@ import { Component } from '@angular/core';
           </div>
         </div>
 
-        <!-- Future Solutions -->
-        <div class="solution-card future-card">
-          <div class="solution-header">
-            <span class="by-google-badge">By Google</span>
-          </div>
-          <div class="solution-diagram">
-            <svg viewBox="0 0 280 200" class="future-diagram">
-              <!-- Coming soon illustration -->
-              <defs>
-                <linearGradient id="futureGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" style="stop-color:#e8f0fe;stop-opacity:0.6" />
-                  <stop offset="100%" style="stop-color:var(--hover-color);stop-opacity:0.8" />
-                </linearGradient>
-              </defs>
-              <rect width="280" height="200" fill="url(#futureGradient)"/>
-              
-              <!-- Abstract network nodes -->
-              <circle cx="70" cy="80" r="20" fill="rgba(33, 150, 243, 0.12)" stroke="#2196f3" stroke-width="2" stroke-dasharray="5,5"/>
-              <circle cx="210" cy="80" r="20" fill="rgba(33, 150, 243, 0.12)" stroke="#2196f3" stroke-width="2" stroke-dasharray="5,5"/>
-              <circle cx="140" cy="140" r="25" fill="rgba(33, 150, 243, 0.12)" stroke="#2196f3" stroke-width="2" stroke-dasharray="5,5"/>
-              
-              <!-- Dotted connections -->
-              <line x1="90" y1="90" x2="115" y2="125" stroke="var(--text-secondary-color)" stroke-width="2" stroke-dasharray="3,3" opacity="0.6"/>
-              <line x1="190" y1="90" x2="165" y2="125" stroke="var(--text-secondary-color)" stroke-width="2" stroke-dasharray="3,3" opacity="0.6"/>
-              
-              <!-- Future indicator -->
-              <text x="140" y="50" text-anchor="middle" class="future-label">Future Solutions</text>
-              <text x="140" y="180" text-anchor="middle" class="coming-soon">Coming Soon...</text>
-            </svg>
-          </div>
-          <div class="solution-content">
-            <h3>[TBD] Future solutions</h3>
-            <p>Future solutions...</p>
-            <div class="solution-actions">
-              <a href="#" class="documentation-link">Documentation ↗</a>
-              <div class="action-buttons">
-                <button mat-stroked-button class="preview-btn" disabled>Preview solution</button>
-                <button mat-raised-button color="primary" class="get-started-btn" disabled>Get started</button>
-              </div>
-            </div>
-          </div>
-        </div>
+
       </div>
 
       <!-- Bottom section with Gemini -->
@@ -411,10 +370,6 @@ import { Component } from '@angular/core';
       box-shadow: 0 2px 8px rgba(0,0,0,0.15);
     }
 
-    .solution-card.future-card {
-      opacity: 0.7;
-    }
-
     .solution-header {
       margin-bottom: 16px;
     }
@@ -463,18 +418,6 @@ import { Component } from '@angular/core';
     .small-label {
       font-size: 6px;
       fill: var(--text-secondary-color);
-    }
-
-    .future-label {
-      font-size: 14px;
-      fill: var(--primary-color);
-      font-weight: 500;
-    }
-
-    .coming-soon {
-      font-size: 10px;
-      fill: var(--text-secondary-color);
-      font-style: italic;
     }
 
     .solution-content h3 {

@@ -1,22 +1,18 @@
-import { Component, OnInit, Inject } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { Router, ActivatedRoute } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { TPPIService } from '../../services/tppi.service';
-
-interface WizardData {
-  role?: 'producer' | 'consumer';
-  projectId?: string;
-}
+import { Location } from '@angular/common';
 
 @Component({
   selector: 'app-tppi-setup-wizard',
   template: `
     <div class="wizard-container">
-      <mat-dialog-content class="wizard-content">
+      <div class="wizard-content">
         <div class="wizard-header">
-          <h2>TPPI Setup Wizard</h2>
-          <p>Let's configure Third Party Packet Intercept step by step</p>
+          <h2>{{ getWizardTitle() }}</h2>
+          <p>{{ getWizardDescription() }}</p>
         </div>
 
         <!-- Step Indicator -->
@@ -124,9 +120,9 @@ interface WizardData {
               <mat-form-field appearance="outline" class="full-width">
                 <mat-label>Producer VPC Network *</mat-label>
                 <mat-select formControlName="network">
-                  <mat-option *ngFor="let network of availableNetworks" [value]="network.id">
-                    {{ network.name }}
-                  </mat-option>
+                  <mat-option value="vpc-1">default</mat-option>
+                  <mat-option value="vpc-2">production-vpc</mat-option>
+                  <mat-option value="vpc-3">development-vpc</mat-option>
                 </mat-select>
                 <mat-hint>VPC network where your security appliances are deployed</mat-hint>
                 <mat-error *ngIf="producerForm.get('network')?.hasError('required')">
@@ -137,13 +133,93 @@ interface WizardData {
               <div class="deployment-zones">
                 <h4>Deployment Zones</h4>
                 <p>Select zones where you want to deploy security appliances:</p>
-                <div class="zones-grid">
-                  <mat-checkbox *ngFor="let zone of availableZones" 
-                               [checked]="selectedZones.includes(zone.id)"
-                               (change)="toggleZone(zone.id)">
-                    {{ zone.name }}
-                    <span class="zone-description">{{ zone.description }}</span>
-                  </mat-checkbox>
+                
+                <!-- Zone Selection Strategy -->
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Zone Selection Strategy</mat-label>
+                  <mat-select [(value)]="zoneSelectionStrategy" (selectionChange)="onZoneStrategyChange()">
+                    <mat-option value="all-regions">All zones in all regions ({{ availableZones.length }} zones)</mat-option>
+                    <mat-option value="specific-regions">Select by regions</mat-option>
+                    <mat-option value="specific-zones">Select individual zones</mat-option>
+                  </mat-select>
+                  <mat-hint>Choose how to select deployment zones</mat-hint>
+                </mat-form-field>
+
+                <!-- Region Selection -->
+                <div *ngIf="zoneSelectionStrategy === 'specific-regions'" class="region-selection">
+                  <h5>Select Regions:</h5>
+                  <div class="regions-grid">
+                    <mat-checkbox *ngFor="let region of availableRegions" 
+                                 [checked]="selectedRegions.includes(region.id)"
+                                 (change)="onRegionChange($event, region.id)"
+                                 [value]="region.id">
+                      <div class="region-info">
+                        <span class="region-name">{{ region.name }}</span>
+                        <span class="region-location">{{ region.location }}</span>
+                        <span class="zone-count">({{ getZonesInRegion(region.id).length }} zones)</span>
+                      </div>
+                    </mat-checkbox>
+                  </div>
+                </div>
+
+                <!-- Individual Zone Selection -->
+                <div *ngIf="zoneSelectionStrategy === 'specific-zones'" class="zone-selection">
+                  <h5>Search and Select Zones:</h5>
+                  
+                  <!-- Search -->
+                  <mat-form-field appearance="outline" class="full-width">
+                    <mat-label>Search zones...</mat-label>
+                    <input matInput [(ngModel)]="zoneSearchTerm" (input)="updateFilteredZones()" placeholder="Type zone name or region">
+                    <mat-icon matSuffix>search</mat-icon>
+                  </mat-form-field>
+                  
+                  <!-- Selected Zones Display -->
+                  <div class="selected-zones-display" *ngIf="selectedZones.length > 0">
+                    <h6>Selected Zones ({{ selectedZones.length }}):</h6>
+                    <div class="selected-zones-chips">
+                      <mat-chip-set>
+                        <mat-chip *ngFor="let zoneId of selectedZones" 
+                                 (removed)="removeZone(zoneId)"
+                                 removable="true">
+                          {{ zoneId }}
+                          <mat-icon matChipRemove>cancel</mat-icon>
+                        </mat-chip>
+                      </mat-chip-set>
+                    </div>
+                  </div>
+
+                  <!-- Available Zones -->
+                  <div class="available-zones">
+                    <h6>Available Zones ({{ getDisplayedZones().length }}):</h6>
+                    <div class="zones-checkboxes">
+                      <mat-checkbox *ngFor="let zone of getDisplayedZones()" 
+                                   [checked]="selectedZones.includes(zone.id)"
+                                   (change)="onZoneToggle($event, zone.id)"
+                                   [value]="zone.id">
+                        <div class="zone-info">
+                          <span class="zone-name">{{ zone.id }}</span>
+                          <span class="zone-region">{{ zone.region }}</span>
+                        </div>
+                      </mat-checkbox>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Summary -->
+                <div class="zone-summary" *ngIf="getEffectiveZoneCount() > 0">
+                  <mat-card class="summary-card">
+                    <mat-card-content>
+                      <div class="summary-content">
+                        <mat-icon color="primary">info</mat-icon>
+                        <div>
+                          <strong>{{ getEffectiveZoneCount() }} zones</strong> will be used for deployment
+                          <div class="summary-details" *ngIf="zoneSelectionStrategy === 'specific-regions'">
+                            Regions: {{ selectedRegions.join(', ') }}
+                          </div>
+                        </div>
+                      </div>
+                    </mat-card-content>
+                  </mat-card>
                 </div>
               </div>
             </form>
@@ -167,9 +243,9 @@ interface WizardData {
               <mat-form-field appearance="outline" class="full-width">
                 <mat-label>Security Service Provider *</mat-label>
                 <mat-select formControlName="deploymentGroup">
-                  <mat-option *ngFor="let provider of securityProviders" [value]="provider.id">
-                    {{ provider.name }} - {{ provider.organization }}
-                  </mat-option>
+                  <mat-option value="provider-1">Enterprise Firewall Service - Security Corp</mat-option>
+                  <mat-option value="provider-2">Advanced IDS/IPS - CyberSec Inc</mat-option>
+                  <mat-option value="provider-3">Cloud Security Suite - SecureNet Ltd</mat-option>
                 </mat-select>
                 <mat-hint>Choose the security service you want to use</mat-hint>
                 <mat-error *ngIf="consumerForm.get('deploymentGroup')?.hasError('required')">
@@ -181,11 +257,23 @@ interface WizardData {
                 <h4>VPC Networks to Protect</h4>
                 <p>Select which VPC networks should have their traffic intercepted:</p>
                 <div class="networks-grid">
-                  <mat-checkbox *ngFor="let network of availableNetworks" 
-                               [checked]="selectedNetworks.includes(network.id)"
-                               (change)="toggleNetwork(network.id)">
-                    {{ network.name }}
-                    <span class="network-description">{{ network.description }}</span>
+                  <mat-checkbox [checked]="selectedNetworks.includes('vpc-1')"
+                               (change)="onNetworkChange($event, 'vpc-1')"
+                               value="vpc-1">
+                    default
+                    <span class="network-description">Default VPC network</span>
+                  </mat-checkbox>
+                  <mat-checkbox [checked]="selectedNetworks.includes('vpc-2')"
+                               (change)="onNetworkChange($event, 'vpc-2')"
+                               value="vpc-2">
+                    production-vpc
+                    <span class="network-description">Production environment</span>
+                  </mat-checkbox>
+                  <mat-checkbox [checked]="selectedNetworks.includes('vpc-3')"
+                               (change)="onNetworkChange($event, 'vpc-3')"
+                               value="vpc-3">
+                    development-vpc
+                    <span class="network-description">Development environment</span>
                   </mat-checkbox>
                 </div>
               </div>
@@ -203,36 +291,15 @@ interface WizardData {
 
             <div class="deployments-section">
               <h4>Security Appliance Deployments</h4>
-              <div *ngFor="let zone of getSelectedZones(); let i = index" class="deployment-config">
-                <mat-card class="deployment-card">
-                  <mat-card-header>
-                    <mat-card-title>Deployment in {{ zone.name }}</mat-card-title>
-                  </mat-card-header>
-                  <mat-card-content>
-                    <form [formGroup]="getDeploymentForm(i)" class="deployment-form">
-                      <mat-form-field appearance="outline">
-                        <mat-label>Deployment Name *</mat-label>
-                        <input matInput formControlName="name" [placeholder]="'security-' + zone.id">
-                        <mat-error *ngIf="getDeploymentForm(i).get('name')?.hasError('required')">
-                          Deployment name is required
-                        </mat-error>
-                      </mat-form-field>
-
-                      <mat-form-field appearance="outline">
-                        <mat-label>Forwarding Rule (ILB) *</mat-label>
-                        <mat-select formControlName="forwardingRule">
-                          <mat-option *ngFor="let rule of getForwardingRulesForZone(zone.id)" [value]="rule.id">
-                            {{ rule.name }}
-                          </mat-option>
-                        </mat-select>
-                        <mat-hint>Internal Load Balancer that fronts your security appliances</mat-hint>
-                        <mat-error *ngIf="getDeploymentForm(i).get('forwardingRule')?.hasError('required')">
-                          Forwarding rule is required
-                        </mat-error>
-                      </mat-form-field>
-                    </form>
-                  </mat-card-content>
-                </mat-card>
+              <p>Deployments will be created for selected zones. Configuration details will be handled automatically.</p>
+              <div class="selected-zones-summary">
+                <h5>Selected Zones:</h5>
+                <div class="zones-list">
+                  <mat-chip *ngIf="selectedZones.includes('us-central1-a')">us-central1-a</mat-chip>
+                  <mat-chip *ngIf="selectedZones.includes('us-central1-b')">us-central1-b</mat-chip>
+                  <mat-chip *ngIf="selectedZones.includes('us-east1-a')">us-east1-a</mat-chip>
+                  <mat-chip *ngIf="selectedZones.includes('europe-west1-a')">europe-west1-a</mat-chip>
+                </div>
               </div>
             </div>
           </div>
@@ -310,9 +377,17 @@ interface WizardData {
                     <strong>Network:</strong> {{ getNetworkName(producerForm.get('network')?.value) }}
                   </div>
                   <div class="review-item">
-                    <strong>Deployment Zones:</strong>
-                    <div class="zones-list">
-                      <mat-chip *ngFor="let zone of getSelectedZones()">{{ zone.name }}</mat-chip>
+                    <strong>Deployment Strategy:</strong> {{ getZoneStrategyDisplayName() }}
+                  </div>
+                  <div class="review-item">
+                    <strong>Deployment Zones ({{ getEffectiveZoneCount() }}):</strong>
+                    <div class="zones-list" *ngIf="getEffectiveZoneCount() <= 10">
+                      <mat-chip *ngFor="let zoneId of getEffectiveZones().slice(0, 10)">{{ zoneId }}</mat-chip>
+                      <mat-chip *ngIf="getEffectiveZoneCount() > 10" color="accent">+{{ getEffectiveZoneCount() - 10 }} more</mat-chip>
+                    </div>
+                    <div *ngIf="getEffectiveZoneCount() > 10" class="zones-summary">
+                      <span>{{ getEffectiveZoneCount() }} zones selected</span>
+                      <span *ngIf="zoneSelectionStrategy === 'specific-regions'"> across {{ selectedRegions.length }} regions</span>
                     </div>
                   </div>
                 </div>
@@ -361,10 +436,10 @@ interface WizardData {
             </div>
           </div>
         </div>
-      </mat-dialog-content>
+      </div>
 
       <!-- Actions -->
-      <mat-dialog-actions class="wizard-actions">
+      <div class="wizard-actions">
         <button mat-button (click)="onCancel()">Cancel</button>
         <button mat-button (click)="previousStep()" [disabled]="currentStep === 1">
           <mat-icon>arrow_back</mat-icon>
@@ -372,10 +447,12 @@ interface WizardData {
         </button>
         <button mat-raised-button color="primary" 
                 (click)="nextStep()" 
-                [disabled]="!canProceed()"
+                [disabled]="!canProceed() || isProcessing"
                 *ngIf="currentStep < 4">
-          Next
-          <mat-icon>arrow_forward</mat-icon>
+          <mat-spinner diameter="16" *ngIf="isProcessing"></mat-spinner>
+          <span *ngIf="!isProcessing">Next</span>
+          <span *ngIf="isProcessing">Processing...</span>
+          <mat-icon *ngIf="!isProcessing">arrow_forward</mat-icon>
         </button>
         <button mat-raised-button color="primary" 
                 (click)="createResources()" 
@@ -385,13 +462,16 @@ interface WizardData {
           <mat-icon *ngIf="!isCreating">check</mat-icon>
           {{ isCreating ? 'Creating...' : 'Create Resources' }}
         </button>
-      </mat-dialog-actions>
+      </div>
     </div>
   `,
   styles: [`
     .wizard-container {
-      width: 800px;
-      max-width: 90vw;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 40px 20px;
+      min-height: 100vh;
+      background: var(--background-color);
     }
 
     .wizard-header {
@@ -401,7 +481,7 @@ interface WizardData {
 
     .wizard-header h2 {
       margin: 0 0 8px 0;
-      color: #6a1b9a;
+      color: #1a73e8;
     }
 
     .wizard-header p {
@@ -445,7 +525,7 @@ interface WizardData {
     }
 
     .step.active .step-number {
-      background: #6a1b9a;
+      background: #1a73e8;
       color: white;
     }
 
@@ -474,7 +554,7 @@ interface WizardData {
 
     .step-content h3 {
       margin: 0 0 16px 0;
-      color: #6a1b9a;
+      color: #1a73e8;
     }
 
     .role-selection {
@@ -491,13 +571,13 @@ interface WizardData {
     }
 
     .role-card:hover {
-      border-color: #6a1b9a;
+      border-color: #1a73e8;
       transform: translateY(-2px);
     }
 
     .role-card.selected {
-      border-color: #6a1b9a;
-      background: #f8f9ff;
+      border-color: #1a73e8;
+      background: rgba(26, 115, 232, 0.04);
     }
 
     .role-icon {
@@ -597,6 +677,110 @@ interface WizardData {
       font-size: 12px;
       color: #666;
       margin-top: 4px;
+    }
+
+    .region-selection,
+    .zone-selection {
+      margin: 16px 0;
+    }
+
+    .regions-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 12px;
+      margin: 16px 0;
+    }
+
+    .region-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .region-name {
+      font-weight: 500;
+      color: #333;
+    }
+
+    .region-location {
+      font-size: 12px;
+      color: #666;
+    }
+
+    .zone-count {
+      font-size: 11px;
+      color: #1a73e8;
+      font-weight: 500;
+    }
+
+    .selected-zones-display {
+      margin: 16px 0;
+    }
+
+    .selected-zones-chips {
+      margin: 8px 0;
+    }
+
+    .available-zones {
+      margin: 16px 0;
+    }
+
+    .zones-checkboxes {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 8px;
+      max-height: 400px;
+      overflow-y: auto;
+      border: 1px solid #e0e0e0;
+      border-radius: 4px;
+      padding: 16px;
+      margin: 8px 0;
+    }
+
+    .zone-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .zone-name {
+      font-weight: 500;
+      color: #333;
+    }
+
+    .zone-region {
+      color: #666;
+      font-size: 12px;
+    }
+
+    .zone-summary {
+      margin: 16px 0;
+    }
+
+    .summary-card {
+      background: #f8f9fa;
+      border-left: 4px solid #1a73e8;
+    }
+
+    .summary-content {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .summary-details {
+      color: #666;
+      font-size: 14px;
+      margin-top: 4px;
+    }
+
+    .selected-zones-summary {
+      margin: 16px 0;
+    }
+
+    .selected-zones-summary h5 {
+      margin: 0 0 8px 0;
+      color: #333;
     }
 
     .deployments-section {
@@ -714,11 +898,16 @@ interface WizardData {
     }
 
     .wizard-actions {
-      padding: 16px 24px;
-      border-top: 1px solid #e0e0e0;
+      padding: 24px 0;
+      border-top: 1px solid var(--border-color);
       display: flex;
       justify-content: space-between;
       align-items: center;
+      margin-top: 40px;
+      background: var(--surface-color);
+      border-radius: 8px;
+      padding: 20px 24px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
 
     @media (max-width: 768px) {
@@ -749,7 +938,9 @@ interface WizardData {
 export class TPPISetupWizardComponent implements OnInit {
   currentStep = 1;
   selectedRole: 'producer' | 'consumer' | null = null;
+  specificResource: string | null = null;
   isCreating = false;
+  isProcessing = false;
 
   // Forms
   producerForm!: FormGroup;
@@ -760,6 +951,15 @@ export class TPPISetupWizardComponent implements OnInit {
   // Selection tracking
   selectedZones: string[] = [];
   selectedNetworks: string[] = [];
+  selectedRegions: string[] = [];
+
+  // Zone selection strategy
+  zoneSelectionStrategy: 'all-regions' | 'specific-regions' | 'specific-zones' = 'specific-zones';
+  zoneSearchTerm: string = '';
+  
+  // Computed properties to avoid method calls in templates
+  selectedZoneObjects: any[] = [];
+  selectedNetworkObjects: any[] = [];
 
   // Mock data
   availableNetworks = [
@@ -768,11 +968,92 @@ export class TPPISetupWizardComponent implements OnInit {
     { id: 'vpc-3', name: 'development-vpc', description: 'Development environment', type: 'Custom' }
   ];
 
+  availableRegions = [
+    { id: 'us-central1', name: 'us-central1', location: 'Iowa, USA' },
+    { id: 'us-east1', name: 'us-east1', location: 'South Carolina, USA' },
+    { id: 'us-east4', name: 'us-east4', location: 'Northern Virginia, USA' },
+    { id: 'us-west1', name: 'us-west1', location: 'Oregon, USA' },
+    { id: 'us-west2', name: 'us-west2', location: 'Los Angeles, USA' },
+    { id: 'us-west3', name: 'us-west3', location: 'Salt Lake City, USA' },
+    { id: 'us-west4', name: 'us-west4', location: 'Las Vegas, USA' },
+    { id: 'europe-west1', name: 'europe-west1', location: 'Belgium' },
+    { id: 'europe-west2', name: 'europe-west2', location: 'London, UK' },
+    { id: 'europe-west3', name: 'europe-west3', location: 'Frankfurt, Germany' },
+    { id: 'europe-west4', name: 'europe-west4', location: 'Netherlands' },
+    { id: 'europe-west6', name: 'europe-west6', location: 'Zurich, Switzerland' },
+    { id: 'asia-east1', name: 'asia-east1', location: 'Taiwan' },
+    { id: 'asia-east2', name: 'asia-east2', location: 'Hong Kong' },
+    { id: 'asia-northeast1', name: 'asia-northeast1', location: 'Tokyo, Japan' },
+    { id: 'asia-northeast2', name: 'asia-northeast2', location: 'Osaka, Japan' },
+    { id: 'asia-south1', name: 'asia-south1', location: 'Mumbai, India' },
+    { id: 'asia-southeast1', name: 'asia-southeast1', location: 'Singapore' },
+    { id: 'australia-southeast1', name: 'australia-southeast1', location: 'Sydney, Australia' }
+  ];
+
   availableZones = [
-    { id: 'us-central1-a', name: 'us-central1-a', description: 'Iowa, USA' },
-    { id: 'us-central1-b', name: 'us-central1-b', description: 'Iowa, USA' },
-    { id: 'us-east1-a', name: 'us-east1-a', description: 'South Carolina, USA' },
-    { id: 'europe-west1-a', name: 'europe-west1-a', description: 'Belgium' }
+    // US Central
+    { id: 'us-central1-a', region: 'us-central1', name: 'us-central1-a' },
+    { id: 'us-central1-b', region: 'us-central1', name: 'us-central1-b' },
+    { id: 'us-central1-c', region: 'us-central1', name: 'us-central1-c' },
+    { id: 'us-central1-f', region: 'us-central1', name: 'us-central1-f' },
+    // US East
+    { id: 'us-east1-b', region: 'us-east1', name: 'us-east1-b' },
+    { id: 'us-east1-c', region: 'us-east1', name: 'us-east1-c' },
+    { id: 'us-east1-d', region: 'us-east1', name: 'us-east1-d' },
+    { id: 'us-east4-a', region: 'us-east4', name: 'us-east4-a' },
+    { id: 'us-east4-b', region: 'us-east4', name: 'us-east4-b' },
+    { id: 'us-east4-c', region: 'us-east4', name: 'us-east4-c' },
+    // US West
+    { id: 'us-west1-a', region: 'us-west1', name: 'us-west1-a' },
+    { id: 'us-west1-b', region: 'us-west1', name: 'us-west1-b' },
+    { id: 'us-west1-c', region: 'us-west1', name: 'us-west1-c' },
+    { id: 'us-west2-a', region: 'us-west2', name: 'us-west2-a' },
+    { id: 'us-west2-b', region: 'us-west2', name: 'us-west2-b' },
+    { id: 'us-west2-c', region: 'us-west2', name: 'us-west2-c' },
+    { id: 'us-west3-a', region: 'us-west3', name: 'us-west3-a' },
+    { id: 'us-west3-b', region: 'us-west3', name: 'us-west3-b' },
+    { id: 'us-west3-c', region: 'us-west3', name: 'us-west3-c' },
+    { id: 'us-west4-a', region: 'us-west4', name: 'us-west4-a' },
+    { id: 'us-west4-b', region: 'us-west4', name: 'us-west4-b' },
+    { id: 'us-west4-c', region: 'us-west4', name: 'us-west4-c' },
+    // Europe
+    { id: 'europe-west1-b', region: 'europe-west1', name: 'europe-west1-b' },
+    { id: 'europe-west1-c', region: 'europe-west1', name: 'europe-west1-c' },
+    { id: 'europe-west1-d', region: 'europe-west1', name: 'europe-west1-d' },
+    { id: 'europe-west2-a', region: 'europe-west2', name: 'europe-west2-a' },
+    { id: 'europe-west2-b', region: 'europe-west2', name: 'europe-west2-b' },
+    { id: 'europe-west2-c', region: 'europe-west2', name: 'europe-west2-c' },
+    { id: 'europe-west3-a', region: 'europe-west3', name: 'europe-west3-a' },
+    { id: 'europe-west3-b', region: 'europe-west3', name: 'europe-west3-b' },
+    { id: 'europe-west3-c', region: 'europe-west3', name: 'europe-west3-c' },
+    { id: 'europe-west4-a', region: 'europe-west4', name: 'europe-west4-a' },
+    { id: 'europe-west4-b', region: 'europe-west4', name: 'europe-west4-b' },
+    { id: 'europe-west4-c', region: 'europe-west4', name: 'europe-west4-c' },
+    { id: 'europe-west6-a', region: 'europe-west6', name: 'europe-west6-a' },
+    { id: 'europe-west6-b', region: 'europe-west6', name: 'europe-west6-b' },
+    { id: 'europe-west6-c', region: 'europe-west6', name: 'europe-west6-c' },
+    // Asia
+    { id: 'asia-east1-a', region: 'asia-east1', name: 'asia-east1-a' },
+    { id: 'asia-east1-b', region: 'asia-east1', name: 'asia-east1-b' },
+    { id: 'asia-east1-c', region: 'asia-east1', name: 'asia-east1-c' },
+    { id: 'asia-east2-a', region: 'asia-east2', name: 'asia-east2-a' },
+    { id: 'asia-east2-b', region: 'asia-east2', name: 'asia-east2-b' },
+    { id: 'asia-east2-c', region: 'asia-east2', name: 'asia-east2-c' },
+    { id: 'asia-northeast1-a', region: 'asia-northeast1', name: 'asia-northeast1-a' },
+    { id: 'asia-northeast1-b', region: 'asia-northeast1', name: 'asia-northeast1-b' },
+    { id: 'asia-northeast1-c', region: 'asia-northeast1', name: 'asia-northeast1-c' },
+    { id: 'asia-northeast2-a', region: 'asia-northeast2', name: 'asia-northeast2-a' },
+    { id: 'asia-northeast2-b', region: 'asia-northeast2', name: 'asia-northeast2-b' },
+    { id: 'asia-northeast2-c', region: 'asia-northeast2', name: 'asia-northeast2-c' },
+    { id: 'asia-south1-a', region: 'asia-south1', name: 'asia-south1-a' },
+    { id: 'asia-south1-b', region: 'asia-south1', name: 'asia-south1-b' },
+    { id: 'asia-south1-c', region: 'asia-south1', name: 'asia-south1-c' },
+    { id: 'asia-southeast1-a', region: 'asia-southeast1', name: 'asia-southeast1-a' },
+    { id: 'asia-southeast1-b', region: 'asia-southeast1', name: 'asia-southeast1-b' },
+    { id: 'asia-southeast1-c', region: 'asia-southeast1', name: 'asia-southeast1-c' },
+    { id: 'australia-southeast1-a', region: 'australia-southeast1', name: 'australia-southeast1-a' },
+    { id: 'australia-southeast1-b', region: 'australia-southeast1', name: 'australia-southeast1-b' },
+    { id: 'australia-southeast1-c', region: 'australia-southeast1', name: 'australia-southeast1-c' }
   ];
 
   securityProviders = [
@@ -783,19 +1064,28 @@ export class TPPISetupWizardComponent implements OnInit {
 
   constructor(
     private fb: FormBuilder,
-    private dialogRef: MatDialogRef<TPPISetupWizardComponent>,
+    private router: Router,
+    private route: ActivatedRoute,
+    private location: Location,
     private snackBar: MatSnackBar,
-    private tppiService: TPPIService,
-    @Inject(MAT_DIALOG_DATA) public data: WizardData
+    private tppiService: TPPIService
   ) {
-    this.selectedRole = data.role || null;
     this.initializeForms();
   }
 
   ngOnInit() {
-    if (this.selectedRole) {
-      this.currentStep = 2;
-    }
+    // Get role and specific resource from route parameters
+    this.route.queryParams.subscribe(params => {
+      if (params['role']) {
+        this.selectedRole = params['role'] as 'producer' | 'consumer';
+        this.currentStep = 2;
+      }
+      if (params['resource']) {
+        this.specificResource = params['resource'];
+        // Skip to appropriate step for specific resource creation
+        this.currentStep = this.getStepForResource(params['resource']);
+      }
+    });
     this.loadSecurityProviders();
   }
 
@@ -821,13 +1111,88 @@ export class TPPISetupWizardComponent implements OnInit {
     this.selectedRole = role;
   }
 
-  nextStep() {
-    if (this.canProceed()) {
-      this.currentStep++;
-      if (this.currentStep === 3 && this.selectedRole === 'producer') {
-        this.createDeploymentForms();
+  getStepForResource(resource: string): number {
+    // Map specific resources to their appropriate wizard steps
+    switch (resource) {
+      case 'deployment-group':
+      case 'endpoint-group':
+        return 2; // Configuration step
+      case 'deployment':
+      case 'security-profile':
+        return 3; // Resources step
+      default:
+        return 1; // Start from beginning
+    }
+  }
+
+  getWizardTitle(): string {
+    if (this.specificResource) {
+      switch (this.specificResource) {
+        case 'deployment-group':
+          return 'Create Deployment Group';
+        case 'deployment':
+          return 'Create Deployment';
+        case 'endpoint-group':
+          return 'Create Endpoint Group';
+        case 'security-profile':
+          return 'Create Security Profile';
+        default:
+          return 'TPPI Setup Wizard';
       }
     }
+    return 'TPPI Setup Wizard';
+  }
+
+  getWizardDescription(): string {
+    if (this.specificResource) {
+      switch (this.specificResource) {
+        case 'deployment-group':
+          return 'Create a logical container for your security service deployments';
+        case 'deployment':
+          return 'Deploy security appliances in specific zones';
+        case 'endpoint-group':
+          return 'Create a reference to external security services';
+        case 'security-profile':
+          return 'Define security policies and inspection rules';
+        default:
+          return 'Let\'s configure Third Party Packet Intercept step by step';
+      }
+    }
+    return 'Let\'s configure Third Party Packet Intercept step by step';
+  }
+
+  nextStep() {
+    if (this.isProcessing) {
+      console.log('Already processing, ignoring click');
+      return;
+    }
+    
+    this.isProcessing = true;
+    console.log('nextStep called');
+    console.log('Current step:', this.currentStep);
+    console.log('Can proceed:', this.canProceed());
+    
+    // Use setTimeout to break out of any potential change detection cycle
+    setTimeout(() => {
+      try {
+        if (this.canProceed()) {
+          console.log('Proceeding to next step');
+          this.currentStep++;
+          console.log('New step:', this.currentStep);
+          
+          if (this.currentStep === 3 && this.selectedRole === 'producer') {
+            console.log('Creating deployment forms');
+            this.createDeploymentForms();
+          }
+        } else {
+          console.log('Cannot proceed - validation failed');
+        }
+      } catch (error) {
+        console.error('Error in nextStep:', error);
+      } finally {
+        this.isProcessing = false;
+      }
+    }, 100);
   }
 
   previousStep() {
@@ -835,25 +1200,58 @@ export class TPPISetupWizardComponent implements OnInit {
   }
 
   canProceed(): boolean {
-    switch (this.currentStep) {
-      case 1:
-        return this.selectedRole !== null;
-      case 2:
-        if (this.selectedRole === 'producer') {
-          return this.producerForm.valid && this.selectedZones.length > 0;
-        } else {
-          return this.consumerForm.valid && this.selectedNetworks.length > 0;
+    try {
+      console.log('canProceed called for step:', this.currentStep);
+      switch (this.currentStep) {
+        case 1:
+          return this.selectedRole !== null;
+        case 2:
+          if (this.selectedRole === 'producer') {
+            const hasName = this.producerForm?.value?.deploymentGroupName?.trim();
+            const hasNetwork = this.producerForm?.value?.network;
+            const hasZones = this.getEffectiveZoneCount() > 0;
+            
+            console.log('Producer validation:', { hasName, hasNetwork, hasZones, effectiveZones: this.getEffectiveZoneCount() });
+            return !!(hasName && hasNetwork && hasZones);
+          } else if (this.selectedRole === 'consumer') {
+            const hasName = this.consumerForm?.value?.endpointGroupName?.trim();
+            const hasProvider = this.consumerForm?.value?.deploymentGroup;
+            const hasNetworks = this.selectedNetworks.length > 0;
+            
+            return !!(hasName && hasProvider && hasNetworks);
+          }
+          return false;
+        case 3:
+          return true;
+        case 4:
+          return true;
+        default:
+          return false;
+      }
+    } catch (error) {
+      console.error('Error in canProceed:', error);
+      return false;
+    }
+  }
+
+  onZoneChange(event: any, zoneId: string) {
+    console.log('Zone change:', zoneId, event.checked);
+    
+    try {
+      if (event.checked) {
+        if (!this.selectedZones.includes(zoneId)) {
+          this.selectedZones.push(zoneId);
+          console.log('Added zone:', zoneId, 'Selected zones:', this.selectedZones);
         }
-      case 3:
-        if (this.selectedRole === 'producer') {
-          return this.deploymentForms.every(form => form.valid);
-        } else {
-          return this.securityProfileForm.valid;
+      } else {
+        const index = this.selectedZones.indexOf(zoneId);
+        if (index > -1) {
+          this.selectedZones.splice(index, 1);
+          console.log('Removed zone:', zoneId, 'Selected zones:', this.selectedZones);
         }
-      case 4:
-        return true;
-      default:
-        return false;
+      }
+    } catch (error) {
+      console.error('Error in onZoneChange:', error);
     }
   }
 
@@ -863,6 +1261,19 @@ export class TPPISetupWizardComponent implements OnInit {
       this.selectedZones.splice(index, 1);
     } else {
       this.selectedZones.push(zoneId);
+    }
+  }
+
+  onNetworkChange(event: any, networkId: string) {
+    if (event.checked) {
+      if (!this.selectedNetworks.includes(networkId)) {
+        this.selectedNetworks.push(networkId);
+      }
+    } else {
+      const index = this.selectedNetworks.indexOf(networkId);
+      if (index > -1) {
+        this.selectedNetworks.splice(index, 1);
+      }
     }
   }
 
@@ -885,7 +1296,18 @@ export class TPPISetupWizardComponent implements OnInit {
   }
 
   getSelectedZones() {
-    return this.availableZones.filter(zone => this.selectedZones.includes(zone.id));
+    // Always return the same array reference to prevent change detection loops
+    return this.selectedZoneObjects;
+  }
+
+  private updateSelectedZoneObjects() {
+    // Clear and rebuild the array to maintain the same reference
+    this.selectedZoneObjects.length = 0;
+    this.availableZones.forEach(zone => {
+      if (this.selectedZones.includes(zone.id)) {
+        this.selectedZoneObjects.push(zone);
+      }
+    });
   }
 
   getDeploymentForm(index: number): FormGroup {
@@ -924,12 +1346,12 @@ export class TPPISetupWizardComponent implements OnInit {
         duration: 5000,
         panelClass: 'success-snackbar'
       });
-      this.dialogRef.close({ success: true, role: this.selectedRole });
+      this.router.navigate(['/tppi']);
     }, 3000);
   }
 
   onCancel() {
-    this.dialogRef.close();
+    this.location.back();
   }
 
   loadSecurityProviders() {
@@ -941,5 +1363,128 @@ export class TPPISetupWizardComponent implements OnInit {
         console.error('Error loading security providers:', error);
       }
     });
+  }
+
+  // Zone selection methods
+  onZoneStrategyChange() {
+    console.log('Zone strategy changed to:', this.zoneSelectionStrategy);
+    this.selectedZones = [];
+    this.selectedRegions = [];
+    this.zoneSearchTerm = '';
+    this.updateFilteredZones();
+  }
+
+  onRegionChange(event: any, regionId: string) {
+    console.log('Region change:', regionId, event.checked);
+    
+    if (event.checked) {
+      if (!this.selectedRegions.includes(regionId)) {
+        this.selectedRegions.push(regionId);
+      }
+    } else {
+      const index = this.selectedRegions.indexOf(regionId);
+      if (index > -1) {
+        this.selectedRegions.splice(index, 1);
+      }
+    }
+    
+    // Auto-update zones based on selected regions
+    this.updateZonesFromRegions();
+    console.log('Selected regions:', this.selectedRegions);
+    console.log('Auto-selected zones:', this.selectedZones);
+  }
+
+  updateZonesFromRegions() {
+    // Auto-select all zones in selected regions
+    this.selectedZones = this.availableZones
+      .filter(zone => this.selectedRegions.includes(zone.region))
+      .map(zone => zone.id);
+  }
+
+  onZoneToggle(event: any, zoneId: string) {
+    console.log('Zone toggle:', zoneId, event.checked);
+    
+    if (event.checked) {
+      if (!this.selectedZones.includes(zoneId)) {
+        this.selectedZones.push(zoneId);
+      }
+    } else {
+      const index = this.selectedZones.indexOf(zoneId);
+      if (index > -1) {
+        this.selectedZones.splice(index, 1);
+      }
+    }
+    
+    console.log('Selected zones:', this.selectedZones);
+  }
+
+  updateFilteredZones() {
+    // This method updates the displayed zones based on search term
+    // The actual filtering is done in getDisplayedZones()
+  }
+
+  getDisplayedZones() {
+    if (!this.zoneSearchTerm.trim()) {
+      return this.availableZones;
+    }
+    
+    const searchTerm = this.zoneSearchTerm.toLowerCase();
+    return this.availableZones.filter(zone => 
+      zone.id.toLowerCase().includes(searchTerm) ||
+      zone.region.toLowerCase().includes(searchTerm)
+    );
+  }
+
+  getZonesInRegion(regionId: string) {
+    return this.availableZones.filter(zone => zone.region === regionId);
+  }
+
+  removeZone(zoneId: string) {
+    const index = this.selectedZones.indexOf(zoneId);
+    if (index > -1) {
+      this.selectedZones.splice(index, 1);
+      console.log('Removed zone:', zoneId, 'Remaining zones:', this.selectedZones);
+    }
+  }
+
+  getEffectiveZoneCount(): number {
+    switch (this.zoneSelectionStrategy) {
+      case 'all-regions':
+        return this.availableZones.length;
+      case 'specific-regions':
+        return this.availableZones.filter(zone => this.selectedRegions.includes(zone.region)).length;
+      case 'specific-zones':
+        return this.selectedZones.length;
+      default:
+        return 0;
+    }
+  }
+
+  getEffectiveZones(): string[] {
+    switch (this.zoneSelectionStrategy) {
+      case 'all-regions':
+        return this.availableZones.map(zone => zone.id);
+      case 'specific-regions':
+        return this.availableZones
+          .filter(zone => this.selectedRegions.includes(zone.region))
+          .map(zone => zone.id);
+      case 'specific-zones':
+        return this.selectedZones;
+      default:
+        return [];
+    }
+  }
+
+  getZoneStrategyDisplayName(): string {
+    switch (this.zoneSelectionStrategy) {
+      case 'all-regions':
+        return 'All zones in all regions';
+      case 'specific-regions':
+        return 'All zones in selected regions';
+      case 'specific-zones':
+        return 'Specific zones only';
+      default:
+        return 'Unknown';
+    }
   }
 } 

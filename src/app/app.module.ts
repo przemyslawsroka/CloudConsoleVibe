@@ -61,6 +61,7 @@ import { FlowAnalyzerComponent } from './components/flow-analyzer/flow-analyzer.
 import { DataSourceSelectionDialogComponent } from './components/flow-analyzer/data-source-selection-dialog.component';
 import { NetworkSolutionsComponent } from './components/network-solutions/network-solutions.component';
 import { DistributedApplicationComponent } from './components/distributed-application/distributed-application.component';
+import { DistributedApplicationWizardComponent } from './components/distributed-application-wizard/distributed-application-wizard.component';
 import { DnsManagementComponent } from './components/dns-management/dns-management.component';
 import { CreateZoneDialogComponent } from './components/dns-management/create-zone-dialog.component';
 import { ConnectivityTestsComponent } from './components/connectivity-tests/connectivity-tests.component';
@@ -103,9 +104,12 @@ import { CreateCloudNatComponent } from './components/create-cloud-nat/create-cl
 import { CreateRouteComponent } from './components/create-route/create-route.component';
 import { GkeClustersComponent } from './components/gke-clusters/gke-clusters.component';
 import { AiAssistantComponent } from './components/ai-assistant/ai-assistant.component';
+import { NetworkConnectivityComponent } from './components/network-connectivity/network-connectivity.component';
+import { GlobalFrontendWizardComponent } from './components/global-frontend-wizard/global-frontend-wizard.component';
 import { CloudNatService } from './services/cloud-nat.service';
 import { GkeClusterService } from './services/gke-cluster.service';
 import { GeminiAiService } from './services/gemini-ai.service';
+import { GlobalFrontendService } from './services/global-frontend.service';
 
 @NgModule({
   declarations: [
@@ -129,6 +133,7 @@ import { GeminiAiService } from './services/gemini-ai.service';
     DataSourceSelectionDialogComponent,
     NetworkSolutionsComponent,
     DistributedApplicationComponent,
+    DistributedApplicationWizardComponent,
     DnsManagementComponent,
     CreateZoneDialogComponent,
     ConnectivityTestsComponent,
@@ -168,7 +173,9 @@ import { GeminiAiService } from './services/gemini-ai.service';
     CreateCloudNatComponent,
     CreateRouteComponent,
     GkeClustersComponent,
-    AiAssistantComponent
+    AiAssistantComponent,
+    NetworkConnectivityComponent,
+    GlobalFrontendWizardComponent
   ],
   imports: [
     BrowserModule,
@@ -193,9 +200,10 @@ import { GeminiAiService } from './services/gemini-ai.service';
     MatButtonToggleModule,
     MatProgressBarModule,
     MatDividerModule,
-    TextFieldModule
+    TextFieldModule,
+    MatStepperModule
   ],
-  providers: [AuthService, GoogleAnalyticsService, VpcService, TPPIService, PacketMirroringService, NetworkHealthMonitorService, AppNetaService, CloudNatService, GkeClusterService, GeminiAiService],
+  providers: [AuthService, GoogleAnalyticsService, VpcService, TPPIService, PacketMirroringService, NetworkHealthMonitorService, AppNetaService, CloudNatService, GkeClusterService, GeminiAiService, GlobalFrontendService],
   bootstrap: [AppComponent]
 })
 export class AppModule { } 

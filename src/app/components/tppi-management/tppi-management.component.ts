@@ -1,9 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { MatDialog } from '@angular/material/dialog';
+import { Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ProjectService, Project } from '../../services/project.service';
-import { TPPISetupWizardComponent } from '../tppi-setup-wizard/tppi-setup-wizard.component';
 
 interface TPPIResource {
   id: string;
@@ -23,10 +22,14 @@ interface TPPIResource {
       <div class="page-header">
         <div class="header-content">
           <h1>Third Party Packet Intercept (TPPI)</h1>
+          <h2 class="page-subtitle">Network Traffic Security Inspection Service</h2>
           <p class="page-description">
-            Configure and manage third-party packet interception for network security and monitoring.
-            TPPI allows you to redirect network traffic to external security appliances for inspection.
+            Configure and manage third-party packet interception for network security and monitoring. 
+            TPPI enables organizations to redirect network traffic to external security appliances for 
+            deep packet inspection, threat detection, and compliance monitoring without disrupting 
+            existing network infrastructure.
           </p>
+
         </div>
         <div class="header-actions">
           <button mat-raised-button color="primary" (click)="openSetupWizard()">
@@ -36,91 +39,122 @@ interface TPPIResource {
         </div>
       </div>
 
-      <!-- Architecture Overview -->
+      <!-- Architecture Overview - Compact -->
       <mat-card class="architecture-card">
         <mat-card-header>
           <mat-card-title>
             <mat-icon>architecture</mat-icon>
             TPPI Architecture Overview
           </mat-card-title>
+          <button mat-icon-button (click)="toggleArchitectureView()" 
+                  [attr.aria-label]="showDetailedArchitecture ? 'Collapse' : 'Expand'">
+            <mat-icon>{{ showDetailedArchitecture ? 'expand_less' : 'expand_more' }}</mat-icon>
+          </button>
         </mat-card-header>
         <mat-card-content>
-          <div class="architecture-diagram">
-            <div class="workflow-section">
-              <h3>Producer Workflow (Security Service Provider)</h3>
-              <div class="workflow-steps">
-                <div class="step">
-                  <div class="step-number">1</div>
-                  <div class="step-content">
-                    <h4>Intercept Deployment Group</h4>
-                    <p>Create a logical container for your security service deployments</p>
+          <!-- Compact Flow Diagram -->
+          <div class="flow-diagram">
+            <!-- Single Line Flow -->
+            <div class="single-line-flow">
+              <!-- Producer Steps -->
+              <div class="flow-section producer-section">
+                <div class="section-label">
+                  <mat-icon class="section-icon producer-icon">security</mat-icon>
+                  <div class="label-content">
+                    <span class="label-title">Security Service Provider</span>
+                    <span class="label-subtitle">(Producer)</span>
+                    <span class="label-description">Offers security inspection services through transparent packet intercept</span>
                   </div>
                 </div>
-                <div class="step-arrow">→</div>
-                <div class="step">
+                <div class="flow-step producer-step" 
+                     matTooltip="Creates a logical container that organizes all security service deployments for a specific offering"
+                     matTooltipPosition="above">
+                  <div class="step-number">1</div>
+                  <span>Deployment Group</span>
+                </div>
+                <mat-icon class="flow-arrow">arrow_forward</mat-icon>
+                <div class="flow-step producer-step"
+                     matTooltip="Deploys actual security appliances (VMs, containers) with Internal Load Balancer frontends in specific zones"
+                     matTooltipPosition="above">
                   <div class="step-number">2</div>
-                  <div class="step-content">
-                    <h4>Intercept Deployment</h4>
-                    <p>Deploy security appliances in specific zones with ILB frontends</p>
+                  <span>Deployment</span>
+                </div>
+              </div>
+
+              <!-- Connection -->
+              <div class="connection-divider">
+                <div class="intercept-flow">
+                  <mat-icon class="intercept-icon">swap_horiz</mat-icon>
+                  <div class="intercept-label">
+                    <span class="intercept-title">Packet Intercept</span>
+                    <span class="intercept-description">Traffic Redirection</span>
                   </div>
                 </div>
               </div>
-            </div>
 
-            <div class="workflow-section">
-              <h3>Consumer Workflow (Traffic Owner)</h3>
-              <div class="workflow-steps">
-                <div class="step">
+              <!-- Consumer Steps -->
+              <div class="flow-section consumer-section">
+                <div class="section-label">
+                  <mat-icon class="section-icon consumer-icon">traffic</mat-icon>
+                  <div class="label-content">
+                    <span class="label-title">Traffic Owner</span>
+                    <span class="label-subtitle">(Consumer)</span>
+                    <span class="label-description">Needs traffic inspection services via network traffic redirection</span>
+                  </div>
+                </div>
+                <div class="flow-step consumer-step"
+                     matTooltip="References and connects to the security service provider's deployment group"
+                     matTooltipPosition="above">
                   <div class="step-number">3</div>
-                  <div class="step-content">
-                    <h4>Intercept Endpoint Group</h4>
-                    <p>Reference the producer's security service you want to use</p>
-                  </div>
+                  <span>Endpoint Group</span>
                 </div>
-                <div class="step-arrow">→</div>
-                <div class="step">
+                <mat-icon class="flow-arrow">arrow_forward</mat-icon>
+                <div class="flow-step consumer-step"
+                     matTooltip="Associates specific VPC networks with the endpoint group to enable traffic interception"
+                     matTooltipPosition="above">
                   <div class="step-number">4</div>
-                  <div class="step-content">
-                    <h4>VPC Association</h4>
-                    <p>Connect your VPC networks to the endpoint group</p>
-                  </div>
+                  <span>VPC Association</span>
                 </div>
-                <div class="step-arrow">→</div>
-                <div class="step">
+                <mat-icon class="flow-arrow">arrow_forward</mat-icon>
+                <div class="flow-step consumer-step"
+                     matTooltip="Defines security policies and rules that are applied via firewall configurations"
+                     matTooltipPosition="above">
                   <div class="step-number">5</div>
-                  <div class="step-content">
-                    <h4>Security Profiles</h4>
-                    <p>Create policies and apply them via firewall rules</p>
-                  </div>
+                  <span>Security Profiles</span>
                 </div>
               </div>
             </div>
           </div>
 
-          <div class="key-concepts">
-            <h3>Key Concepts</h3>
-            <div class="concepts-grid">
-              <mat-card class="concept-card">
-                <mat-card-content>
-                  <mat-icon class="concept-icon producer">business</mat-icon>
-                  <h4>Service Producer</h4>
-                  <p>Organizations that provide security services (firewall, IDS, etc.) through TPPI</p>
-                </mat-card-content>
-              </mat-card>
-              <mat-card class="concept-card">
-                <mat-card-content>
-                  <mat-icon class="concept-icon consumer">person</mat-icon>
-                  <h4>Service Consumer</h4>
-                  <p>Organizations that want their traffic inspected by third-party security services</p>
-                </mat-card-content>
-              </mat-card>
-              <mat-card class="concept-card">
-                <mat-card-content>
-                  <mat-icon class="concept-icon">security</mat-icon>
-                  <h4>Packet Intercept</h4>
-                  <p>Transparent redirection of network traffic to security appliances for inspection</p>
-                </mat-card-content>
-              </mat-card>
+          <!-- Detailed view (expandable) -->
+          <div *ngIf="showDetailedArchitecture" class="detailed-architecture">
+            <div class="workflow-section producer-workflow">
+              <h4><mat-icon>business</mat-icon> Security Service Provider Workflow</h4>
+              <p class="workflow-description">Organizations that provide security services (firewalls, IDS, DLP, etc.)</p>
+              <div class="workflow-details">
+                <div class="detail-step">
+                  <strong>1. Deployment Group:</strong> Creates a logical container that organizes all security service deployments for a specific offering
+                </div>
+                <div class="detail-step">
+                  <strong>2. Deployment:</strong> Deploys actual security appliances (VMs, containers) with Internal Load Balancer frontends in specific zones
+                </div>
+              </div>
+            </div>
+            
+            <div class="workflow-section consumer-workflow">
+              <h4><mat-icon>person</mat-icon> Traffic Owner Workflow</h4>
+              <p class="workflow-description">Organizations that want their network traffic inspected by third-party security services</p>
+              <div class="workflow-details">
+                <div class="detail-step">
+                  <strong>3. Endpoint Group:</strong> References and connects to the security service provider's deployment group
+                </div>
+                <div class="detail-step">
+                  <strong>4. VPC Association:</strong> Associates specific VPC networks with the endpoint group to enable traffic interception
+                </div>
+                <div class="detail-step">
+                  <strong>5. Security Profiles:</strong> Defines security policies and rules that are applied via firewall configurations
+                </div>
+              </div>
             </div>
           </div>
         </mat-card-content>
@@ -130,161 +164,190 @@ interface TPPIResource {
       <div class="resources-section">
         <div class="section-header">
           <h2>Current TPPI Resources</h2>
-          <mat-button-toggle-group [(value)]="currentView" class="view-toggle">
-            <mat-button-toggle value="producer">Producer Resources</mat-button-toggle>
-            <mat-button-toggle value="consumer">Consumer Resources</mat-button-toggle>
-            <mat-button-toggle value="all">All Resources</mat-button-toggle>
-          </mat-button-toggle-group>
+          <div class="view-controls">
+            <mat-button-toggle-group [(value)]="viewMode" class="layout-toggle">
+              <mat-button-toggle value="table">
+                <mat-icon>table_view</mat-icon>
+                Table
+              </mat-button-toggle>
+              <mat-button-toggle value="cards">
+                <mat-icon>view_module</mat-icon>
+                Cards
+              </mat-button-toggle>
+            </mat-button-toggle-group>
+            <mat-button-toggle-group [(value)]="currentView" class="filter-toggle">
+              <mat-button-toggle value="producer">Service Provider</mat-button-toggle>
+              <mat-button-toggle value="consumer">Traffic Owner</mat-button-toggle>
+              <mat-button-toggle value="all">All Resources</mat-button-toggle>
+            </mat-button-toggle-group>
+          </div>
         </div>
 
-        <!-- Producer Resources -->
-        <div *ngIf="currentView === 'producer' || currentView === 'all'">
-          <mat-card class="resource-category-card">
-            <mat-card-header>
-              <mat-card-title>
-                <mat-icon class="producer-icon">business</mat-icon>
-                Producer Resources (Security Service Provider)
-              </mat-card-title>
-            </mat-card-header>
+        <!-- Table View -->
+        <div *ngIf="viewMode === 'table'" class="table-view">
+          <mat-card class="resources-table-card">
             <mat-card-content>
-              <!-- Deployment Groups -->
-              <div class="resource-section">
-                <h3>Intercept Deployment Groups</h3>
-                <div *ngIf="deploymentGroups.length === 0" class="empty-state">
-                  <mat-icon>inbox</mat-icon>
-                  <p>No deployment groups configured</p>
-                  <button mat-raised-button color="primary" (click)="createDeploymentGroup()">
-                    Create Deployment Group
-                  </button>
-                </div>
-                <div *ngIf="deploymentGroups.length > 0" class="resources-grid">
-                  <mat-card *ngFor="let group of deploymentGroups" class="resource-card">
-                    <mat-card-content>
-                      <div class="resource-header">
-                        <h4>{{ group.name }}</h4>
-                        <mat-chip [color]="getStatusColor(group.status)">{{ group.status }}</mat-chip>
-                      </div>
-                      <p>{{ group.description }}</p>
-                      <div class="resource-details">
-                        <span><strong>Scope:</strong> {{ group.scope }}</span>
-                        <span><strong>Deployments:</strong> {{ group.dependencies?.length || 0 }}</span>
-                      </div>
-                    </mat-card-content>
-                    <mat-card-actions>
-                      <button mat-button (click)="viewResource(group)">View</button>
-                      <button mat-button (click)="editResource(group)">Edit</button>
-                    </mat-card-actions>
-                  </mat-card>
-                </div>
-              </div>
+              <table mat-table [dataSource]="getFilteredResources()" class="resources-table">
+                <!-- Name Column -->
+                <ng-container matColumnDef="name">
+                  <th mat-header-cell *matHeaderCellDef>Name</th>
+                  <td mat-cell *matCellDef="let resource">
+                    <div class="resource-name">
+                      <mat-icon [class]="getResourceTypeIcon(resource.type)">{{ getResourceIcon(resource.type) }}</mat-icon>
+                      <span>{{ resource.name }}</span>
+                    </div>
+                  </td>
+                </ng-container>
 
-              <!-- Deployments -->
-              <div class="resource-section">
-                <h3>Intercept Deployments</h3>
-                <div *ngIf="deployments.length === 0" class="empty-state">
-                  <mat-icon>inbox</mat-icon>
-                  <p>No deployments configured</p>
-                  <button mat-raised-button color="primary" (click)="createDeployment()">
-                    Create Deployment
-                  </button>
-                </div>
-                <div *ngIf="deployments.length > 0" class="resources-grid">
-                  <mat-card *ngFor="let deployment of deployments" class="resource-card">
-                    <mat-card-content>
-                      <div class="resource-header">
-                        <h4>{{ deployment.name }}</h4>
-                        <mat-chip [color]="getStatusColor(deployment.status)">{{ deployment.status }}</mat-chip>
-                      </div>
-                      <p>{{ deployment.description }}</p>
-                      <div class="resource-details">
-                        <span><strong>Scope:</strong> {{ deployment.scope }}</span>
-                        <span><strong>Type:</strong> {{ deployment.type }}</span>
-                      </div>
-                    </mat-card-content>
-                    <mat-card-actions>
-                      <button mat-button (click)="viewResource(deployment)">View</button>
-                      <button mat-button (click)="editResource(deployment)">Edit</button>
-                    </mat-card-actions>
-                  </mat-card>
-                </div>
+                <!-- Type Column -->
+                <ng-container matColumnDef="type">
+                  <th mat-header-cell *matHeaderCellDef>Type</th>
+                  <td mat-cell *matCellDef="let resource">{{ resource.type }}</td>
+                </ng-container>
+
+                <!-- Status Column -->
+                <ng-container matColumnDef="status">
+                  <th mat-header-cell *matHeaderCellDef>Status</th>
+                  <td mat-cell *matCellDef="let resource">
+                    <mat-chip [ngClass]="'status-' + resource.status.toLowerCase()">
+                      {{ resource.status }}
+                    </mat-chip>
+                  </td>
+                </ng-container>
+
+                <!-- Scope Column -->
+                <ng-container matColumnDef="scope">
+                  <th mat-header-cell *matHeaderCellDef>Scope</th>
+                  <td mat-cell *matCellDef="let resource">{{ resource.scope }}</td>
+                </ng-container>
+
+                <!-- Description Column -->
+                <ng-container matColumnDef="description">
+                  <th mat-header-cell *matHeaderCellDef>Description</th>
+                  <td mat-cell *matCellDef="let resource" class="description-cell">
+                    {{ resource.description || 'No description' }}
+                  </td>
+                </ng-container>
+
+                <!-- Actions Column -->
+                <ng-container matColumnDef="actions">
+                  <th mat-header-cell *matHeaderCellDef>Actions</th>
+                  <td mat-cell *matCellDef="let resource">
+                    <button mat-icon-button (click)="viewResource(resource)" matTooltip="View details">
+                      <mat-icon>visibility</mat-icon>
+                    </button>
+                    <button mat-icon-button (click)="editResource(resource)" matTooltip="Edit">
+                      <mat-icon>edit</mat-icon>
+                    </button>
+                  </td>
+                </ng-container>
+
+                <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                <tr mat-row *matRowDef="let row; columns: displayedColumns;"
+                    [class.selected]="false"></tr>
+              </table>
+
+              <!-- Empty state for table -->
+              <div *ngIf="getFilteredResources().length === 0" class="empty-table-state">
+                <mat-icon>inbox</mat-icon>
+                <h3>No TPPI resources found</h3>
+                <p>Get started by creating your first resource</p>
+                <button mat-raised-button color="primary" (click)="openSetupWizard()">
+                  <mat-icon>add</mat-icon>
+                  Setup TPPI
+                </button>
               </div>
             </mat-card-content>
           </mat-card>
         </div>
 
-        <!-- Consumer Resources -->
-        <div *ngIf="currentView === 'consumer' || currentView === 'all'">
-          <mat-card class="resource-category-card">
-            <mat-card-header>
-              <mat-card-title>
-                <mat-icon class="consumer-icon">person</mat-icon>
-                Consumer Resources (Traffic Owner)
-              </mat-card-title>
-            </mat-card-header>
-            <mat-card-content>
-              <!-- Endpoint Groups -->
-              <div class="resource-section">
-                <h3>Intercept Endpoint Groups</h3>
-                <div *ngIf="endpointGroups.length === 0" class="empty-state">
-                  <mat-icon>inbox</mat-icon>
-                  <p>No endpoint groups configured</p>
-                  <button mat-raised-button color="primary" (click)="createEndpointGroup()">
-                    Create Endpoint Group
+        <!-- Card View -->
+        <div *ngIf="viewMode === 'cards'">
+          <!-- Producer Resources -->
+          <div *ngIf="currentView === 'producer' || currentView === 'all'">
+            <mat-card class="resource-category-card producer-card">
+              <mat-card-header>
+                <mat-card-title>
+                  <mat-icon class="producer-icon">business</mat-icon>
+                  Security Service Provider Resources
+                </mat-card-title>
+              </mat-card-header>
+              <mat-card-content>
+                <div *ngIf="getProducerResources().length === 0" class="empty-state">
+                  <mat-icon>business</mat-icon>
+                  <p>No producer resources configured</p>
+                  <button mat-raised-button color="primary" (click)="openSetupWizard('producer')">
+                    Create Producer Resources
                   </button>
                 </div>
-                <div *ngIf="endpointGroups.length > 0" class="resources-grid">
-                  <mat-card *ngFor="let group of endpointGroups" class="resource-card">
+                <div *ngIf="getProducerResources().length > 0" class="resources-grid">
+                  <mat-card *ngFor="let resource of getProducerResources()" class="resource-card">
                     <mat-card-content>
                       <div class="resource-header">
-                        <h4>{{ group.name }}</h4>
-                        <mat-chip [color]="getStatusColor(group.status)">{{ group.status }}</mat-chip>
+                        <div class="resource-name">
+                          <mat-icon [class]="getResourceTypeIcon(resource.type)">{{ getResourceIcon(resource.type) }}</mat-icon>
+                          <h4>{{ resource.name }}</h4>
+                        </div>
+                        <mat-chip [ngClass]="'status-' + resource.status.toLowerCase()">{{ resource.status }}</mat-chip>
                       </div>
-                      <p>{{ group.description }}</p>
+                      <p class="resource-description">{{ resource.description || 'No description' }}</p>
                       <div class="resource-details">
-                        <span><strong>Scope:</strong> {{ group.scope }}</span>
-                        <span><strong>Associations:</strong> {{ group.dependencies?.length || 0 }}</span>
+                        <span><strong>Type:</strong> {{ resource.type }}</span>
+                        <span><strong>Scope:</strong> {{ resource.scope }}</span>
                       </div>
                     </mat-card-content>
                     <mat-card-actions>
-                      <button mat-button (click)="viewResource(group)">View</button>
-                      <button mat-button (click)="editResource(group)">Edit</button>
+                      <button mat-button (click)="viewResource(resource)">View</button>
+                      <button mat-button (click)="editResource(resource)">Edit</button>
                     </mat-card-actions>
                   </mat-card>
                 </div>
-              </div>
+              </mat-card-content>
+            </mat-card>
+          </div>
 
-              <!-- Security Profiles -->
-              <div class="resource-section">
-                <h3>Security Profiles & Groups</h3>
-                <div *ngIf="securityProfiles.length === 0" class="empty-state">
-                  <mat-icon>inbox</mat-icon>
-                  <p>No security profiles configured</p>
-                  <button mat-raised-button color="primary" (click)="createSecurityProfile()">
-                    Create Security Profile
+          <!-- Consumer Resources -->
+          <div *ngIf="currentView === 'consumer' || currentView === 'all'">
+            <mat-card class="resource-category-card consumer-card">
+              <mat-card-header>
+                <mat-card-title>
+                  <mat-icon class="consumer-icon">person</mat-icon>
+                  Traffic Owner Resources
+                </mat-card-title>
+              </mat-card-header>
+              <mat-card-content>
+                <div *ngIf="getConsumerResources().length === 0" class="empty-state">
+                  <mat-icon>person</mat-icon>
+                  <p>No consumer resources configured</p>
+                  <button mat-raised-button color="primary" (click)="openSetupWizard('consumer')">
+                    Create Consumer Resources
                   </button>
                 </div>
-                <div *ngIf="securityProfiles.length > 0" class="resources-grid">
-                  <mat-card *ngFor="let profile of securityProfiles" class="resource-card">
+                <div *ngIf="getConsumerResources().length > 0" class="resources-grid">
+                  <mat-card *ngFor="let resource of getConsumerResources()" class="resource-card">
                     <mat-card-content>
                       <div class="resource-header">
-                        <h4>{{ profile.name }}</h4>
-                        <mat-chip [color]="getStatusColor(profile.status)">{{ profile.status }}</mat-chip>
+                        <div class="resource-name">
+                          <mat-icon [class]="getResourceTypeIcon(resource.type)">{{ getResourceIcon(resource.type) }}</mat-icon>
+                          <h4>{{ resource.name }}</h4>
+                        </div>
+                        <mat-chip [ngClass]="'status-' + resource.status.toLowerCase()">{{ resource.status }}</mat-chip>
                       </div>
-                      <p>{{ profile.description }}</p>
+                      <p class="resource-description">{{ resource.description || 'No description' }}</p>
                       <div class="resource-details">
-                        <span><strong>Type:</strong> {{ profile.type }}</span>
-                        <span><strong>Scope:</strong> {{ profile.scope }}</span>
+                        <span><strong>Type:</strong> {{ resource.type }}</span>
+                        <span><strong>Scope:</strong> {{ resource.scope }}</span>
                       </div>
                     </mat-card-content>
                     <mat-card-actions>
-                      <button mat-button (click)="viewResource(profile)">View</button>
-                      <button mat-button (click)="editResource(profile)">Edit</button>
+                      <button mat-button (click)="viewResource(resource)">View</button>
+                      <button mat-button (click)="editResource(resource)">Edit</button>
                     </mat-card-actions>
                   </mat-card>
                 </div>
-              </div>
-            </mat-card-content>
-          </mat-card>
+              </mat-card-content>
+            </mat-card>
+          </div>
         </div>
       </div>
 
@@ -301,15 +364,15 @@ interface TPPIResource {
             <button mat-raised-button class="action-button producer" (click)="openSetupWizard('producer')">
               <mat-icon>business</mat-icon>
               <div class="action-content">
-                <h4>Set up as Producer</h4>
-                <p>Provide security services to other organizations</p>
+                <h4>Set up as Security Service Provider</h4>
+                <p>Offer security inspection services (firewall, IDS, DLP) to other organizations</p>
               </div>
             </button>
             <button mat-raised-button class="action-button consumer" (click)="openSetupWizard('consumer')">
               <mat-icon>person</mat-icon>
               <div class="action-content">
-                <h4>Set up as Consumer</h4>
-                <p>Use third-party security services for your traffic</p>
+                <h4>Set up as Traffic Owner</h4>
+                <p>Route your network traffic through third-party security services for inspection</p>
               </div>
             </button>
             <button mat-raised-button class="action-button" (click)="viewDocumentation()">
@@ -334,157 +397,316 @@ interface TPPIResource {
     }
 
     .page-header {
-      background: linear-gradient(135deg, #6a1b9a, #8e24aa);
-      color: white;
+      background: white;
+      color: var(--text-color);
       padding: 32px 40px;
       display: flex;
       justify-content: space-between;
-      align-items: center;
+      align-items: flex-start;
+      border-bottom: 1px solid var(--border-color);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .header-content {
+      flex: 1;
+      max-width: 900px;
     }
 
     .header-content h1 {
       font-size: 2.5rem;
-      font-weight: 300;
-      margin: 0 0 8px 0;
+      font-weight: 400;
+      margin: 0 0 4px 0;
+      color: #1a73e8;
+    }
+
+    .page-subtitle {
+      font-size: 1.2rem;
+      font-weight: 500;
+      margin: 0 0 16px 0;
+      color: var(--text-secondary-color);
     }
 
     .page-description {
-      font-size: 1.1rem;
-      opacity: 0.9;
+      font-size: 1rem;
+      line-height: 1.6;
+      margin: 0 0 20px 0;
+      color: var(--text-secondary-color);
       max-width: 800px;
-      line-height: 1.5;
-      margin: 0;
+    }
+
+
+
+    .header-actions {
+      margin-top: 8px;
     }
 
     .header-actions button {
-      background: rgba(255,255,255,0.1);
+      background: #1a73e8;
       color: white;
-      border: 1px solid rgba(255,255,255,0.3);
+      border: none;
     }
 
     .architecture-card {
-      margin: -20px 40px 32px;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      margin: 24px 40px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
       background: var(--surface-color);
       border: 1px solid var(--border-color);
     }
 
-    .architecture-diagram {
-      margin: 24px 0;
+    .architecture-card mat-card-header {
+      padding-bottom: 8px;
     }
 
-    .workflow-section {
-      margin-bottom: 32px;
-      padding: 20px;
+    .flow-diagram {
+      margin: 16px 0;
+    }
+
+    .single-line-flow {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      padding: 16px;
       background: var(--hover-color);
       border-radius: 8px;
       border: 1px solid var(--border-color);
+      flex-wrap: wrap;
     }
 
-    .workflow-section h3 {
-      margin: 0 0 20px 0;
-      color: #6a1b9a;
+    .flow-section {
       display: flex;
       align-items: center;
       gap: 8px;
     }
 
-    .workflow-steps {
+    .section-label {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-right: 16px;
+      text-align: center;
+      min-width: 120px;
+    }
+
+    .section-label mat-icon {
+      font-size: 24px;
+      width: 24px;
+      height: 24px;
+      margin-bottom: 8px;
+    }
+
+    .label-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+    }
+
+    .label-title {
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 1.1;
+    }
+
+    .label-subtitle {
+      font-size: 11px;
+      font-weight: 600;
+      opacity: 0.8;
+      line-height: 1;
+    }
+
+    .label-description {
+      font-size: 10px;
+      font-weight: 400;
+      opacity: 0.7;
+      line-height: 1.2;
+      margin-top: 2px;
+    }
+
+    .producer-section .section-label {
+      color: #1a73e8;
+    }
+
+    .consumer-section .section-label {
+      color: #34a853;
+    }
+
+    .connection-divider {
       display: flex;
       align-items: center;
-      gap: 16px;
-      flex-wrap: wrap;
+      margin: 0 8px;
     }
 
-    .step {
-      background: var(--surface-color);
-      padding: 16px;
-      border-radius: 8px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      min-width: 200px;
-      flex: 1;
-      border: 1px solid var(--border-color);
+    .connection-divider mat-icon {
+      font-size: 24px;
+      color: #1a73e8;
     }
 
-    .step-number {
-      background: #6a1b9a;
+    .flow-step {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 12px 16px;
+      border-radius: 6px;
+      min-width: 90px;
+      font-size: 11px;
+      text-align: center;
+      transition: all 0.2s ease;
+      cursor: help;
+      position: relative;
+    }
+
+    .flow-step:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+
+    .flow-step.producer-step {
+      background: rgba(26, 115, 232, 0.1);
+      border: 1px solid rgba(26, 115, 232, 0.3);
+    }
+
+    .flow-step.producer-step:hover {
+      background: rgba(26, 115, 232, 0.15);
+    }
+
+    .flow-step.consumer-step {
+      background: rgba(52, 168, 83, 0.1);
+      border: 1px solid rgba(52, 168, 83, 0.3);
+    }
+
+    .flow-step.consumer-step:hover {
+      background: rgba(52, 168, 83, 0.15);
+    }
+
+    .flow-step .step-number {
+      background: #1a73e8;
       color: white;
-      width: 32px;
-      height: 32px;
+      width: 24px;
+      height: 24px;
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
       font-weight: bold;
-      margin-bottom: 12px;
+      font-size: 12px;
+      margin-bottom: 6px;
+      box-shadow: 0 2px 4px rgba(26, 115, 232, 0.3);
     }
 
-    .step-content h4 {
-      margin: 0 0 8px 0;
+    .flow-step span {
+      font-weight: 600;
       color: var(--text-color);
+      line-height: 1.2;
     }
 
-    .step-content p {
-      margin: 0;
-      color: var(--text-secondary-color);
-      font-size: 14px;
-      line-height: 1.4;
+    .flow-arrow {
+      color: #1a73e8;
+      font-size: 18px;
+      margin: 0 4px;
+      opacity: 0.7;
     }
 
-    .step-arrow {
-      font-size: 24px;
-      color: #6a1b9a;
-      font-weight: bold;
+    .section-icon {
+      font-size: 20px !important;
+      width: 20px;
+      height: 20px;
+      margin-right: 8px;
     }
 
-    .key-concepts {
-      margin-top: 32px;
+    .producer-icon {
+      color: #1a73e8;
     }
 
-    .key-concepts h3 {
-      margin: 0 0 16px 0;
-      color: #6a1b9a;
+    .consumer-icon {
+      color: #34a853;
     }
 
-    .concepts-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 16px;
+    .intercept-flow {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
     }
 
-    .concept-card {
+    .intercept-icon {
+      color: #ea4335;
+      font-size: 24px !important;
+      width: 24px;
+      height: 24px;
+    }
+
+    .intercept-label {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
       text-align: center;
-      background: var(--surface-color);
+    }
+
+    .intercept-title {
+      font-weight: 600;
+      font-size: 11px;
+      color: #ea4335;
+      line-height: 1;
+    }
+
+    .intercept-description {
+      font-size: 10px;
+      color: var(--text-secondary-color);
+      line-height: 1;
+    }
+
+    .detailed-architecture {
+      margin-top: 16px;
+      border-top: 1px solid var(--border-color);
+      padding-top: 16px;
+    }
+
+    .workflow-section {
+      margin-bottom: 16px;
+      padding: 12px;
+      border-radius: 6px;
       border: 1px solid var(--border-color);
     }
 
-    .concept-icon {
-      font-size: 48px;
-      width: 48px;
-      height: 48px;
-      margin-bottom: 12px;
+    .workflow-section.producer-workflow {
+      background: rgba(26, 115, 232, 0.04);
+      border-color: rgba(26, 115, 232, 0.2);
     }
 
-    .concept-icon.producer {
-      color: #1976d2;
+    .workflow-section.consumer-workflow {
+      background: rgba(52, 168, 83, 0.04);
+      border-color: rgba(52, 168, 83, 0.2);
     }
 
-    .concept-icon.consumer {
-      color: #388e3c;
-    }
-
-    .concept-card h4 {
+    .workflow-section h4 {
       margin: 0 0 8px 0;
-      color: var(--text-color);
+      color: #1a73e8;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
     }
 
-    .concept-card p {
-      margin: 0;
+    .workflow-description {
+      margin: 0 0 12px 0;
+      font-size: 13px;
       color: var(--text-secondary-color);
-      font-size: 14px;
-      line-height: 1.4;
+      font-style: italic;
     }
+
+    .workflow-details {
+      margin-left: 28px;
+    }
+
+    .detail-step {
+      margin-bottom: 4px;
+      font-size: 13px;
+      color: var(--text-secondary-color);
+    }
+
+
 
     .resources-section {
       margin: 0 40px 32px;
@@ -494,45 +716,144 @@ interface TPPIResource {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 24px;
+      margin-bottom: 20px;
     }
 
     .section-header h2 {
       margin: 0;
       color: var(--text-color);
+      font-size: 1.4rem;
     }
 
-    .view-toggle {
+    .view-controls {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .layout-toggle,
+    .filter-toggle {
       background: var(--surface-color);
-      border-radius: 8px;
+      border-radius: 6px;
       border: 1px solid var(--border-color);
     }
 
-    .resource-category-card {
+    .layout-toggle .mat-button-toggle {
+      border: none;
+    }
+
+    .filter-toggle .mat-button-toggle {
+      border: none;
+    }
+
+    /* Table View Styles */
+    .table-view {
       margin-bottom: 24px;
-      border-radius: 12px;
+    }
+
+    .resources-table-card {
+      border-radius: 8px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
       background: var(--surface-color);
       border: 1px solid var(--border-color);
     }
 
+    .resources-table {
+      width: 100%;
+      background: var(--surface-color);
+    }
+
+    .resources-table th {
+      background: var(--hover-color);
+      color: var(--text-color);
+      font-weight: 600;
+      border-bottom: 2px solid #1a73e8;
+    }
+
+    .resources-table td {
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .resource-name {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .description-cell {
+      max-width: 200px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .empty-table-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-secondary-color);
+    }
+
+    .empty-table-state mat-icon {
+      font-size: 64px;
+      width: 64px;
+      height: 64px;
+      margin-bottom: 16px;
+      opacity: 0.5;
+    }
+
+    .empty-table-state h3 {
+      margin: 0 0 8px 0;
+      color: var(--text-color);
+    }
+
+    /* Status chips in table */
+    .status-active {
+      background: rgba(52, 168, 83, 0.1);
+      color: #34a853;
+      border: 1px solid rgba(52, 168, 83, 0.3);
+    }
+
+    .status-inactive {
+      background: rgba(158, 158, 158, 0.1);
+      color: #9e9e9e;
+      border: 1px solid rgba(158, 158, 158, 0.3);
+    }
+
+    .status-pending {
+      background: rgba(251, 188, 5, 0.1);
+      color: #fbbc05;
+      border: 1px solid rgba(251, 188, 5, 0.3);
+    }
+
+    .status-error {
+      background: rgba(234, 67, 53, 0.1);
+      color: #ea4335;
+      border: 1px solid rgba(234, 67, 53, 0.3);
+    }
+
+    /* Card View Styles */
+    .resource-category-card {
+      margin-bottom: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      background: var(--surface-color);
+      border: 1px solid var(--border-color);
+    }
+
+    .resource-category-card.producer-card {
+      border-left: 4px solid #1a73e8;
+    }
+
+    .resource-category-card.consumer-card {
+      border-left: 4px solid #34a853;
+    }
+
     .producer-icon {
-      color: #1976d2;
+      color: #1a73e8;
     }
 
     .consumer-icon {
-      color: #388e3c;
-    }
-
-    .resource-section {
-      margin-bottom: 32px;
-    }
-
-    .resource-section h3 {
-      margin: 0 0 16px 0;
-      color: #6a1b9a;
-      border-bottom: 2px solid var(--border-color);
-      padding-bottom: 8px;
+      color: #34a853;
     }
 
     .empty-state {
@@ -571,13 +892,28 @@ interface TPPIResource {
     .resource-header {
       display: flex;
       justify-content: space-between;
-      align-items: center;
+      align-items: flex-start;
       margin-bottom: 8px;
+    }
+
+    .resource-header .resource-name {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 1;
     }
 
     .resource-header h4 {
       margin: 0;
       color: var(--text-color);
+      font-size: 16px;
+    }
+
+    .resource-description {
+      margin: 8px 0;
+      color: var(--text-secondary-color);
+      font-size: 14px;
+      line-height: 1.4;
     }
 
     .resource-details {
@@ -587,6 +923,23 @@ interface TPPIResource {
       margin-top: 12px;
       font-size: 12px;
       color: var(--text-secondary-color);
+    }
+
+    /* Resource type icons */
+    .deployment-group-icon {
+      color: #1a73e8;
+    }
+
+    .deployment-icon {
+      color: #4285f4;
+    }
+
+    .endpoint-group-icon {
+      color: #34a853;
+    }
+
+    .security-profile-icon {
+      color: #ea4335;
     }
 
     .quick-actions-card {
@@ -677,6 +1030,8 @@ interface TPPIResource {
         padding: 20px;
       }
 
+
+
       .architecture-card,
       .resources-section,
       .quick-actions-card {
@@ -684,12 +1039,29 @@ interface TPPIResource {
         margin-right: 20px;
       }
 
-      .workflow-steps {
+      .single-line-flow {
         flex-direction: column;
+        gap: 16px;
       }
 
-      .step-arrow {
+      .flow-section {
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .section-label {
+        margin-right: 0;
+        margin-bottom: 8px;
+      }
+
+      .flow-arrow {
         transform: rotate(90deg);
+        margin: 8px 0;
+      }
+
+      .connection-divider {
+        margin: 12px 0;
       }
 
       .section-header {
@@ -705,6 +1077,13 @@ interface TPPIResource {
 
     /* Dark theme specific adjustments */
     :host-context(.dark-theme) {
+      .page-header {
+        background: var(--surface-color) !important;
+        border-bottom-color: var(--border-color);
+      }
+
+
+
       .architecture-card,
       .resource-category-card,
       .quick-actions-card,
@@ -842,7 +1221,12 @@ interface TPPIResource {
 })
 export class TPPIManagementComponent implements OnInit {
   currentView = 'all';
+  viewMode = 'table';
+  showDetailedArchitecture = false;
   projectId: string | null = null;
+
+  // Table columns
+  displayedColumns: string[] = ['name', 'type', 'status', 'scope', 'description', 'actions'];
 
   // Mock data for demonstration
   deploymentGroups: TPPIResource[] = [];
@@ -852,7 +1236,7 @@ export class TPPIManagementComponent implements OnInit {
 
   constructor(
     private fb: FormBuilder,
-    private dialog: MatDialog,
+    private router: Router,
     private snackBar: MatSnackBar,
     private projectService: ProjectService
   ) {}
@@ -913,6 +1297,73 @@ export class TPPIManagementComponent implements OnInit {
     ];
   }
 
+  toggleArchitectureView() {
+    this.showDetailedArchitecture = !this.showDetailedArchitecture;
+  }
+
+  getAllResources(): TPPIResource[] {
+    return [
+      ...this.deploymentGroups,
+      ...this.deployments,
+      ...this.endpointGroups,
+      ...this.securityProfiles
+    ];
+  }
+
+  getFilteredResources(): TPPIResource[] {
+    const allResources = this.getAllResources();
+    
+    if (this.currentView === 'producer') {
+      return allResources.filter(r => 
+        r.type === 'Deployment Group' || r.type === 'Deployment'
+      );
+    } else if (this.currentView === 'consumer') {
+      return allResources.filter(r => 
+        r.type === 'Endpoint Group' || r.type === 'Security Profile'
+      );
+    }
+    
+    return allResources;
+  }
+
+  getProducerResources(): TPPIResource[] {
+    return [...this.deploymentGroups, ...this.deployments];
+  }
+
+  getConsumerResources(): TPPIResource[] {
+    return [...this.endpointGroups, ...this.securityProfiles];
+  }
+
+  getResourceIcon(type: string): string {
+    switch (type) {
+      case 'Deployment Group':
+        return 'business_center';
+      case 'Deployment':
+        return 'cloud_queue';
+      case 'Endpoint Group':
+        return 'hub';
+      case 'Security Profile':
+        return 'security';
+      default:
+        return 'help';
+    }
+  }
+
+  getResourceTypeIcon(type: string): string {
+    switch (type) {
+      case 'Deployment Group':
+        return 'deployment-group-icon';
+      case 'Deployment':
+        return 'deployment-icon';
+      case 'Endpoint Group':
+        return 'endpoint-group-icon';
+      case 'Security Profile':
+        return 'security-profile-icon';
+      default:
+        return '';
+    }
+  }
+
   getStatusColor(status: string): string {
     switch (status.toLowerCase()) {
       case 'active': return 'primary';
@@ -923,46 +1374,27 @@ export class TPPIManagementComponent implements OnInit {
   }
 
   openSetupWizard(role?: string) {
-    const dialogRef = this.dialog.open(TPPISetupWizardComponent, {
-      width: '900px',
-      maxWidth: '90vw',
-      disableClose: true,
-      data: { role, projectId: this.projectId }
-    });
-
-    dialogRef.afterClosed().subscribe(result => {
-      if (result && result.success) {
-        this.snackBar.open(`TPPI setup completed successfully for ${result.role}!`, 'Close', {
-          duration: 5000,
-          panelClass: 'success-snackbar'
-        });
-        this.loadTPPIResources(); // Refresh the resources
-      }
-    });
+    if (role) {
+      this.router.navigate(['/tppi/setup'], { queryParams: { role } });
+    } else {
+      this.router.navigate(['/tppi/setup']);
+    }
   }
 
   createDeploymentGroup() {
-    this.snackBar.open('Opening Deployment Group creation wizard...', 'Close', {
-      duration: 3000
-    });
+    this.router.navigate(['/tppi/setup'], { queryParams: { role: 'producer', resource: 'deployment-group' } });
   }
 
   createDeployment() {
-    this.snackBar.open('Opening Deployment creation wizard...', 'Close', {
-      duration: 3000
-    });
+    this.router.navigate(['/tppi/setup'], { queryParams: { role: 'producer', resource: 'deployment' } });
   }
 
   createEndpointGroup() {
-    this.snackBar.open('Opening Endpoint Group creation wizard...', 'Close', {
-      duration: 3000
-    });
+    this.router.navigate(['/tppi/setup'], { queryParams: { role: 'consumer', resource: 'endpoint-group' } });
   }
 
   createSecurityProfile() {
-    this.snackBar.open('Opening Security Profile creation wizard...', 'Close', {
-      duration: 3000
-    });
+    this.router.navigate(['/tppi/setup'], { queryParams: { role: 'consumer', resource: 'security-profile' } });
   }
 
   viewResource(resource: TPPIResource) {

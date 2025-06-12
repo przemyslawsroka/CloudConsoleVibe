@@ -14,6 +14,7 @@ import { FirewallManagementComponent } from './components/firewall-management/fi
 import { FlowAnalyzerComponent } from './components/flow-analyzer/flow-analyzer.component';
 import { NetworkSolutionsComponent } from './components/network-solutions/network-solutions.component';
 import { DistributedApplicationComponent } from './components/distributed-application/distributed-application.component';
+import { DistributedApplicationWizardComponent } from './components/distributed-application-wizard/distributed-application-wizard.component';
 import { DnsManagementComponent } from './components/dns-management/dns-management.component';
 import { ConnectivityTestsComponent } from './components/connectivity-tests/connectivity-tests.component';
 import { CloudArmorPoliciesComponent } from './components/cloud-armor-policies/cloud-armor-policies.component';
@@ -25,6 +26,7 @@ import { LoadBalancerConfigureComponent } from './components/load-balancing/load
 import { DocumentationComponent } from './components/documentation/documentation.component';
 import { CreateVpcNetworkComponent } from './components/create-vpc-network/create-vpc-network.component';
 import { TPPIManagementComponent } from './components/tppi-management/tppi-management.component';
+import { TPPISetupWizardComponent } from './components/tppi-setup-wizard/tppi-setup-wizard.component';
 import { PacketMirroringManagementComponent } from './components/packet-mirroring-management/packet-mirroring-management.component';
 import { NetworkHealthMonitorComponent } from './components/network-health-monitor/network-health-monitor.component';
 import { NetworkHealthMonitorDetailsComponent } from './components/network-health-monitor-details/network-health-monitor-details.component';
@@ -40,6 +42,8 @@ import { CloudNatDetailsComponent } from './components/cloud-nat-details/cloud-n
 import { CreateCloudNatComponent } from './components/create-cloud-nat/create-cloud-nat.component';
 import { CreateRouteComponent } from './components/create-route/create-route.component';
 import { GkeClustersComponent } from './components/gke-clusters/gke-clusters.component';
+import { NetworkConnectivityComponent } from './components/network-connectivity/network-connectivity.component';
+import { GlobalFrontendWizardComponent } from './components/global-frontend-wizard/global-frontend-wizard.component';
 
 const routes: Routes = [
   { path: '', redirectTo: '/vpc', pathMatch: 'full' },
@@ -75,12 +79,14 @@ const routes: Routes = [
   { path: 'flow-analyzer', component: FlowAnalyzerComponent },
   { path: 'network-solutions', component: NetworkSolutionsComponent },
   { path: 'distributed-application', component: DistributedApplicationComponent },
+  { path: 'distributed-application/wizard', component: DistributedApplicationWizardComponent },
   { path: 'dns-management', component: DnsManagementComponent, canActivate: [AuthGuard] },
   { path: 'connectivity-tests', component: ConnectivityTestsComponent, canActivate: [AuthGuard] },
   { path: 'cloud-armor-policies', component: CloudArmorPoliciesComponent, canActivate: [AuthGuard] },
   { path: 'tls-inspection-policies', component: TlsInspectionPoliciesComponent, canActivate: [AuthGuard] },
   { path: 'address-groups', component: AddressGroupsComponent, canActivate: [AuthGuard] },
   { path: 'tppi', component: TPPIManagementComponent, canActivate: [AuthGuard] },
+  { path: 'tppi/setup', component: TPPISetupWizardComponent, canActivate: [AuthGuard] },
   { path: 'packet-mirroring', component: PacketMirroringManagementComponent, canActivate: [AuthGuard] },
   { path: 'load-balancing', component: LoadBalancingComponent, canActivate: [AuthGuard] },
   { path: 'load-balancing/create', component: CreateLoadBalancerComponent, canActivate: [AuthGuard] },
@@ -104,6 +110,12 @@ const routes: Routes = [
     component: NetworkHealthMonitorDetailsComponent
   },
   { path: 'kubernetes/clusters', component: GkeClustersComponent, canActivate: [AuthGuard] },
+  { path: 'network-connectivity', component: NetworkConnectivityComponent, canActivate: [AuthGuard] },
+  { path: 'network-connectivity/hubs/create', component: NetworkConnectivityComponent, canActivate: [AuthGuard] },
+  { path: 'network-connectivity/hubs/:hubId', component: NetworkConnectivityComponent, canActivate: [AuthGuard] },
+  { path: 'network-connectivity/spokes/create', component: NetworkConnectivityComponent, canActivate: [AuthGuard] },
+  { path: 'network-connectivity/spokes/:spokeId', component: NetworkConnectivityComponent, canActivate: [AuthGuard] },
+  { path: 'global-frontend-wizard', component: GlobalFrontendWizardComponent, canActivate: [AuthGuard] },
   {
     path: 'monitoring',
     loadChildren: () => import('./components/monitoring/monitoring.module').then(m => m.MonitoringModule),

@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, FormArray } from '@angular/forms';
+import { Router } from '@angular/router';
 import { DistributedApplicationService, DistributedAppConfig, TerraformTemplate } from '../../services/distributed-application.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
@@ -9,7 +10,7 @@ interface WizardStep {
 }
 
 @Component({
-  selector: 'app-distributed-application',
+  selector: 'app-distributed-application-wizard',
   template: `
     <div class="wizard-container">
       <div class="wizard-header">
@@ -763,7 +764,7 @@ interface WizardStep {
     }
   `]
 })
-export class DistributedApplicationComponent implements OnInit {
+export class DistributedApplicationWizardComponent implements OnInit {
   currentStep = 0;
   steps: WizardStep[] = [
     { title: 'Project & Architecture', completed: false },
@@ -783,6 +784,7 @@ export class DistributedApplicationComponent implements OnInit {
 
   constructor(
     private fb: FormBuilder,
+    private router: Router,
     private distributedAppService: DistributedApplicationService,
     private snackBar: MatSnackBar
   ) {
