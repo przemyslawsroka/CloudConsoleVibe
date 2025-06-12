@@ -228,7 +228,7 @@ import { Component } from '@angular/core';
               <a href="#" class="github-link">View on GitHub ↗</a>
               <div class="action-buttons">
                 <button mat-stroked-button class="preview-btn">Preview solution</button>
-                <button mat-raised-button color="primary" class="get-started-btn">Get started</button>
+                <button mat-raised-button color="primary" class="get-started-btn" routerLink="/google-wan-wizard">Get started</button>
               </div>
             </div>
           </div>
