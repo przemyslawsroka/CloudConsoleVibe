@@ -935,6 +935,343 @@ export class ComputeEngineService {
   }
 
   /**
+   * Create a new VM instance
+   */
+  createInstance(instanceConfig: any): Observable<InstanceOperation> {
+    if (this.authService.isDemoMode()) {
+      // Create mock instance
+      const mockInstance: VmInstance = {
+        id: Math.random().toString(36).substr(2, 9),
+        name: instanceConfig.name,
+        zone: instanceConfig.zone,
+        machineType: instanceConfig.machineType,
+        status: 'PROVISIONING',
+        internalIp: '10.128.0.' + Math.floor(Math.random() * 255),
+        externalIp: instanceConfig.externalIp ? '34.123.' + Math.floor(Math.random() * 255) + '.' + Math.floor(Math.random() * 255) : undefined,
+        networkInterfaces: [{
+          name: 'nic0',
+          network: instanceConfig.network,
+          subnetwork: instanceConfig.subnet,
+          networkIP: '10.128.0.' + Math.floor(Math.random() * 255),
+          accessConfigs: instanceConfig.externalIp ? [{
+            type: 'ONE_TO_ONE_NAT',
+            name: 'External NAT',
+            natIP: '34.123.' + Math.floor(Math.random() * 255) + '.' + Math.floor(Math.random() * 255),
+            networkTier: 'PREMIUM',
+            kind: 'compute#accessConfig'
+          }] : [],
+          fingerprint: 'fingerprint',
+          kind: 'compute#networkInterface',
+          stackType: 'IPV4_ONLY'
+        }],
+        disks: [{
+          boot: true,
+          deviceName: 'persistent-disk-0',
+          index: 0,
+          kind: 'compute#attachedDisk',
+          source: 'projects/project/zones/' + instanceConfig.zone + '/disks/' + instanceConfig.name,
+          type: 'PERSISTENT',
+          mode: 'READ_WRITE',
+          autoDelete: true,
+          interface: 'SCSI',
+          guestOsFeatures: [],
+          diskSizeGb: instanceConfig.bootDiskSize.toString()
+        }],
+        serviceAccounts: [{
+          email: 'default',
+          scopes: ['https://www.googleapis.com/auth/cloud-platform']
+        }],
+        metadata: {
+          fingerprint: 'fingerprint',
+          items: [],
+          kind: 'compute#metadata'
+        },
+        tags: {
+          items: instanceConfig.networkTags || [],
+          fingerprint: 'fingerprint'
+        },
+        labels: {},
+        creationTimestamp: new Date().toISOString(),
+        selfLink: 'projects/project/zones/' + instanceConfig.zone + '/instances/' + instanceConfig.name,
+        kind: 'compute#instance',
+        cpuPlatform: 'Intel Broadwell',
+        scheduling: {
+          automaticRestart: true,
+          onHostMaintenance: 'MIGRATE',
+          preemptible: false
+        },
+        canIpForward: false,
+        fingerprint: 'fingerprint',
+        startRestricted: false,
+        deletionProtection: false,
+        reservationAffinity: {
+          consumeReservationType: 'ANY_RESERVATION'
+        },
+        displayDevice: {
+          enableDisplay: false
+        },
+        shieldedInstanceConfig: {
+          enableSecureBoot: false,
+          enableVtpm: true,
+          enableIntegrityMonitoring: true
+        },
+        confidentialInstanceConfig: {
+          enableConfidentialCompute: false
+        }
+      };
+
+      // Add to mock instances
+      this.mockInstances.push(mockInstance);
+      this.instancesSubject.next([...this.mockInstances]);
+
+      const mockOperation: InstanceOperation = {
+        kind: 'compute#operation',
+        id: '111222333',
+        name: `create-${instanceConfig.name}-${Date.now()}`,
+        zone: instanceConfig.zone,
+        operationType: 'insert',
+        targetLink: `${instanceConfig.zone}/instances/${instanceConfig.name}`,
+        targetId: '111222333',
+        status: 'DONE',
+        user: 'user@example.com',
+        progress: 100,
+        insertTime: new Date().toISOString(),
+        startTime: new Date().toISOString(),
+        endTime: new Date().toISOString(),
+        selfLink: `${instanceConfig.zone}/operations/create-${instanceConfig.name}-${Date.now()}`
+      };
+
+      // Simulate instance starting after creation
+      setTimeout(() => {
+        const instance = this.mockInstances.find(i => i.name === instanceConfig.name);
+        if (instance) {
+          instance.status = 'RUNNING';
+          this.instancesSubject.next([...this.mockInstances]);
+        }
+      }, 2000);
+
+      return of(mockOperation);
+    }
+
+    const currentProject = this.projectService.getCurrentProject();
+    if (!currentProject) {
+      return throwError(() => new Error('No project selected'));
+    }
+
+    const token = this.authService.getAccessToken();
+    if (!token) {
+      return throwError(() => new Error('No authentication token available'));
+    }
+
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    });
+
+    // Build the instance configuration for GCP API
+    const instanceBody = {
+      name: instanceConfig.name,
+      machineType: `zones/${instanceConfig.zone}/machineTypes/${instanceConfig.machineType}`,
+      disks: [
+        {
+          boot: true,
+          autoDelete: true,
+          initializeParams: {
+            sourceImage: instanceConfig.sourceImage,
+            diskType: `zones/${instanceConfig.zone}/diskTypes/${instanceConfig.bootDiskType}`,
+            diskSizeGb: instanceConfig.bootDiskSize.toString()
+          }
+        }
+      ],
+      networkInterfaces: this.buildNetworkInterfaces(instanceConfig, currentProject.id),
+      tags: {
+        items: [...(instanceConfig.networkTags || [])]
+      },
+      metadata: {
+        items: []
+      },
+      serviceAccounts: [
+        {
+          email: 'default',
+          scopes: [
+            'https://www.googleapis.com/auth/cloud-platform'
+          ]
+        }
+      ]
+    };
+
+    // Add firewall tags based on traffic settings
+    if (instanceConfig.allowHttpTraffic) {
+      instanceBody.tags.items.push('http-server');
+    }
+    if (instanceConfig.allowHttpsTraffic) {
+      instanceBody.tags.items.push('https-server');
+    }
+
+    const url = `${this.baseUrl}/projects/${currentProject.id}/zones/${instanceConfig.zone}/instances`;
+
+    return this.http.post<InstanceOperation>(url, instanceBody, { headers }).pipe(
+      tap(() => {
+        // Refresh instances list after creation
+        this.loadInstances().subscribe();
+      }),
+      catchError(error => {
+        const errorMessage = `Failed to create instance ${instanceConfig.name}: ${error.error?.error?.message || error.message}`;
+        this.logApiError(error);
+        return throwError(() => new Error(errorMessage));
+      })
+    );
+  }
+
+  /**
+   * Get authentication headers for API requests
+   */
+  private getAuthHeaders(): HttpHeaders {
+    const token = this.authService.getAccessToken();
+    return new HttpHeaders({
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    });
+  }
+
+  /**
+   * Build network interfaces configuration for instance creation
+   */
+  private buildNetworkInterfaces(instanceConfig: any, projectId: string): any[] {
+    const networkInterfaces = [];
+    
+    // Primary network interface
+    const primaryInterface: any = {
+      network: `global/networks/${instanceConfig.network}`,
+      accessConfigs: []
+    };
+
+    // Add subnetwork if not using default network
+    if (instanceConfig.subnet && instanceConfig.subnet !== 'default') {
+      const region = instanceConfig.zone.substring(0, instanceConfig.zone.lastIndexOf('-'));
+      primaryInterface.subnetwork = `regions/${region}/subnetworks/${instanceConfig.subnet}`;
+    }
+
+    // Add external IP configuration
+    if (instanceConfig.externalIp) {
+      primaryInterface.accessConfigs.push({
+        type: 'ONE_TO_ONE_NAT',
+        name: 'External NAT',
+        networkTier: 'PREMIUM'
+      });
+    }
+
+    // Add IP stack configuration (IPv4 only by default, can be extended)
+    primaryInterface.stackType = 'IPV4_ONLY';
+
+    networkInterfaces.push(primaryInterface);
+
+    // Support for additional network interfaces (from instanceConfig.additionalNetworkInterfaces if provided)
+    if (instanceConfig.additionalNetworkInterfaces && Array.isArray(instanceConfig.additionalNetworkInterfaces)) {
+      instanceConfig.additionalNetworkInterfaces.forEach((additionalInterface: any, index: number) => {
+        const networkInterface: any = {
+          network: `global/networks/${additionalInterface.network}`,
+          accessConfigs: []
+        };
+
+        if (additionalInterface.subnet && additionalInterface.subnet !== 'default') {
+          const region = instanceConfig.zone.substring(0, instanceConfig.zone.lastIndexOf('-'));
+          networkInterface.subnetwork = `regions/${region}/subnetworks/${additionalInterface.subnet}`;
+        }
+
+        if (additionalInterface.externalIp) {
+          networkInterface.accessConfigs.push({
+            type: 'ONE_TO_ONE_NAT',
+            name: `External NAT ${index + 1}`,
+            networkTier: additionalInterface.networkTier || 'PREMIUM'
+          });
+        }
+
+        networkInterface.stackType = additionalInterface.stackType || 'IPV4_ONLY';
+
+        // Add alias IP ranges if specified
+        if (additionalInterface.aliasIpRanges && Array.isArray(additionalInterface.aliasIpRanges)) {
+          networkInterface.aliasIpRanges = additionalInterface.aliasIpRanges;
+        }
+
+        networkInterfaces.push(networkInterface);
+      });
+    }
+
+    return networkInterfaces;
+  }
+
+  /**
+   * Get networks for the current project
+   */
+  getNetworks(): Observable<any> {
+    if (this.authService.isDemoMode()) {
+      // Return mock networks for demo mode
+      const mockNetworks = {
+        items: [
+          {
+            name: 'default',
+            description: 'Default network for the project',
+            selfLink: 'https://www.googleapis.com/compute/v1/projects/demo-project/global/networks/default',
+            autoCreateSubnetworks: true,
+            routingConfig: { routingMode: 'REGIONAL' }
+          },
+          {
+            name: 'custom-network',
+            description: 'Custom network',
+            selfLink: 'https://www.googleapis.com/compute/v1/projects/demo-project/global/networks/custom-network',
+            autoCreateSubnetworks: false,
+            routingConfig: { routingMode: 'REGIONAL' }
+          }
+        ]
+      };
+      return of(mockNetworks);
+    }
+
+    const currentProject = this.projectService.getCurrentProject();
+    if (!currentProject) {
+      return throwError(() => new Error('No project selected'));
+    }
+
+    const url = `https://compute.googleapis.com/compute/v1/projects/${currentProject.id}/global/networks`;
+    const headers = this.getAuthHeaders();
+    
+    return this.http.get<any>(url, { headers });
+  }
+
+  /**
+   * Get subnetworks for a specific region
+   */
+  getSubnetworks(region: string, networkName?: string): Observable<any> {
+    if (this.authService.isDemoMode()) {
+      // Return mock subnetworks for demo mode
+      const mockSubnetworks = {
+        items: [
+          {
+            name: 'default',
+            description: 'Default subnetwork',
+            network: `https://www.googleapis.com/compute/v1/projects/demo-project/global/networks/${networkName || 'default'}`,
+            ipCidrRange: '10.128.0.0/20',
+            region: `https://www.googleapis.com/compute/v1/projects/demo-project/regions/${region}`,
+            selfLink: `https://www.googleapis.com/compute/v1/projects/demo-project/regions/${region}/subnetworks/default`
+          }
+        ]
+      };
+      return of(mockSubnetworks);
+    }
+
+    const currentProject = this.projectService.getCurrentProject();
+    if (!currentProject) {
+      return throwError(() => new Error('No project selected'));
+    }
+
+    const url = `https://compute.googleapis.com/compute/v1/projects/${currentProject.id}/regions/${region}/subnetworks`;
+    const headers = this.getAuthHeaders();
+    
+    return this.http.get<any>(url, { headers });
+  }
+
+  /**
    * Get machine types for a specific zone
    */
   getMachineTypes(zone: string): Observable<MachineType[]> {

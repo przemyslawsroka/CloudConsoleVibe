@@ -1,6 +1,7 @@
 import { Component, OnInit, OnDestroy, ViewChild, ElementRef, AfterViewChecked } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { Observable, Subscription } from 'rxjs';
+import { take } from 'rxjs/operators';
 import { GeminiAiService, ChatMessage, VoiceSessionState } from '../../services/gemini-ai.service';
 
 @Component({
@@ -50,9 +51,8 @@ import { GeminiAiService, ChatMessage, VoiceSessionState } from '../../services/
               <mat-icon 
                 class="voice-indicator" 
                 [class.recording]="voiceState.isRecording"
-                [class.processing]="voiceState.isProcessing"
                 [class.mic-detected]="voiceState.isMicrophoneDetected">
-                {{ voiceState.isRecording ? 'mic' : voiceState.isProcessing ? 'hourglass_empty' : 'mic_off' }}
+                {{ voiceState.isRecording ? 'mic' : 'hourglass_empty' }}
               </mat-icon>
               
               <div class="microphone-level" *ngIf="voiceState.isRecording">
@@ -66,19 +66,6 @@ import { GeminiAiService, ChatMessage, VoiceSessionState } from '../../services/
                 <span class="level-text">{{ voiceState.microphoneLevel }}%</span>
               </div>
             </div>
-            
-            <div class="voice-status-info">
-              <span class="voice-status-text">
-                {{ voiceState.isRecording ? 'Listening...' : voiceState.isProcessing ? 'Processing...' : 'Voice session active' }}
-              </span>
-              <span class="mic-status" *ngIf="voiceState.isRecording">
-                {{ voiceState.isMicrophoneDetected ? '🎤 Audio detected' : '🔇 No audio detected' }}
-              </span>
-            </div>
-            
-            <button mat-stroked-button color="warn" (click)="stopVoiceSession()" class="stop-voice-btn">
-              Stop Voice
-            </button>
           </div>
         </div>
 
@@ -86,20 +73,11 @@ import { GeminiAiService, ChatMessage, VoiceSessionState } from '../../services/
           <button 
             mat-raised-button 
             color="primary" 
-            (click)="shareScreen()"
+            (click)="startOrStopVoice()"
             class="share-screen-btn"
             [disabled]="(voiceSession$ | async)?.isProcessing">
-            <mat-icon>screen_share</mat-icon>
-            Share your screen
-          </button>
-          
-          <button 
-            mat-stroked-button 
-            color="warn" 
-            (click)="testMicrophone()"
-            class="test-mic-btn">
-            <mat-icon>mic</mat-icon>
-            Test Microphone
+            <mat-icon>{{ (voiceSession$ | async)?.isActive ? 'stop' : 'mic' }}</mat-icon>
+            {{ (voiceSession$ | async)?.isActive ? 'Stop AI Assistant' : 'Start AI Assistant' }}
           </button>
           
           <button 
@@ -291,57 +269,56 @@ import { GeminiAiService, ChatMessage, VoiceSessionState } from '../../services/
       display: flex;
       align-items: center;
       gap: 12px;
+      flex-grow: 1;
     }
 
     .voice-indicator {
-      color: var(--primary-color);
-      font-size: 20px;
+      font-size: 28px;
+      width: 28px;
+      height: 28px;
+      color: #e53935; /* Red for off/default */
+      transition: color 0.3s ease-in-out;
     }
 
     .voice-indicator.recording {
-      color: #f44336;
-      animation: pulse 1.5s infinite;
-    }
-
-    .voice-indicator.processing {
-      color: #ff9800;
-      animation: rotate 2s linear infinite;
+      color: #43a047; /* Green for recording */
     }
 
     .voice-indicator.mic-detected {
-      color: #4caf50;
+      color: #1e88e5; /* Blue when audio is detected */
+      animation: pulse 1s infinite;
     }
 
     .microphone-level {
       display: flex;
       align-items: center;
       gap: 8px;
-      flex: 1;
+      width: 100%;
     }
 
     .level-bar {
-      flex: 1;
-      height: 6px;
-      background: rgba(0, 0, 0, 0.1);
-      border-radius: 3px;
+      width: 100%;
+      height: 8px;
+      background-color: var(--border-color);
+      border-radius: 4px;
       overflow: hidden;
-      max-width: 120px;
     }
 
     .level-fill {
       height: 100%;
-      background: #ccc;
-      transition: width 0.1s ease, background-color 0.2s ease;
-      border-radius: 3px;
+      width: 0;
+      background-color: #6c757d;
+      border-radius: 4px;
+      transition: width 0.1s linear;
     }
 
     .level-fill.active {
-      background: #4caf50;
+      background-color: #1e88e5;
     }
 
     .level-text {
-      font-size: 10px;
-      color: var(--text-secondary-color);
+      font-size: 0.8rem;
+      color: var(--text-color-secondary);
       min-width: 30px;
     }
 
@@ -394,13 +371,15 @@ import { GeminiAiService, ChatMessage, VoiceSessionState } from '../../services/
     }
 
     @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.5; }
-    }
-
-    @keyframes rotate {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
+      0% {
+        transform: scale(1);
+      }
+      50% {
+        transform: scale(1.2);
+      }
+      100% {
+        transform: scale(1);
+      }
     }
 
     /* Dark theme adjustments */
@@ -435,58 +414,58 @@ export class AiAssistantComponent implements OnInit, OnDestroy, AfterViewChecked
   }
 
   ngOnInit(): void {
-    // Auto-focus input when component loads
-    setTimeout(() => {
-      if (this.messageInput) {
-        this.messageInput.nativeElement.focus();
-      }
-    }, 100);
+    this.subscription.add(
+      this.geminiService.messages$.subscribe(() => {
+        this.shouldScrollToBottom = true;
+      })
+    );
   }
 
   ngAfterViewChecked(): void {
     if (this.shouldScrollToBottom) {
       this.scrollToBottom();
+      this.shouldScrollToBottom = false;
     }
   }
 
   ngOnDestroy(): void {
     this.subscription.unsubscribe();
+    this.geminiService.stopVoiceSession();
   }
 
   sendMessage(): void {
-    const message = this.messageControl.value?.trim();
-    if (message) {
+    const message = this.messageControl.value;
+    if (message && message.trim()) {
       this.geminiService.sendTextMessage(message);
-      this.messageControl.setValue('');
-      this.shouldScrollToBottom = true;
+      this.messageControl.reset();
     }
   }
 
-  async shareScreen(): Promise<void> {
-    try {
-      await this.geminiService.shareScreen();
-    } catch (error) {
-      console.error('Error sharing screen:', error);
-    }
-  }
-
-  async stopVoiceSession(): Promise<void> {
-    await this.geminiService.stopVoiceSession();
-  }
-
-  testMicrophone(): void {
-    this.geminiService.testMicrophone();
+  startOrStopVoice(): void {
+    this.voiceSession$.pipe(take(1)).subscribe(async state => {
+      if (state.isActive) {
+        await this.geminiService.stopVoiceSession();
+      } else {
+        await this.geminiService.startVoiceSession();
+      }
+    });
   }
 
   clearChat(): void {
     this.geminiService.clearMessages();
-    this.shouldScrollToBottom = true;
   }
 
   closePanel(): void {
-    // Emit event to parent component to close panel
-    const event = new CustomEvent('closeAiPanel');
-    window.dispatchEvent(event);
+    console.log('Closing panel');
+    // Stop any active voice session before closing
+    this.voiceSession$.pipe(take(1)).subscribe(async state => {
+      if (state.isActive) {
+        await this.geminiService.stopVoiceSession();
+      }
+    });
+    
+    // Emit custom event that the app component is listening for
+    window.dispatchEvent(new CustomEvent('closeAiPanel'));
   }
 
   formatTime(date: Date): string {

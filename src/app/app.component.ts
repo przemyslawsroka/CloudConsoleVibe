@@ -411,8 +411,15 @@ export class AppComponent implements OnInit {
       expanded: false,
       items: [
         { name: 'Network Connectivity Center', route: '/network-connectivity', icon: 'hub' },
-        { name: 'Cloud Router', route: '/cloud-router', icon: 'router' },
-        { name: 'Network Solutions', route: '/network-solutions', icon: 'network_check' }
+        { name: 'Cloud Router', route: '/cloud-router', icon: 'router' }
+      ]
+    },
+    {
+      name: 'Network Solutions',
+      icon: 'network_check',
+      expanded: false,
+      items: [
+        { name: 'Overview', route: '/network-solutions', icon: 'dashboard' }
       ]
     },
     {

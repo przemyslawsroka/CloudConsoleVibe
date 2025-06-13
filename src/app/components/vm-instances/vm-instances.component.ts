@@ -10,6 +10,7 @@ import { takeUntil, debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { FormControl } from '@angular/forms';
 import { ComputeEngineService, VmInstance, Zone } from '../../services/compute-engine.service';
 import { ProjectService } from '../../services/project.service';
+import { Router } from '@angular/router';
 
 interface TableVmInstance extends VmInstance {
   displayZone: string;
@@ -663,7 +664,8 @@ export class VmInstancesComponent implements OnInit, OnDestroy, AfterViewInit {
     private computeEngineService: ComputeEngineService,
     private projectService: ProjectService,
     private dialog: MatDialog,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private router: Router
   ) {}
 
   ngOnInit() {
@@ -852,9 +854,7 @@ export class VmInstancesComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   createInstance() {
-    this.snackBar.open('Create instance functionality would be implemented here', 'Close', {
-      duration: 3000
-    });
+    this.router.navigate(['/vm-instances/create']);
   }
 
   viewInstanceDetails(instance: VmInstance) {
@@ -971,6 +971,4 @@ export class VmInstancesComponent implements OnInit, OnDestroy, AfterViewInit {
       this.selection.clear();
     }
   }
-
-
 }

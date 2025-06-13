@@ -47,6 +47,7 @@ import { GlobalFrontendWizardComponent } from './components/global-frontend-wiza
 import { GoogleWANWizardComponent } from './components/google-wan-wizard/google-wan-wizard.component';
 import { SecureWebProxyComponent } from './components/secure-web-proxy/secure-web-proxy.component';
 import { VmInstancesComponent } from './components/vm-instances/vm-instances.component';
+import { CreateVmInstanceComponent } from './components/vm-instances/create-vm-instance.component';
 
 const routes: Routes = [
   { path: '', redirectTo: '/vpc', pathMatch: 'full' },
@@ -122,6 +123,7 @@ const routes: Routes = [
   { path: 'google-wan-wizard', component: GoogleWANWizardComponent, canActivate: [AuthGuard] },
   { path: 'secure-web-proxy', component: SecureWebProxyComponent, canActivate: [AuthGuard] },
   { path: 'vm-instances', component: VmInstancesComponent, canActivate: [AuthGuard] },
+  { path: 'vm-instances/create', component: CreateVmInstanceComponent },
   {
     path: 'monitoring',
     loadChildren: () => import('./components/monitoring/monitoring.module').then(m => m.MonitoringModule),

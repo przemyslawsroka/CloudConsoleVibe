@@ -7,7 +7,7 @@ import { Component } from '@angular/core';
       <!-- Header Section -->
       <div class="header-section">
         <div class="header-content">
-          <h1>Network solutions</h1>
+          <h1>Network Solutions Overview</h1>
           <p class="header-description">
             Build out a network solution to create a cross-cloud network architecture to scale for your high demand AI / ML workloads or distributed applications across multiple clouds and on-prem
             <a href="#" class="learn-more-link">Learn more in Cloud Architecture Center</a>

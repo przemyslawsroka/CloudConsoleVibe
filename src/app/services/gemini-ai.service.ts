@@ -1,11 +1,13 @@
-import { Injectable } from '@angular/core';
+import { Injectable, NgZone } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { 
   GoogleGenAI as LiveGoogleGenAI, 
   LiveServerMessage, 
   MediaResolution, 
   Modality, 
-  Session
+  Session,
+  VoiceConfig,
+  SpeechConfig,
 } from '@google/genai';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { environment } from '../../environments/environment';
@@ -31,10 +33,18 @@ export interface VoiceSessionState {
 })
 export class GeminiAiService {
   private session: Session | undefined = undefined;
-  private responseQueue: LiveServerMessage[] = [];
-  private audioParts: string[] = [];
-  
+  private audioContext: AudioContext | null = null;
+  private audioWorkletNode: AudioWorkletNode | null = null;
+  private micStream: MediaStream | null = null;
+  private isMicrophoneActive = false;
+  private audioPlayer: HTMLAudioElement | null = null;
+  private audioBuffer: string[] = [];
+  private isPlayingAudio = false;
+  private currentTurnText: string = '';
+
   private messagesSubject = new BehaviorSubject<ChatMessage[]>([]);
+  public messages$: Observable<ChatMessage[]> = this.messagesSubject.asObservable();
+  
   private voiceSessionSubject = new BehaviorSubject<VoiceSessionState>({
     isActive: false,
     isRecording: false,
@@ -42,37 +52,11 @@ export class GeminiAiService {
     microphoneLevel: 0,
     isMicrophoneDetected: false
   });
-  
-  public messages$: Observable<ChatMessage[]> = this.messagesSubject.asObservable();
   public voiceSession$: Observable<VoiceSessionState> = this.voiceSessionSubject.asObservable();
+  public microphoneVolume$ = new BehaviorSubject<number>(0);
 
-  constructor() {
-    this.addSystemMessage('Hello! I\'m your Google Cloud Console AI assistant. I can help you navigate the console, explain GCP services, and provide guidance. Click "Share your screen" to start a voice conversation!');
-    
-    // Initialize audio context to make this tab appear in Chrome's sharing list
-    this.initializeAudioContext();
-  }
-
-  private initializeAudioContext(): void {
-    try {
-      // Create a silent audio context to make Chrome recognize this tab as audio-capable
-      const audioContext = new AudioContext();
-      const oscillator = audioContext.createOscillator();
-      const gainNode = audioContext.createGain();
-      
-      oscillator.connect(gainNode);
-      gainNode.connect(audioContext.destination);
-      
-      // Silent audio
-      gainNode.gain.setValueAtTime(0, audioContext.currentTime);
-      oscillator.frequency.setValueAtTime(440, audioContext.currentTime);
-      oscillator.start();
-      oscillator.stop(audioContext.currentTime + 0.1);
-      
-      console.log('🔊 Audio context initialized for tab recognition');
-    } catch (error) {
-      console.log('Audio context initialization failed (this is normal on some browsers):', error);
-    }
+  constructor(private zone: NgZone) {
+    this.addSystemMessage('Hello! I\'m your Google Cloud Console AI assistant. I can help you navigate the console, explain GCP services, and provide guidance. Click "Start AI Assistant" to start a voice conversation!');
   }
 
   async sendTextMessage(message: string): Promise<void> {
@@ -125,72 +109,74 @@ export class GeminiAiService {
     }
   }
 
-  async startVoiceSession(): Promise<void> {
+  public async startVoiceSession(): Promise<void> {
     try {
-      this.updateVoiceSession({ isActive: true, isRecording: false, isProcessing: true });
+      this.updateVoiceSession({ isActive: true, isRecording: false, isProcessing: true, isMicrophoneDetected: false });
       
       const ai = new LiveGoogleGenAI({
         apiKey: environment.geminiApiKey,
+        apiVersion: 'v1alpha'
       });
 
       const model = 'models/gemini-2.5-flash-preview-native-audio-dialog';
-
       const config = {
-        responseModalities: [Modality.AUDIO],
-        mediaResolution: MediaResolution.MEDIA_RESOLUTION_MEDIUM,
-        speechConfig: {
-          voiceConfig: {
-            prebuiltVoiceConfig: {
-              voiceName: 'Zephyr',
-            }
-          }
-        },
-        contextWindowCompression: {
-          triggerTokens: '25600',
-          slidingWindow: { targetTokens: '12800' },
-        },
+        responseModalities: [Modality.AUDIO, Modality.TEXT],
       };
 
       this.session = await ai.live.connect({
         model,
         callbacks: {
-          onopen: () => {
-            console.debug('Voice session opened');
-            this.updateVoiceSession({ isActive: true, isRecording: true, isProcessing: false });
-            this.addSystemMessage('🎤 Voice session started! You can now speak to me.');
+          onopen: async () => {
+            console.debug('🚀 Voice session connection opened.');
+            
+            try {
+              await this.setupMicrophoneStreaming();
+              if (this.session) {
+                console.log('✉️ Sending initial prompt to Gemini...');
+                await this.session.sendClientContent({
+                  turns: [
+                    {
+                      role: 'user',
+                      parts: [{
+                        text: `System prompt: You are an AI assistant for CloudConsoleVibe, a demo Google Cloud Console application. Your main role is to help users with questions about Google Cloud Platform. 
+                    
+                          Instructions for our conversation:
+                          1. Start our conversation with a very short, friendly, one-sentence welcome message.
+                          2. After your welcome, wait for me to speak.
+                          3. Keep your answers concise and to the point.
+                          
+                          Begin.`
+                      }]
+                    }
+                  ]
+                });
+                console.log('✅ Initial prompt sent.');
+              }
+
+              this.isMicrophoneActive = true;
+              this.updateVoiceSession({ isActive: true, isRecording: true, isProcessing: false, isMicrophoneDetected: true });
+              this.addSystemMessage('🎤 Voice session started! You can now speak to me.');
+
+            } catch (error) {
+              console.error('❌ Failed during voice session setup:', error);
+              this.addSystemMessage('❌ Failed to access microphone. Please check permissions and try again.');
+              await this.stopVoiceSession();
+            }
           },
           onmessage: (message: LiveServerMessage) => {
-            console.log('Received message from Gemini:', message);
-            this.responseQueue.push(message);
-            this.handleModelTurn(message);
+            this.handleLiveMessage(message);
           },
-          onerror: (e: ErrorEvent) => {
+          onerror: async (e: ErrorEvent) => {
             console.error('Voice session error:', e.message);
             this.addSystemMessage(`❌ Voice session error: ${e.message}`);
-            this.stopVoiceSession();
+            await this.stopVoiceSession();
           },
-          onclose: (e: CloseEvent) => {
+          onclose: async (e: CloseEvent) => {
             console.debug('Voice session closed:', e.reason);
-            this.updateVoiceSession({ isActive: false, isRecording: false, isProcessing: false });
-            this.addSystemMessage('Voice session ended.');
+            await this.stopVoiceSession();
           },
         },
         config
-      });
-
-      // Send initial context about the application
-      this.session.sendClientContent({
-        turns: [
-          `You are an AI assistant for CloudConsoleVibe, a demo Google Cloud Console application. 
-           Help users navigate the interface, explain GCP networking features, and provide guidance on:
-           - VPC networks and subnets
-           - Load balancing
-           - Cloud NAT and DNS
-           - Firewall rules and security
-           - Monitoring and observability
-           - Kubernetes clusters
-           Be helpful, concise, and focus on Google Cloud Platform networking services.`
-        ]
       });
 
     } catch (error) {
@@ -200,393 +186,211 @@ export class GeminiAiService {
     }
   }
 
-  async stopVoiceSession(): Promise<void> {
+  public async stopVoiceSession(): Promise<void> {
+    // Basic guard to prevent multiple closing attempts
+    if (!this.session) return;
+
+    console.log('Stopping voice session...');
+    this.isMicrophoneActive = false;
+
     if (this.session) {
       this.session.close();
       this.session = undefined;
     }
-    
-    // Clean up audio monitor
-    if ((this as any).audioMonitor) {
-      clearInterval((this as any).audioMonitor);
-      (this as any).audioMonitor = undefined;
+
+    if (this.micStream) {
+      this.micStream.getTracks().forEach(track => track.stop());
+      this.micStream = null;
+    }
+
+    if (this.audioWorkletNode) {
+      this.audioWorkletNode.port.postMessage('stop');
+      this.audioWorkletNode.disconnect();
+      this.audioWorkletNode = null;
+    }
+
+    if (this.audioContext && this.audioContext.state !== 'closed') {
+      await this.audioContext.close();
+      this.audioContext = null;
     }
     
-    this.updateVoiceSession({ 
-      isActive: false, 
-      isRecording: false, 
-      isProcessing: false,
-      microphoneLevel: 0,
-      isMicrophoneDetected: false 
-    });
+    if (this.audioPlayer) {
+      this.audioPlayer.pause();
+      this.audioPlayer = null;
+    }
+    this.audioBuffer = [];
+    this.isPlayingAudio = false;
+    this.currentTurnText = '';
+
+    this.updateVoiceSession({ isActive: false, isRecording: false, isProcessing: false, microphoneLevel: 0 });
+    this.addSystemMessage('Voice session ended.');
   }
 
-  async shareScreen(): Promise<void> {
+  private async setupMicrophoneStreaming(): Promise<void> {
     try {
-      const currentUrl = window.location.href;
-      console.log('🌐 Current URL for screen sharing:', currentUrl);
-      
-      this.addSystemMessage('📺 IMPORTANT: Select "Chrome Tab" (not Screen/Window) in the sharing dialog to enable microphone access. Choose this current tab from the list.');
-      
-      // Add a small delay to ensure audio context is established
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      // Request screen sharing with audio - user must select browser tab for microphone access
-      const screenStream = await navigator.mediaDevices.getDisplayMedia({
-        video: {
-          width: { ideal: 1280 },
-          height: { ideal: 720 }
-        },
-        audio: true // Request audio - only works with browser tab sharing
-      });
-
-      // Also request microphone for voice input with optimal settings
-      const micStream = await navigator.mediaDevices.getUserMedia({
+      console.log('🎤 Requesting microphone access...');
+      this.micStream = await navigator.mediaDevices.getUserMedia({
         audio: {
-          echoCancellation: false, // Disable for better raw audio capture
-          noiseSuppression: false, // Disable to capture all audio
+          echoCancellation: true,
+          noiseSuppression: true,
           autoGainControl: true,
           channelCount: 1,
+          sampleRate: 16000,
           sampleSize: 16
         }
       });
-      
-      this.addSystemMessage('Screen sharing and microphone access granted! I can now see your screen and listen to your voice for contextual help.');
-      
-      // Start voice session with enhanced context
-      if (!this.voiceSessionSubject.value.isActive) {
-        // Add small delay to ensure screen sharing is fully established
-        setTimeout(async () => {
-          await this.startVoiceSession();
-        }, 1000);
-      }
+      console.log('🎤 Microphone access granted.');
 
-      // Send screen context to AI if session exists
-      if (this.session) {
-        this.session.sendClientContent({
-          turns: [`The user is now sharing their screen showing the Google Cloud Console. 
-                   You can help them navigate the interface, explain what they're looking at, 
-                   and provide guidance on GCP networking features. Focus on what's currently visible 
-                   and provide step-by-step assistance.`]
-        });
-      }
+      this.audioContext = new AudioContext({ sampleRate: 16000 });
+      console.log(`🔊 Audio context created - Sample rate: ${this.audioContext.sampleRate}Hz`);
 
-      // Handle microphone audio for voice input using modern Web Audio API
-      const audioTrack = micStream.getAudioTracks()[0];
-      console.log('🎤 Audio track info:', {
-        enabled: audioTrack?.enabled,
-        muted: audioTrack?.muted,
-        readyState: audioTrack?.readyState,
-        label: audioTrack?.label
-      });
-      
-      if (audioTrack && this.session) {
-        console.log('🎤 Setting up microphone streaming...');
-        this.setupMicrophoneStreaming(micStream);
-      } else {
-        console.error('🎤 Missing audio track or session:', { audioTrack: !!audioTrack, session: !!this.session });
-      }
-      
-      // Handle track ending
-      [...screenStream.getTracks(), ...micStream.getTracks()].forEach(track => {
-        track.addEventListener('ended', () => {
-          this.addSystemMessage('Screen sharing or microphone access ended.');
-        });
-      });
-      
-    } catch (error: any) {
-      console.error('Error sharing screen:', error);
-      if (error?.name === 'NotAllowedError') {
-        this.addSystemMessage('Screen sharing permission denied. Please allow screen sharing to use this feature.');
-      } else if (error?.name === 'NotFoundError') {
-        this.addSystemMessage('No screen or microphone found. Please check your devices.');
-      } else {
-        this.addSystemMessage('Failed to access screen or microphone. Please check your permissions.');
-      }
-    }
-  }
+      const source = this.audioContext.createMediaStreamSource(this.micStream);
+      await this.setupAudioWorklet(this.audioContext, source);
 
-  private setupMicrophoneStreaming(micStream: MediaStream): void {
-    try {
-      // Create audio context with default sample rate for better compatibility
-      const audioContext = new AudioContext();
-      const source = audioContext.createMediaStreamSource(micStream);
-      
-      console.log(`🎤 Audio context created - Sample rate: ${audioContext.sampleRate}Hz`);
-      console.log(`🎤 Microphone stream tracks:`, micStream.getTracks().map(t => ({
-        kind: t.kind,
-        enabled: t.enabled,
-        muted: t.muted,
-        readyState: t.readyState
-      })));
-      
-      // Resume audio context if suspended (required by some browsers)
-      if (audioContext.state === 'suspended') {
-        audioContext.resume().then(() => {
-          console.log('🎤 Audio context resumed');
-        });
-      }
-      
-      // Always use ScriptProcessor for now (more reliable)
-      this.setupScriptProcessor(audioContext, source);
-      
-      // Monitor audio context state
-      const monitorAudioContext = () => {
-        console.log(`🎤 Audio context state: ${audioContext.state}`);
-        if (audioContext.state === 'suspended') {
-          console.warn('🎤 Audio context suspended, attempting to resume...');
-          audioContext.resume();
-        }
-      };
-      
-      // Check audio context state every 2 seconds
-      const audioMonitor = setInterval(monitorAudioContext, 2000);
-      
-      // Store monitor for cleanup
-      (this as any).audioMonitor = audioMonitor;
-      
-      console.log('🎤 Microphone streaming setup complete');
-      this.addSystemMessage('🎤 Microphone connected - You can now speak!');
-      
     } catch (error) {
-      console.error('Error setting up microphone streaming:', error);
-      this.addSystemMessage('❌ Microphone setup failed. Please check permissions and try again.');
+      console.error('❌ Error setting up microphone streaming:', error);
+      throw error; // Propagate error to be handled in startVoiceSession
     }
   }
 
-  private setupScriptProcessor(audioContext: AudioContext, source: MediaStreamAudioSourceNode): void {
-    const processor = audioContext.createScriptProcessor(4096, 1, 1); 
-    
-    // Connect source directly to processor for better audio capture
-    source.connect(processor);
-    processor.connect(audioContext.destination);
-    
-    processor.onaudioprocess = (event) => {
-      const inputBuffer = event.inputBuffer;
-      const inputData = inputBuffer.getChannelData(0);
-      
-      // Calculate microphone level - use same method as the working test
-      let sum = 0;
-      let maxAmplitude = 0;
-      
-      for (let i = 0; i < inputData.length; i++) {
-        const sample = Math.abs(inputData[i]);
-        sum += sample * sample;
-        maxAmplitude = Math.max(maxAmplitude, sample);
-      }
-      
-      const rms = Math.sqrt(sum / inputData.length);
-      
-      // Use same scaling as the working microphone test
-      const micLevel = Math.min(100, Math.floor(rms * 10000));
-      const peakLevel = Math.floor(maxAmplitude * 100);
-      const combinedLevel = Math.max(micLevel, peakLevel);
-      
-      // Always log audio processing (even if silent) for debugging
-      console.log(`🎤 Audio processing - RMS: ${rms.toFixed(6)}, Level: ${micLevel}, Peak: ${peakLevel}, Combined: ${combinedLevel}`);
-      
-      // Use very low threshold for detection
-      const isMicDetected = combinedLevel > 0;
-      
-      // Always update the UI with current levels
-      this.updateVoiceSession({ 
-        microphoneLevel: combinedLevel,
-        isMicrophoneDetected: isMicDetected 
-      });
-      
-      // Debug session state
-      if (!this.session) {
-        console.log('🎤 No session available');
-        return;
-      }
-      
-      if (!this.voiceSessionSubject.value.isRecording) {
-        console.log('🎤 Not in recording state');
-        return;
-      }
-      
-      // Send audio if there's any detectable level (very low threshold)
-      if (combinedLevel > 0) {
-        try {
-          // Convert Float32Array to 16-bit PCM for Gemini
-          const pcmData = this.convertToPCM16(inputData);
-          const base64Audio = btoa(String.fromCharCode(...pcmData));
+  private setupAudioWorklet(audioContext: AudioContext, source: MediaStreamAudioSourceNode): Promise<void> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        await audioContext.audioWorklet.addModule('assets/audio-processor.worklet.js');
+        this.audioWorkletNode = new AudioWorkletNode(audioContext, 'audio-processor');
+        
+        this.audioWorkletNode.port.onmessage = (event: MessageEvent) => {
+          if (!this.isMicrophoneActive || !this.session) return;
           
-          // Send to Gemini Live API with proper format
-          this.session.sendClientContent({
-            turns: [{ parts: [{ inlineData: { mimeType: 'audio/pcm', data: base64Audio } }] }]
+          const { pcmData, rms } = event.data;
+
+          this.zone.run(() => this.microphoneVolume$.next(rms));
+          
+          // The API expects base64 encoded audio data
+          const base64Audio = this.arrayBufferToBase64(pcmData.buffer);
+
+          // Use sendRealtimeInput for streaming audio data
+          this.session.sendRealtimeInput({
+            audio: { data: base64Audio, mimeType: 'audio/pcm;rate=16000' }
           });
-          
-          console.log(`🎤 ✅ SENT audio to Gemini (Level: ${combinedLevel})`);
-        } catch (error) {
-          console.error('❌ Error sending audio to Gemini:', error);
-        }
-      } else {
-        // Log when no audio is detected
-        console.log('🎤 Silent - no audio to send');
+        };
+        
+        this.audioWorkletNode.port.onmessageerror = (e) => reject(e);
+        source.connect(this.audioWorkletNode);
+        // We don't connect to destination, as we don't want to hear ourselves.
+        
+        console.log('✅ AudioWorkletNode setup complete and connected.');
+        resolve();
+
+      } catch (error) {
+        console.error('❌ Error setting up AudioWorklet:', error);
+        reject(error);
       }
-    };
-    
-    // Add error handling
-    processor.addEventListener('error', (e) => {
-      console.error('Audio processor error:', e);
     });
   }
 
-  private setupAudioWorklet(audioContext: AudioContext, source: MediaStreamAudioSourceNode): void {
-    // For now, use the script processor as AudioWorklet requires separate files
-    this.setupScriptProcessor(audioContext, source);
-  }
-
-  private convertToPCM16(floatSamples: Float32Array): Uint8Array {
-    const buffer = new ArrayBuffer(floatSamples.length * 2);
-    const view = new DataView(buffer);
-    
-    for (let i = 0; i < floatSamples.length; i++) {
-      // Clamp to [-1, 1] and convert to 16-bit signed integer
-      const sample = Math.max(-1, Math.min(1, floatSamples[i]));
-      view.setInt16(i * 2, sample * 0x7FFF, true);
+  private arrayBufferToBase64(buffer: ArrayBuffer): string {
+    let binary = '';
+    const bytes = new Uint8Array(buffer);
+    const len = bytes.byteLength;
+    for (let i = 0; i < len; i++) {
+        binary += String.fromCharCode(bytes[i]);
     }
-    
-    return new Uint8Array(buffer);
+    return window.btoa(binary);
   }
 
-  private handleModelTurn(message: LiveServerMessage): void {
+  private handleLiveMessage(message: LiveServerMessage): void {
     if (message.serverContent?.modelTurn?.parts) {
+      this.updateVoiceSession({ isProcessing: true, isRecording: false });
+
       for (const part of message.serverContent.modelTurn.parts) {
-        if (part?.text) {
-          const aiMessage: ChatMessage = {
+        if (part.text) {
+          this.addMessage({
             id: this.generateId(),
             content: part.text,
             isUser: false,
             timestamp: new Date(),
             type: 'text'
-          };
-          this.addMessage(aiMessage);
+          });
         }
+        if (part.inlineData?.data) {
+          this.audioBuffer.push(part.inlineData.data);
+        }
+      }
+    }
 
-        if (part?.inlineData?.data) {
-          // Each part contains a complete audio chunk, play immediately
-          this.playAudioChunk(part.inlineData.data);
-        }
+    if (message.serverContent?.turnComplete) {
+      if (this.audioBuffer.length > 0) {
+        this.processAndPlayAudio();
+      } else {
+        this.updateVoiceSession({ isProcessing: false, isRecording: true });
       }
     }
   }
 
-  private playAudioChunk(base64AudioData: string): void {
-    try {
-      // Gemini Live API returns audio as base64 encoded PCM
-      const binaryString = atob(base64AudioData);
-      const bytes = new Uint8Array(binaryString.length);
-      for (let i = 0; i < binaryString.length; i++) {
-        bytes[i] = binaryString.charCodeAt(i);
-      }
-      
-      // Create proper WAV file for browser compatibility
-      const wavBlob = this.createWavFile(bytes);
-      const audioUrl = URL.createObjectURL(wavBlob);
-      
-      const audio = new Audio(audioUrl);
-      audio.volume = 0.8;
-      audio.playbackRate = 0.9; // Slightly slower for better understanding
-      
-      audio.play().then(() => {
-        console.log('🔊 Playing audio chunk (slower rate for clarity)');
-      }).catch(error => {
-        console.error('Audio playback failed:', error);
-      });
-      
-      // Clean up when done
-      audio.addEventListener('ended', () => {
+  private processAndPlayAudio(): void {
+    if (this.isPlayingAudio || this.audioBuffer.length === 0) {
+      return;
+    }
+    this.isPlayingAudio = true;
+    
+    const audioChunks = [...this.audioBuffer];
+    this.audioBuffer = [];
+
+    const audioBlob = this.createAudioBlobFromBase64Chunks(audioChunks, 'audio/mp3');
+    
+    if (audioBlob) {
+      const audioUrl = URL.createObjectURL(audioBlob);
+      this.audioPlayer = new Audio(audioUrl);
+
+      this.audioPlayer.onended = () => {
         URL.revokeObjectURL(audioUrl);
+        this.isPlayingAudio = false;
+        this.audioPlayer = null;
+        this.updateVoiceSession({ isProcessing: false, isRecording: true });
+      };
+
+      this.audioPlayer.onerror = (e) => {
+        console.error("Error playing audio:", e);
+        URL.revokeObjectURL(audioUrl);
+        this.isPlayingAudio = false;
+        this.audioPlayer = null;
+        this.updateVoiceSession({ isProcessing: false, isRecording: true });
+      };
+
+      this.audioPlayer.play().catch(e => {
+        console.error("Audio playback failed:", e);
+        this.isPlayingAudio = false;
+        this.audioPlayer = null;
+        this.updateVoiceSession({ isProcessing: false, isRecording: true });
       });
-      
-    } catch (error) {
-      console.error('Error processing audio chunk:', error);
+    } else {
+      this.isPlayingAudio = false;
+      this.updateVoiceSession({ isProcessing: false, isRecording: true });
     }
   }
 
-  private createWavFile(pcmData: Uint8Array): Blob {
-    // Audio format parameters for Gemini Live API - using lower sample rate for better compatibility
-    const sampleRate = 16000; // Lower sample rate for better playback compatibility
-    const numChannels = 1;
-    const bitsPerSample = 16;
-    const bytesPerSample = bitsPerSample / 8;
-    const byteRate = sampleRate * numChannels * bytesPerSample;
-    const blockAlign = numChannels * bytesPerSample;
-    
-    // WAV file structure
-    const headerSize = 44;
-    const dataSize = pcmData.length;
-    const fileSize = headerSize + dataSize;
-    
-    const buffer = new ArrayBuffer(fileSize);
-    const view = new DataView(buffer);
-    
-    // Helper function to write strings
-    let offset = 0;
-    const writeString = (str: string) => {
-      for (let i = 0; i < str.length; i++) {
-        view.setUint8(offset++, str.charCodeAt(i));
+  private createAudioBlobFromBase64Chunks(chunks: string[], mimeType: string): Blob | null {
+    try {
+      const byteCharacters = chunks.map(chunk => atob(chunk)).join('');
+      const byteNumbers = new Array(byteCharacters.length);
+      for (let j = 0; j < byteCharacters.length; j++) {
+        byteNumbers[j] = byteCharacters.charCodeAt(j);
       }
-    };
-    
-    // RIFF header
-    writeString('RIFF');
-    view.setUint32(offset, fileSize - 8, true); offset += 4;
-    writeString('WAVE');
-    
-    // fmt chunk
-    writeString('fmt ');
-    view.setUint32(offset, 16, true); offset += 4; // Subchunk size
-    view.setUint16(offset, 1, true); offset += 2;  // Audio format (PCM)
-    view.setUint16(offset, numChannels, true); offset += 2;
-    view.setUint32(offset, sampleRate, true); offset += 4;
-    view.setUint32(offset, byteRate, true); offset += 4;
-    view.setUint16(offset, blockAlign, true); offset += 2;
-    view.setUint16(offset, bitsPerSample, true); offset += 2;
-    
-    // data chunk
-    writeString('data');
-    view.setUint32(offset, dataSize, true); offset += 4;
-    
-    // Copy PCM data
-    const dataView = new Uint8Array(buffer, offset);
-    dataView.set(pcmData);
-    
-    return new Blob([buffer], { type: 'audio/wav' });
+      const byteArray = new Uint8Array(byteNumbers);
+      return new Blob([byteArray], { type: mimeType });
+    } catch (e) {
+      console.error("Error creating audio blob from base64 chunks:", e);
+      return null;
+    }
   }
 
-  private generateResponse(userMessage: string): string {
-    const responses = [
-      "I can help you with Google Cloud Platform networking services. What specific area would you like to explore?",
-      "For VPC configuration, you can use the Network topology section to visualize your setup.",
-      "Load balancing in GCP offers several options. Would you like me to explain the different types?",
-      "Security is crucial - check the Firewall section to review your current rules.",
-      "The monitoring dashboard provides real-time insights into your network performance.",
-      "For Kubernetes networking, visit the GKE Clusters section for detailed cluster information."
-    ];
-    
-    // Simple keyword-based responses
-    const lowerMessage = userMessage.toLowerCase();
-    if (lowerMessage.includes('vpc') || lowerMessage.includes('network')) {
-      return "VPC networks are the foundation of your Google Cloud networking. You can manage them in the VPC section where you'll find network topology, subnets, and routing configurations.";
-    }
-    if (lowerMessage.includes('load') || lowerMessage.includes('balancer')) {
-      return "Google Cloud offers various load balancing options: HTTP(S), TCP/SSL Proxy, and Network Load Balancers. Check the Load Balancing section to configure and monitor your load balancers.";
-    }
-    if (lowerMessage.includes('firewall') || lowerMessage.includes('security')) {
-      return "Firewall rules control traffic to your resources. Visit the Network Security section to manage firewall rules, Cloud Armor policies, and other security features.";
-    }
-    if (lowerMessage.includes('monitor') || lowerMessage.includes('metrics')) {
-      return "The Monitoring section provides comprehensive network observability with real-time metrics, agent management, and performance insights.";
-    }
-    
-    return responses[Math.floor(Math.random() * responses.length)];
+  private generateId(): string {
+    return Math.random().toString(36).substring(2, 9);
   }
 
   private addMessage(message: ChatMessage): void {
-    const currentMessages = this.messagesSubject.value;
+    const currentMessages = this.messagesSubject.getValue();
     this.messagesSubject.next([...currentMessages, message]);
   }
 
@@ -602,56 +406,21 @@ export class GeminiAiService {
   }
 
   private updateVoiceSession(state: Partial<VoiceSessionState>): void {
-    const currentState = this.voiceSessionSubject.value;
-    this.voiceSessionSubject.next({ ...currentState, ...state });
+    this.zone.run(() => {
+      const currentState = this.voiceSessionSubject.getValue();
+      this.voiceSessionSubject.next({ ...currentState, ...state });
+    });
   }
 
-  private generateId(): string {
-    return Math.random().toString(36).substr(2, 9);
-  }
-
-  clearMessages(): void {
+  public clearMessages(): void {
     this.messagesSubject.next([]);
-    this.addSystemMessage('Chat cleared. How can I help you with Google Cloud Console?');
+    this.addSystemMessage('Chat cleared. Start a new conversation!');
   }
+}
 
-  // Debug method to test microphone input
-  testMicrophone(): void {
-    navigator.mediaDevices.getUserMedia({ audio: true })
-      .then((stream) => {
-        console.log('🎤 Microphone test - Stream obtained:', stream);
-        const audioContext = new AudioContext();
-        const source = audioContext.createMediaStreamSource(stream);
-        const analyser = audioContext.createAnalyser();
-        
-        source.connect(analyser);
-        analyser.fftSize = 256;
-        
-        const dataArray = new Uint8Array(analyser.frequencyBinCount);
-        
-        const checkAudio = () => {
-          analyser.getByteFrequencyData(dataArray);
-          const average = dataArray.reduce((a, b) => a + b) / dataArray.length;
-          
-          if (average > 0) {
-            console.log(`🎤 Audio level detected: ${average.toFixed(2)}`);
-            this.addSystemMessage(`🎤 Microphone test successful! Audio level: ${average.toFixed(2)}`);
-            
-            // Stop test after 5 seconds
-            setTimeout(() => {
-              stream.getTracks().forEach(track => track.stop());
-              this.addSystemMessage('🎤 Microphone test completed.');
-            }, 5000);
-          } else {
-            requestAnimationFrame(checkAudio);
-          }
-        };
-        
-        checkAudio();
-      })
-      .catch((error) => {
-        console.error('🎤 Microphone test failed:', error);
-        this.addSystemMessage('❌ Microphone test failed: ' + error.message);
-      });
-  }
+// Add interface for WAV conversion options
+interface WavConversionOptions {
+  numChannels: number;
+  sampleRate: number;
+  bitsPerSample: number;
 } 
