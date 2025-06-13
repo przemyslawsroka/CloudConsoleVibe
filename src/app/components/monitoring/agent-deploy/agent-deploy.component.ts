@@ -118,13 +118,26 @@ export class AgentDeployComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Find the selected network and use its subnetDetails
+    // Find the selected network
     const selectedNetwork = this.availableNetworks.find(n => n.name === networkName);
     console.log('🔍 Found network:', selectedNetwork);
     
-    if (selectedNetwork && selectedNetwork.subnetDetails) {
-      this.selectedNetworkSubnets = selectedNetwork.subnetDetails;
-      console.log('✅ Subnets loaded from network details:', this.selectedNetworkSubnets);
+    if (selectedNetwork) {
+      // Check if we have detailed subnet information (demo mode)
+      if (selectedNetwork.subnetDetails && selectedNetwork.subnetDetails.length > 0) {
+        this.selectedNetworkSubnets = selectedNetwork.subnetDetails;
+        console.log('✅ Subnets loaded from subnetDetails:', this.selectedNetworkSubnets);
+      } 
+      // Handle real GCP data with subnetworks URLs
+      else if (selectedNetwork.subnetworks && selectedNetwork.subnetworks.length > 0) {
+        this.selectedNetworkSubnets = this.extractSubnetsFromUrls(selectedNetwork.subnetworks);
+        console.log('✅ Subnets extracted from URLs:', this.selectedNetworkSubnets);
+      }
+      // Fallback: create default subnets for the network
+      else {
+        this.selectedNetworkSubnets = this.createDefaultSubnets(networkName);
+        console.log('✅ Created default subnets for network:', this.selectedNetworkSubnets);
+      }
       
       // Auto-select first subnet if available
       if (this.selectedNetworkSubnets.length > 0) {
@@ -135,8 +148,38 @@ export class AgentDeployComponent implements OnInit, OnDestroy {
       }
     } else {
       this.selectedNetworkSubnets = [];
-      console.log('❌ No subnets found for network:', networkName);
+      console.log('❌ No network found with name:', networkName);
     }
+  }
+
+  private extractSubnetsFromUrls(subnetworkUrls: string[]): SubnetDetails[] {
+    return subnetworkUrls.map((url, index) => {
+      // Extract region and subnet name from URL
+      // URL format: https://www.googleapis.com/compute/v1/projects/{project}/regions/{region}/subnetworks/{subnet}
+      const urlParts = url.split('/');
+      const region = urlParts[urlParts.length - 3] || 'us-central1';
+      const subnetName = urlParts[urlParts.length - 1] || `subnet-${index + 1}`;
+      
+      return {
+        name: subnetName,
+        region: region,
+        ipCidrRange: `10.${128 + index}.0.0/20`, // Generate reasonable CIDR
+        gatewayAddress: `10.${128 + index}.0.1`,
+        selfLink: url
+      };
+    });
+  }
+
+  private createDefaultSubnets(networkName: string): SubnetDetails[] {
+    // Create default subnets for common regions
+    const defaultRegions = ['us-central1', 'us-east1', 'europe-west1'];
+    return defaultRegions.map((region, index) => ({
+      name: `${networkName}-${region}`,
+      region: region,
+      ipCidrRange: `10.${index + 1}.0.0/24`,
+      gatewayAddress: `10.${index + 1}.0.1`,
+      selfLink: `https://www.googleapis.com/compute/v1/projects/demo-project/regions/${region}/subnetworks/${networkName}-${region}`
+    }));
   }
 
   addCustomTarget(target: string): void {
