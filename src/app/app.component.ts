@@ -463,7 +463,8 @@ export class AppComponent implements OnInit {
       icon: 'computer',
       expanded: false,
       items: [
-        { name: 'VM instances', route: '/vm-instances', icon: 'desktop_windows' }
+        { name: 'VM instances', route: '/vm-instances', icon: 'desktop_windows' },
+        { name: 'Instance templates', route: '/instance-templates', icon: 'description' }
       ]
     },
     {

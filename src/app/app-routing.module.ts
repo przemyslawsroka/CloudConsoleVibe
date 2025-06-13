@@ -50,6 +50,7 @@ import { SecureWebProxyComponent } from './components/secure-web-proxy/secure-we
 import { VmInstancesComponent } from './components/vm-instances/vm-instances.component';
 import { CreateVmInstanceComponent } from './components/vm-instances/create-vm-instance.component';
 import { AwsConfigComponent } from './components/aws-config/aws-config.component';
+import { InstanceTemplatesComponent } from './components/instance-templates/instance-templates.component';
 
 const routes: Routes = [
   { path: '', redirectTo: '/vpc', pathMatch: 'full' },
@@ -131,6 +132,7 @@ const routes: Routes = [
   { path: 'secure-web-proxy', component: SecureWebProxyComponent, canActivate: [AuthGuard] },
   { path: 'vm-instances', component: VmInstancesComponent, canActivate: [AuthGuard] },
   { path: 'vm-instances/create', component: CreateVmInstanceComponent },
+  { path: 'instance-templates', component: InstanceTemplatesComponent, canActivate: [AuthGuard] },
   {
     path: 'monitoring',
     loadChildren: () => import('./components/monitoring/monitoring.module').then(m => m.MonitoringModule),

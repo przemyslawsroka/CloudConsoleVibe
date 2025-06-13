@@ -118,7 +118,9 @@ import { SecureWebProxyService } from './services/secure-web-proxy.service';
 import { VmInstancesComponent } from './components/vm-instances/vm-instances.component';
 import { CreateVmInstanceComponent } from './components/vm-instances/create-vm-instance.component';
 import { AwsConfigComponent } from './components/aws-config/aws-config.component';
+import { InstanceTemplatesComponent } from './components/instance-templates/instance-templates.component';
 import { ComputeEngineService } from './services/compute-engine.service';
+import { InstanceTemplatesService } from './services/instance-templates.service';
 
 @NgModule({
   declarations: [
@@ -190,7 +192,8 @@ import { ComputeEngineService } from './services/compute-engine.service';
     SecureWebProxyComponent,
     VmInstancesComponent,
     CreateVmInstanceComponent,
-    AwsConfigComponent
+    AwsConfigComponent,
+    InstanceTemplatesComponent
   ],
   imports: [
     BrowserModule,
