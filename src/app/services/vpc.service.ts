@@ -161,6 +161,49 @@ export class VpcService {
   private getMockVpcNetworks(): Observable<VpcNetwork[]> {
     const mockNetworks: VpcNetwork[] = [
       {
+        id: '0000000000000000000',
+        name: 'default',
+        description: 'Default network for the project',
+        selfLink: 'https://www.googleapis.com/compute/v1/projects/demo-project/global/networks/default',
+        autoCreateSubnetworks: true,
+        creationTimestamp: '2024-01-01T00:00:00.000-08:00',
+        subnetworks: [
+          'https://www.googleapis.com/compute/v1/projects/demo-project/regions/us-central1/subnetworks/default',
+          'https://www.googleapis.com/compute/v1/projects/demo-project/regions/us-east1/subnetworks/default',
+          'https://www.googleapis.com/compute/v1/projects/demo-project/regions/europe-west1/subnetworks/default'
+        ],
+        routingConfig: {
+          routingMode: 'REGIONAL'
+        },
+        networkFirewallPolicyEnforcementOrder: 'AFTER_CLASSIC_FIREWALL',
+        mtu: 1460,
+        enableUlaInternalIpv6: false,
+        bestPathSelectionMode: 'LEGACY',
+        subnetDetails: [
+          {
+            name: 'default',
+            region: 'us-central1',
+            ipCidrRange: '10.128.0.0/20',
+            gatewayAddress: '10.128.0.1',
+            selfLink: 'https://www.googleapis.com/compute/v1/projects/demo-project/regions/us-central1/subnetworks/default'
+          },
+          {
+            name: 'default',
+            region: 'us-east1',
+            ipCidrRange: '10.142.0.0/20',
+            gatewayAddress: '10.142.0.1',
+            selfLink: 'https://www.googleapis.com/compute/v1/projects/demo-project/regions/us-east1/subnetworks/default'
+          },
+          {
+            name: 'default',
+            region: 'europe-west1',
+            ipCidrRange: '10.132.0.0/20',
+            gatewayAddress: '10.132.0.1',
+            selfLink: 'https://www.googleapis.com/compute/v1/projects/demo-project/regions/europe-west1/subnetworks/default'
+          }
+        ]
+      },
+      {
         id: '1234567890123456789',
         name: 'production-vpc',
         description: 'Production environment VPC network',

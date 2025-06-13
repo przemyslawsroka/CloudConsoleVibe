@@ -10,372 +10,216 @@
     </div>
   </div>
 
-  <!-- Deployment Wizard -->
-  <mat-card class="wizard-card">
-    <mat-horizontal-stepper [linear]="true" #stepper>
-      
-      <!-- Step 1: Platform Selection -->
-      <mat-step [stepControl]="platformForm" label="Platform">
-        <form [formGroup]="platformForm">
-          <div class="step-content">
-            <h3>Select Deployment Platform</h3>
-            <p>Choose where you want to deploy the monitoring agent</p>
-            
-            <div class="platform-options">
-              <mat-radio-group formControlName="platform">
-                <div class="platform-option" *ngFor="let platform of platforms">
-                  <mat-radio-button [value]="platform.value">
-                    <div class="platform-content">
-                      <div class="platform-icon">
-                        <mat-icon>{{ platform.icon }}</mat-icon>
-                      </div>
-                      <div class="platform-details">
-                        <h4>{{ platform.name }}</h4>
-                        <p>{{ platform.description }}</p>
-                        <div class="platform-tags">
-                          <mat-chip-set>
-                            <mat-chip *ngFor="let tag of platform.tags" [color]="tag.color">
-                              {{ tag.label }}
-                            </mat-chip>
-                          </mat-chip-set>
-                        </div>
-                      </div>
-                    </div>
-                  </mat-radio-button>
-                </div>
-              </mat-radio-group>
-            </div>
-          </div>
-          
-          <div class="step-actions">
-            <button mat-raised-button color="primary" matStepperNext [disabled]="!platformForm.valid">
-              Next
-            </button>
-          </div>
-        </form>
-      </mat-step>
-
-      <!-- Step 2: Configuration -->
-      <mat-step [stepControl]="configForm" label="Configuration">
-        <form [formGroup]="configForm">
-          <div class="step-content">
-            <h3>Agent Configuration</h3>
-            
-            <!-- Basic Settings -->
-            <div class="config-section">
-              <h4>Basic Settings</h4>
-              <div class="form-row">
-                <mat-form-field appearance="outline">
-                  <mat-label>Agent Name</mat-label>
-                  <input matInput formControlName="agentName" placeholder="my-monitoring-agent">
-                  <mat-hint>Unique identifier for this agent</mat-hint>
-                </mat-form-field>
-                
-                <mat-form-field appearance="outline">
-                  <mat-label>Collection Interval</mat-label>
-                  <mat-select formControlName="interval">
-                    <mat-option value="30">30 seconds</mat-option>
-                    <mat-option value="60">1 minute</mat-option>
-                    <mat-option value="300">5 minutes</mat-option>
-                    <mat-option value="600">10 minutes</mat-option>
-                  </mat-select>
-                </mat-form-field>
-              </div>
-            </div>
-
-            <!-- Target Configuration -->
-            <div class="config-section">
-              <h4>Monitoring Targets</h4>
-              <p>Configure what network endpoints to monitor</p>
-              
-              <div class="targets-container">
-                <div class="target-presets">
-                  <h5>Quick Presets</h5>
-                  <div class="preset-buttons">
-                    <button mat-stroked-button type="button" (click)="addPresetTargets('dns')">
-                      <mat-icon>dns</mat-icon>
-                      Public DNS
-                    </button>
-                    <button mat-stroked-button type="button" (click)="addPresetTargets('cloud')">
-                      <mat-icon>cloud</mat-icon>
-                      Cloud Services
-                    </button>
-                    <button mat-stroked-button type="button" (click)="addPresetTargets('regional')">
-                      <mat-icon>language</mat-icon>
-                      Regional
-                    </button>
-                  </div>
-                </div>
-                
-                <div class="custom-targets">
-                  <h5>Custom Targets</h5>
-                  <div class="target-input">
-                    <mat-form-field appearance="outline">
-                      <mat-label>Target Host/IP</mat-label>
-                      <input matInput #targetInput placeholder="8.8.8.8 or google.com">
-                    </mat-form-field>
-                    <button mat-icon-button (click)="addCustomTarget(targetInput.value); targetInput.value=''">
-                      <mat-icon>add</mat-icon>
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Selected Targets -->
-              <div class="selected-targets" *ngIf="targets.length > 0">
-                <h5>Selected Targets ({{ targets.length }})</h5>
-                <div class="target-chips">
-                  <mat-chip-set>
-                    <mat-chip *ngFor="let target of targets" [removable]="true" (removed)="removeTarget(target)">
-                      {{ target }}
-                      <mat-icon matChipRemove>cancel</mat-icon>
-                    </mat-chip>
-                  </mat-chip-set>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          <div class="step-actions">
-            <button mat-button matStepperPrevious>Back</button>
-            <button mat-raised-button color="primary" matStepperNext [disabled]="!configForm.valid || targets.length === 0">
-              Next
-            </button>
-          </div>
-        </form>
-      </mat-step>
-
-      <!-- Step 3: Resource Selection -->
-      <mat-step [stepControl]="resourceForm" label="Resources">
-        <form [formGroup]="resourceForm">
-          <div class="step-content">
-            <h3>Resource Configuration</h3>
-            
-            <!-- Loading GCP Resources -->
-            <div *ngIf="loadingResources" class="loading-section">
-              <mat-spinner diameter="40"></mat-spinner>
-              <p>Loading available GCP resources...</p>
-            </div>
-            
-            <!-- Resource Selection -->
-            <div *ngIf="!loadingResources" class="resource-selection">
-              <div class="form-row">
-                <mat-form-field appearance="outline">
-                  <mat-label>Project</mat-label>
-                  <mat-select formControlName="project" (selectionChange)="onProjectChange($event.value)">
-                    <mat-option *ngFor="let project of availableProjects" [value]="project.id">
-                      {{ project.name }} ({{ project.id }})
-                    </mat-option>
-                  </mat-select>
-                </mat-form-field>
-                
-                <mat-form-field appearance="outline">
-                  <mat-label>Region</mat-label>
-                  <mat-select formControlName="region" (selectionChange)="onRegionChange($event.value)">
-                    <mat-option *ngFor="let region of regions" [value]="region.name">
-                      {{ region.displayName }}
-                    </mat-option>
-                  </mat-select>
-                </mat-form-field>
-              </div>
-
-              <!-- Platform-specific configuration -->
-              <div [ngSwitch]="platformForm.get('platform')?.value">
-                
-                <!-- Compute Engine Config -->
-                <div *ngSwitchCase="'compute'" class="platform-config">
-                  <h4>Compute Engine Configuration</h4>
-                  <div class="form-row">
-                    <mat-form-field appearance="outline">
-                      <mat-label>Machine Type</mat-label>
-                      <mat-select formControlName="machineType">
-                        <mat-option *ngFor="let type of machineTypes" [value]="type.name">
-                          {{ type.displayName }}
-                        </mat-option>
-                      </mat-select>
-                    </mat-form-field>
-                    
-                    <mat-form-field appearance="outline">
-                      <mat-label>Zone</mat-label>
-                      <mat-select formControlName="zone">
-                        <mat-option *ngFor="let zone of zones" [value]="zone">
-                          {{ zone }}
-                        </mat-option>
-                      </mat-select>
-                    </mat-form-field>
-                  </div>
-                  
-                  <mat-form-field appearance="outline">
-                    <mat-label>Network</mat-label>
-                    <mat-select formControlName="network" (selectionChange)="onNetworkChange()">
-                      <mat-option *ngFor="let network of networks" [value]="network.name">
-                        {{ network.displayName || network.name }}
-                      </mat-option>
-                    </mat-select>
-                  </mat-form-field>
-                </div>
-
-                <!-- GKE Config -->
-                <div *ngSwitchCase="'gke'" class="platform-config">
-                  <h4>GKE Configuration</h4>
-                  <mat-form-field appearance="outline">
-                    <mat-label>Cluster</mat-label>
-                    <mat-select formControlName="cluster">
-                      <mat-option *ngFor="let cluster of availableClusters" [value]="cluster.name">
-                        {{ cluster.name }} ({{ cluster.location }})
-                      </mat-option>
-                    </mat-select>
-                  </mat-form-field>
-                  
-                  <mat-form-field appearance="outline">
-                    <mat-label>Namespace</mat-label>
-                    <input matInput formControlName="namespace" value="default">
-                  </mat-form-field>
-                </div>
-
-                <!-- Cloud Run Config -->
-                <div *ngSwitchCase="'cloudrun'" class="platform-config">
-                  <h4>Cloud Run Configuration</h4>
-                  <div class="form-row">
-                    <mat-form-field appearance="outline">
-                      <mat-label>Memory</mat-label>
-                      <mat-select formControlName="memory">
-                        <mat-option value="512Mi">512 MB</mat-option>
-                        <mat-option value="1Gi">1 GB</mat-option>
-                        <mat-option value="2Gi">2 GB</mat-option>
-                      </mat-select>
-                    </mat-form-field>
-                    
-                    <mat-form-field appearance="outline">
-                      <mat-label>CPU</mat-label>
-                      <mat-select formControlName="cpu">
-                        <mat-option value="1">1 vCPU</mat-option>
-                        <mat-option value="2">2 vCPU</mat-option>
-                      </mat-select>
-                    </mat-form-field>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          <div class="step-actions">
-            <button mat-button matStepperPrevious>Back</button>
-            <button mat-raised-button color="primary" matStepperNext [disabled]="!resourceForm.valid">
-              Next
-            </button>
-          </div>
-        </form>
-      </mat-step>
-
-      <!-- Step 4: Review & Deploy -->
-      <mat-step label="Deploy">
-        <div class="step-content">
-          <h3>Review & Deploy</h3>
-          
-          <!-- Deployment Summary -->
-          <div class="deployment-summary">
-            <mat-card>
-              <mat-card-header>
-                <mat-card-title>Deployment Summary</mat-card-title>
-              </mat-card-header>
-              <mat-card-content>
-                <div class="summary-item">
-                  <strong>Platform:</strong> {{ getPlatformName() }}
-                </div>
-                <div class="summary-item">
-                  <strong>Agent Name:</strong> {{ configForm.get('agentName')?.value }}
-                </div>
-                <div class="summary-item">
-                  <strong>Project:</strong> {{ resourceForm.get('project')?.value }}
-                </div>
-                <div class="summary-item">
-                  <strong>Region:</strong> {{ resourceForm.get('region')?.value }}
-                </div>
-                <div class="summary-item">
-                  <strong>Targets:</strong> {{ targets.length }} endpoints
-                </div>
-                <div class="summary-item" *ngIf="estimatedCost">
-                  <strong>Estimated Monthly Cost:</strong> ${{ estimatedCost.toFixed(2) }}
-                </div>
-              </mat-card-content>
-            </mat-card>
-          </div>
-
-          <!-- Deployment Progress -->
-          <div *ngIf="deploymentInProgress" class="deployment-progress">
-            <mat-card>
-              <mat-card-header>
-                <mat-card-title>Deployment Progress</mat-card-title>
-              </mat-card-header>
-              <mat-card-content>
-                <mat-progress-bar [mode]="deploymentProgress < 100 ? 'determinate' : 'indeterminate'" 
-                                  [value]="deploymentProgress"></mat-progress-bar>
-                <div class="progress-steps">
-                  <div class="progress-step" *ngFor="let step of deploymentSteps" 
-                       [class.active]="step.active" [class.completed]="step.completed">
-                    <mat-icon>{{ step.completed ? 'check_circle' : step.active ? 'radio_button_checked' : 'radio_button_unchecked' }}</mat-icon>
-                    <span>{{ step.name }}</span>
-                  </div>
-                </div>
-                <div class="deployment-logs" *ngIf="deploymentLogs.length > 0">
-                  <h5>Deployment Logs</h5>
-                  <div class="log-container">
-                    <div class="log-entry" *ngFor="let log of deploymentLogs">
-                      <span class="log-timestamp">{{ log.timestamp | date:'HH:mm:ss' }}</span>
-                      <span class="log-message">{{ log.message }}</span>
-                    </div>
-                  </div>
-                </div>
-              </mat-card-content>
-            </mat-card>
-          </div>
-
-          <!-- Success State -->
-          <div *ngIf="deploymentComplete && !deploymentError" class="deployment-success">
-            <mat-card>
-              <mat-card-content class="success-content">
-                <mat-icon class="success-icon">check_circle</mat-icon>
-                <h3>Deployment Successful!</h3>
-                <p>Your monitoring agent has been deployed successfully.</p>
-                <div class="agent-info">
-                  <strong>Agent ID:</strong> {{ deployedAgentId }}
-                </div>
-              </mat-card-content>
-            </mat-card>
-          </div>
-
-          <!-- Error State -->
-          <div *ngIf="deploymentError" class="deployment-error">
-            <mat-card>
-              <mat-card-content class="error-content">
-                <mat-icon class="error-icon">error</mat-icon>
-                <h3>Deployment Failed</h3>
-                <p>{{ deploymentError }}</p>
-              </mat-card-content>
-            </mat-card>
-          </div>
-        </div>
+  <!-- Simplified Deployment Form -->
+  <mat-card class="deployment-card">
+    <mat-card-header>
+      <mat-card-title>Resource Configuration</mat-card-title>
+      <mat-card-subtitle>Configure where to deploy the monitoring agent</mat-card-subtitle>
+    </mat-card-header>
+    
+    <mat-card-content>
+      <form [formGroup]="deploymentForm" class="deployment-form">
         
-        <div class="step-actions">
-          <button mat-button matStepperPrevious [disabled]="deploymentInProgress">Back</button>
-          <button mat-raised-button color="primary" (click)="startDeployment()" 
-                  [disabled]="deploymentInProgress || deploymentComplete"
-                  *ngIf="!deploymentComplete">
-            <mat-icon>rocket_launch</mat-icon>
-            Deploy Agent
-          </button>
-          <button mat-raised-button color="primary" routerLink="/monitoring/agents" 
-                  *ngIf="deploymentComplete && !deploymentError">
-            <mat-icon>list</mat-icon>
-            View Agents
-          </button>
-          <button mat-button (click)="resetDeployment()" 
-                  *ngIf="deploymentComplete || deploymentError">
-            Deploy Another Agent
-          </button>
+        <!-- Agent Configuration Section -->
+        <div class="config-section">
+          <h3>Agent Configuration</h3>
+          <div class="form-row">
+            <mat-form-field appearance="outline">
+              <mat-label>Agent Name</mat-label>
+              <input matInput formControlName="agentName" placeholder="monitoring-agent-1">
+              <mat-hint>Unique identifier for this monitoring agent</mat-hint>
+            </mat-form-field>
+            
+            <mat-form-field appearance="outline">
+              <mat-label>Collection Interval</mat-label>
+              <mat-select formControlName="collectionInterval">
+                <mat-option value="30">30 seconds</mat-option>
+                <mat-option value="60">1 minute</mat-option>
+                <mat-option value="300">5 minutes</mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
         </div>
-      </mat-step>
-    </mat-horizontal-stepper>
+
+        <!-- Network Configuration Section -->
+        <div class="config-section">
+          <h3>Network Configuration</h3>
+          <div class="form-row">
+            <mat-form-field appearance="outline">
+              <mat-label>Network</mat-label>
+              <mat-select formControlName="network" (selectionChange)="onNetworkChange($event.value)">
+                <mat-option *ngFor="let network of availableNetworks" [value]="network.name">
+                  {{ network.description || network.name }}
+                </mat-option>
+              </mat-select>
+              <mat-hint>Select the VPC network for the monitoring agent</mat-hint>
+            </mat-form-field>
+            
+            <mat-form-field appearance="outline">
+              <mat-label>Subnetwork</mat-label>
+              <mat-select formControlName="subnetwork" [disabled]="!selectedNetworkSubnets.length">
+                <mat-option *ngFor="let subnet of selectedNetworkSubnets" [value]="subnet.name">
+                  {{ subnet.name }} ({{ subnet.region }})
+                </mat-option>
+              </mat-select>
+              <mat-hint>Select the subnetwork within the chosen network</mat-hint>
+            </mat-form-field>
+          </div>
+        </div>
+
+        <!-- VM Configuration Section -->
+        <div class="config-section">
+          <h3>VM Configuration</h3>
+          <div class="vm-config-info">
+            <div class="config-item">
+              <mat-icon>computer</mat-icon>
+              <div class="config-details">
+                <strong>Machine Type:</strong> e2-micro (1 vCPU, 1 GB memory)
+                <p>Cost-effective instance for monitoring workloads</p>
+              </div>
+            </div>
+            <div class="config-item">
+              <mat-icon>location_on</mat-icon>
+              <div class="config-details">
+                <strong>Zone:</strong> Auto-selected based on subnetwork region
+                <p>Deployed in the same region as the selected subnetwork</p>
+              </div>
+            </div>
+            <div class="config-item">
+              <mat-icon>security</mat-icon>
+              <div class="config-details">
+                <strong>Monitoring Agent:</strong> Pre-configured and ready
+                <p>Automatically monitors network connectivity and performance</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Monitoring Targets Section -->
+        <div class="config-section">
+          <h3>Monitoring Targets</h3>
+          <p>The agent will monitor connectivity to these default targets:</p>
+          
+          <div class="targets-display">
+            <mat-chip-set>
+              <mat-chip *ngFor="let target of defaultTargets">
+                <mat-icon>network_ping</mat-icon>
+                {{ target }}
+              </mat-chip>
+            </mat-chip-set>
+          </div>
+          
+          <div class="custom-targets-section">
+            <mat-form-field appearance="outline">
+              <mat-label>Additional Target (Optional)</mat-label>
+              <input matInput #customTargetInput placeholder="8.8.4.4 or example.com">
+            </mat-form-field>
+            <button mat-icon-button type="button" (click)="addCustomTarget(customTargetInput.value); customTargetInput.value=''" 
+                    [disabled]="!customTargetInput.value">
+              <mat-icon>add</mat-icon>
+            </button>
+          </div>
+          
+          <div class="custom-targets-list" *ngIf="customTargets.length > 0">
+            <mat-chip-set>
+              <mat-chip *ngFor="let target of customTargets" [removable]="true" (removed)="removeCustomTarget(target)">
+                {{ target }}
+                <mat-icon matChipRemove>cancel</mat-icon>
+              </mat-chip>
+            </mat-chip-set>
+          </div>
+        </div>
+
+      </form>
+    </mat-card-content>
+    
+    <mat-card-actions align="end">
+      <button mat-button type="button" (click)="resetForm()">
+        Reset
+      </button>
+      <button mat-raised-button color="primary" (click)="deployAgent()" 
+              [disabled]="!deploymentForm.valid || isDeploying">
+        <mat-icon>rocket_launch</mat-icon>
+        Deploy Agent
+      </button>
+    </mat-card-actions>
+  </mat-card>
+
+  <!-- Deployment Progress -->
+  <mat-card *ngIf="deploymentInProgress" class="progress-card">
+    <mat-card-header>
+      <mat-card-title>Deployment Progress</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <mat-progress-bar [mode]="deploymentProgress < 100 ? 'determinate' : 'indeterminate'" 
+                        [value]="deploymentProgress"></mat-progress-bar>
+      
+      <div class="progress-steps">
+        <div class="progress-step" *ngFor="let step of deploymentSteps" 
+             [class.active]="step.active" [class.completed]="step.completed">
+          <mat-icon>{{ step.completed ? 'check_circle' : step.active ? 'radio_button_checked' : 'radio_button_unchecked' }}</mat-icon>
+          <span>{{ step.name }}</span>
+        </div>
+      </div>
+      
+      <div class="deployment-logs" *ngIf="deploymentLogs.length > 0">
+        <h4>Deployment Logs</h4>
+        <div class="log-container">
+          <div class="log-entry" *ngFor="let log of deploymentLogs">
+            <span class="log-timestamp">{{ log.timestamp | date:'HH:mm:ss' }}</span>
+            <span class="log-message">{{ log.message }}</span>
+          </div>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Success State -->
+  <mat-card *ngIf="deploymentComplete && !deploymentError" class="success-card">
+    <mat-card-content class="success-content">
+      <mat-icon class="success-icon">check_circle</mat-icon>
+      <h3>Monitoring Agent Deployed Successfully!</h3>
+      <p>Your monitoring agent is now running and collecting network metrics.</p>
+      
+      <div class="deployment-details">
+        <div class="detail-item">
+          <strong>Agent ID:</strong> {{ deployedAgentId }}
+        </div>
+        <div class="detail-item">
+          <strong>Network:</strong> {{ deploymentForm.get('network')?.value }}
+        </div>
+        <div class="detail-item">
+          <strong>Subnetwork:</strong> {{ deploymentForm.get('subnetwork')?.value }}
+        </div>
+        <div class="detail-item">
+          <strong>VM Instance:</strong> {{ deployedVmName }}
+        </div>
+        <div class="detail-item">
+          <strong>Status:</strong> <span class="status-healthy">Healthy</span>
+        </div>
+      </div>
+      
+      <div class="success-actions">
+        <button mat-raised-button color="primary" routerLink="/monitoring/agents">
+          <mat-icon>list</mat-icon>
+          View All Agents
+        </button>
+        <button mat-button (click)="resetDeployment()">
+          Deploy Another Agent
+        </button>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Error State -->
+  <mat-card *ngIf="deploymentError" class="error-card">
+    <mat-card-content class="error-content">
+      <mat-icon class="error-icon">error</mat-icon>
+      <h3>Deployment Failed</h3>
+      <p>{{ deploymentError }}</p>
+      <button mat-raised-button color="warn" (click)="resetDeployment()">
+        Try Again
+      </button>
+    </mat-card-content>
   </mat-card>
 </div> 
