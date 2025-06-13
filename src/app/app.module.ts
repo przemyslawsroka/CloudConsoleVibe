@@ -119,8 +119,10 @@ import { VmInstancesComponent } from './components/vm-instances/vm-instances.com
 import { CreateVmInstanceComponent } from './components/vm-instances/create-vm-instance.component';
 import { AwsConfigComponent } from './components/aws-config/aws-config.component';
 import { InstanceTemplatesComponent } from './components/instance-templates/instance-templates.component';
+import { InstanceGroupsComponent } from './components/instance-groups/instance-groups.component';
 import { ComputeEngineService } from './services/compute-engine.service';
 import { InstanceTemplatesService } from './services/instance-templates.service';
+import { InstanceGroupsService } from './services/instance-groups.service';
 
 @NgModule({
   declarations: [
@@ -193,7 +195,8 @@ import { InstanceTemplatesService } from './services/instance-templates.service'
     VmInstancesComponent,
     CreateVmInstanceComponent,
     AwsConfigComponent,
-    InstanceTemplatesComponent
+    InstanceTemplatesComponent,
+    InstanceGroupsComponent
   ],
   imports: [
     BrowserModule,
@@ -221,7 +224,7 @@ import { InstanceTemplatesService } from './services/instance-templates.service'
     TextFieldModule,
     MatStepperModule
   ],
-  providers: [AuthService, GoogleAnalyticsService, VpcService, TPPIService, PacketMirroringService, NetworkHealthMonitorService, AppNetaService, CloudNatService, GkeClusterService, GeminiAiService, GlobalFrontendService, SecureWebProxyService, ComputeEngineService],
+  providers: [AuthService, GoogleAnalyticsService, VpcService, TPPIService, PacketMirroringService, NetworkHealthMonitorService, AppNetaService, CloudNatService, GkeClusterService, GeminiAiService, GlobalFrontendService, SecureWebProxyService, ComputeEngineService, InstanceTemplatesService, InstanceGroupsService],
   bootstrap: [AppComponent]
 })
 export class AppModule { } 

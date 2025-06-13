@@ -464,7 +464,8 @@ export class AppComponent implements OnInit {
       expanded: false,
       items: [
         { name: 'VM instances', route: '/vm-instances', icon: 'desktop_windows' },
-        { name: 'Instance templates', route: '/instance-templates', icon: 'description' }
+        { name: 'Instance templates', route: '/instance-templates', icon: 'description' },
+        { name: 'Instance groups', route: '/instance-groups', icon: 'group_work' }
       ]
     },
     {

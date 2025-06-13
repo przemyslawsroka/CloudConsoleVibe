@@ -10,16 +10,25 @@ export interface InstanceGroup {
   id: string;
   name: string;
   description?: string;
-  namedPorts?: NamedPort[];
-  network: string;
-  subnetwork?: string;
-  zone?: string;
-  region?: string;
-  size: number;
-  creationTimestamp: string;
   selfLink: string;
   kind: string;
-  fingerprint: string;
+  creationTimestamp: string;
+  zone?: string;
+  region?: string;
+  network?: string;
+  subnetwork?: string;
+  instanceTemplate?: string;
+  targetSize?: number;
+  instanceCount?: number;
+  groupType: 'Managed' | 'Unmanaged';
+  status: 'Running' | 'Healthy' | 'Warning' | 'Error' | 'Stopped';
+  template?: string;
+  recommendation?: string;
+  autoscaling?: string;
+  inUseBy?: string;
+  fingerprint?: string;
+  namedPorts?: NamedPort[];
+  instances?: string[];
 }
 
 export interface NamedPort {
@@ -27,14 +36,18 @@ export interface NamedPort {
   port: number;
 }
 
-export interface InstanceGroupRequest {
+export interface CreateInstanceGroupRequest {
   name: string;
   description?: string;
-  network: string;
-  subnetwork?: string;
   zone?: string;
   region?: string;
+  network?: string;
+  subnetwork?: string;
+  instanceTemplate?: string;
+  targetSize?: number;
+  groupType: 'Managed' | 'Unmanaged';
   namedPorts?: NamedPort[];
+  instances?: string[];
 }
 
 export interface InstanceGroupsListResponse {
@@ -57,51 +70,13 @@ export class InstanceGroupsService {
   public loading$ = this.loadingSubject.asObservable();
   public error$ = this.errorSubject.asObservable();
 
-  // Mock data for demo mode
-  private mockGroups: InstanceGroup[] = [
-    {
-      id: '1234567890123456789',
-      name: 'web-servers-group',
-      description: 'Unmanaged instance group for web servers',
-      network: 'https://www.googleapis.com/compute/v1/projects/demo-project/global/networks/default',
-      subnetwork: 'https://www.googleapis.com/compute/v1/projects/demo-project/regions/us-central1/subnetworks/default',
-      zone: 'https://www.googleapis.com/compute/v1/projects/demo-project/zones/us-central1-a',
-      size: 3,
-      namedPorts: [
-        { name: 'http', port: 80 },
-        { name: 'https', port: 443 }
-      ],
-      creationTimestamp: '2024-05-22T15:55:09.000-07:00',
-      selfLink: 'https://www.googleapis.com/compute/v1/projects/demo-project/zones/us-central1-a/instanceGroups/web-servers-group',
-      kind: 'compute#instanceGroup',
-      fingerprint: 'abcd1234'
-    },
-    {
-      id: '9876543210987654321',
-      name: 'database-servers-group',
-      description: 'Unmanaged instance group for database servers',
-      network: 'https://www.googleapis.com/compute/v1/projects/demo-project/global/networks/default',
-      subnetwork: 'https://www.googleapis.com/compute/v1/projects/demo-project/regions/us-east1/subnetworks/default',
-      zone: 'https://www.googleapis.com/compute/v1/projects/demo-project/zones/us-east1-b',
-      size: 2,
-      namedPorts: [
-        { name: 'mysql', port: 3306 },
-        { name: 'postgres', port: 5432 }
-      ],
-      creationTimestamp: '2024-05-20T10:30:15.000-07:00',
-      selfLink: 'https://www.googleapis.com/compute/v1/projects/demo-project/zones/us-east1-b/instanceGroups/database-servers-group',
-      kind: 'compute#instanceGroup',
-      fingerprint: 'efgh5678'
-    }
-  ];
-
   constructor(
     private http: HttpClient,
     private authService: AuthService,
     private projectService: ProjectService
   ) {
     // Initialize with mock data
-    this.groupsSubject.next(this.mockGroups);
+    this.groupsSubject.next(this.getMockInstanceGroups());
   }
 
   private getHeaders(): HttpHeaders {
@@ -116,11 +91,10 @@ export class InstanceGroupsService {
     this.loadingSubject.next(true);
     this.errorSubject.next(null);
 
-    // Always use mock data for demo
     if (this.authService.isDemoMode()) {
       console.log('Using mock instance groups data');
       this.loadingSubject.next(false);
-      return of(this.mockGroups);
+      return of(this.getMockInstanceGroups());
     }
 
     const headers = this.getHeaders();
@@ -148,78 +122,75 @@ export class InstanceGroupsService {
         console.error('Error fetching instance groups via API:', error);
         // Fallback to mock data on error
         console.log('Using mock instance groups data as fallback');
-        this.groupsSubject.next(this.mockGroups);
+        this.groupsSubject.next(this.getMockInstanceGroups());
         this.loadingSubject.next(false);
-        return of(this.mockGroups);
+        return of(this.getMockInstanceGroups());
       })
     );
   }
 
-  createInstanceGroup(projectId: string, groupData: InstanceGroupRequest): Observable<InstanceGroup> {
-    const headers = this.getHeaders();
-    const zone = this.extractZoneFromUrl(groupData.zone || '');
-    const url = `${this.baseUrl}/projects/${projectId}/zones/${zone}/instanceGroups`;
-    
-    console.log('Creating instance group:', groupData);
-    
-    // Transform the request data to match GCP API format
-    const gcpGroupData = {
-      name: groupData.name,
-      description: groupData.description,
-      network: groupData.network,
-      subnetwork: groupData.subnetwork,
-      namedPorts: groupData.namedPorts || []
-    };
+  getInstanceGroupsForZone(projectId: string, zone: string): Observable<InstanceGroup[]> {
+    if (this.authService.isDemoMode()) {
+      return of(this.getMockInstanceGroups().filter(group => 
+        group.zone === zone
+      ));
+    }
 
-    return this.http.post<any>(url, gcpGroupData, { headers }).pipe(
-      map(response => {
-        console.log('Instance group created:', response);
-        // Transform the response back to our format
-        const newGroup: InstanceGroup = {
-          id: response.id || Date.now().toString(),
-          name: groupData.name,
-          description: groupData.description,
-          network: groupData.network,
-          subnetwork: groupData.subnetwork,
-          zone: groupData.zone,
-          size: 0,
-          namedPorts: groupData.namedPorts,
-          creationTimestamp: response.creationTimestamp || new Date().toISOString(),
-          selfLink: response.selfLink || `${url}/${groupData.name}`,
-          kind: 'compute#instanceGroup',
-          fingerprint: response.fingerprint || 'mock-fingerprint'
-        };
-        
-        // Add to local cache
-        const currentGroups = this.groupsSubject.value;
-        this.groupsSubject.next([...currentGroups, newGroup]);
-        
-        return newGroup;
-      }),
+    const url = `${this.baseUrl}/projects/${projectId}/zones/${zone}/instanceGroups`;
+    return this.http.get<{ items: InstanceGroup[] }>(url, { headers: this.getHeaders() }).pipe(
+      map(response => response.items || []),
       catchError(error => {
-        console.error('Error creating instance group via API:', error);
-        // Return mock success response for development
-        const mockGroup: InstanceGroup = {
-          id: Date.now().toString(),
-          name: groupData.name,
-          description: groupData.description,
-          network: groupData.network,
-          subnetwork: groupData.subnetwork,
-          zone: groupData.zone,
-          size: 0,
-          namedPorts: groupData.namedPorts || [],
-          creationTimestamp: new Date().toISOString(),
-          selfLink: `projects/${projectId}/zones/${zone}/instanceGroups/${groupData.name}`,
-          kind: 'compute#instanceGroup',
-          fingerprint: 'mock-fingerprint'
-        };
-        
-        // Add to local cache
-        const currentGroups = this.groupsSubject.value;
-        this.groupsSubject.next([...currentGroups, mockGroup]);
-        
-        console.log('Using mock instance group creation response:', mockGroup);
+        console.error('Error fetching instance groups for zone:', error);
+        return of(this.getMockInstanceGroups().filter(group => group.zone === zone));
+      })
+    );
+  }
+
+  getInstanceGroup(projectId: string, zone: string, instanceGroupName: string): Observable<InstanceGroup> {
+    if (this.authService.isDemoMode()) {
+      const mockGroup = this.getMockInstanceGroups().find(group => 
+        group.name === instanceGroupName && group.zone === zone
+      );
+      if (mockGroup) {
         return of(mockGroup);
+      }
+      throw new Error('Instance group not found');
+    }
+
+    const url = `${this.baseUrl}/projects/${projectId}/zones/${zone}/instanceGroups/${instanceGroupName}`;
+    return this.http.get<InstanceGroup>(url, { headers: this.getHeaders() }).pipe(
+      catchError(error => {
+        console.error('Error fetching instance group:', error);
+        throw error;
+      })
+    );
+  }
+
+  createInstanceGroup(projectId: string, zone: string, instanceGroupData: CreateInstanceGroupRequest): Observable<any> {
+    if (this.authService.isDemoMode()) {
+      // Simulate creation success
+      const newGroup: InstanceGroup = {
+        id: Date.now().toString(),
+        name: instanceGroupData.name,
+        description: instanceGroupData.description,
+        selfLink: `https://www.googleapis.com/compute/v1/projects/${projectId}/zones/${zone}/instanceGroups/${instanceGroupData.name}`,
+        kind: 'compute#instanceGroup',
+        creationTimestamp: new Date().toISOString(),
+        zone: zone,
+        groupType: instanceGroupData.groupType,
+        status: 'Running',
+        instanceCount: instanceGroupData.targetSize || 0,
+        template: instanceGroupData.instanceTemplate,
+        namedPorts: instanceGroupData.namedPorts || []
+      };
+      return of({ targetLink: newGroup.selfLink });
+    }
+
+    const url = `${this.baseUrl}/projects/${projectId}/zones/${zone}/instanceGroups`;
+    return this.http.post<any>(url, instanceGroupData, { headers: this.getHeaders() }).pipe(
+      catchError(error => {
+        console.error('Error creating instance group:', error);
+        throw error;
       })
     );
   }
@@ -278,5 +249,144 @@ export class InstanceGroupsService {
     if (!resourceUrl) return '';
     const parts = resourceUrl.split('/');
     return parts[parts.length - 1] || '';
+  }
+
+  private getMockInstanceGroups(): InstanceGroup[] {
+    return [
+      {
+        id: '1001',
+        name: 'instance-group-1',
+        description: 'Production web servers instance group',
+        selfLink: 'https://www.googleapis.com/compute/v1/projects/demo-project/zones/us-central1-a/instanceGroups/instance-group-1',
+        kind: 'compute#instanceGroup',
+        creationTimestamp: '2024-05-22T15:55:09.000-07:00',
+        zone: 'us-central1-a',
+        groupType: 'Unmanaged',
+        status: 'Healthy',
+        instanceCount: 0,
+        template: '-',
+        recommendation: '-',
+        autoscaling: '-',
+        inUseBy: 'bs',
+        namedPorts: [
+          { name: 'http', port: 80 },
+          { name: 'https', port: 443 }
+        ],
+        instances: []
+      },
+      {
+        id: '1002',
+        name: 'web-servers-managed',
+        description: 'Managed instance group for web servers',
+        selfLink: 'https://www.googleapis.com/compute/v1/projects/demo-project/zones/us-central1-b/instanceGroups/web-servers-managed',
+        kind: 'compute#instanceGroup',
+        creationTimestamp: '2024-05-20T10:30:15.000-07:00',
+        zone: 'us-central1-b',
+        groupType: 'Managed',
+        status: 'Running',
+        instanceCount: 3,
+        template: 'web-server-template-v2',
+        recommendation: 'Optimize CPU',
+        autoscaling: 'Enabled (1-5)',
+        inUseBy: 'Load Balancer',
+        namedPorts: [
+          { name: 'http', port: 8080 }
+        ],
+        instances: [
+          'web-server-1',
+          'web-server-2',
+          'web-server-3'
+        ]
+      },
+      {
+        id: '1003',
+        name: 'api-servers',
+        description: 'API backend servers',
+        selfLink: 'https://www.googleapis.com/compute/v1/projects/demo-project/zones/us-east1-a/instanceGroups/api-servers',
+        kind: 'compute#instanceGroup',
+        creationTimestamp: '2024-05-18T14:22:30.000-07:00',
+        zone: 'us-east1-a',
+        groupType: 'Managed',
+        status: 'Warning',
+        instanceCount: 2,
+        template: 'api-server-template',
+        recommendation: 'Scale up',
+        autoscaling: 'Disabled',
+        inUseBy: '-',
+        namedPorts: [
+          { name: 'api', port: 3000 },
+          { name: 'health', port: 8080 }
+        ],
+        instances: [
+          'api-server-1',
+          'api-server-2'
+        ]
+      },
+      {
+        id: '1004',
+        name: 'database-cluster',
+        description: 'Database cluster instance group',
+        selfLink: 'https://www.googleapis.com/compute/v1/projects/demo-project/zones/us-west1-a/instanceGroups/database-cluster',
+        kind: 'compute#instanceGroup',
+        creationTimestamp: '2024-05-15T09:45:00.000-07:00',
+        zone: 'us-west1-a',
+        groupType: 'Unmanaged',
+        status: 'Healthy',
+        instanceCount: 1,
+        template: '-',
+        recommendation: 'Add backup',
+        autoscaling: '-',
+        inUseBy: '-',
+        namedPorts: [
+          { name: 'mysql', port: 3306 }
+        ],
+        instances: [
+          'db-primary-1'
+        ]
+      },
+      {
+        id: '1005',
+        name: 'worker-nodes',
+        description: 'Background job processing workers',
+        selfLink: 'https://www.googleapis.com/compute/v1/projects/demo-project/zones/us-central1-c/instanceGroups/worker-nodes',
+        kind: 'compute#instanceGroup',
+        creationTimestamp: '2024-05-12T16:10:45.000-07:00',
+        zone: 'us-central1-c',
+        groupType: 'Managed',
+        status: 'Running',
+        instanceCount: 4,
+        template: 'worker-template-v1',
+        recommendation: '-',
+        autoscaling: 'Enabled (2-8)',
+        inUseBy: 'Job Queue',
+        namedPorts: [],
+        instances: [
+          'worker-1',
+          'worker-2',
+          'worker-3',
+          'worker-4'
+        ]
+      },
+      {
+        id: '1006',
+        name: 'cache-servers',
+        description: 'Redis cache servers',
+        selfLink: 'https://www.googleapis.com/compute/v1/projects/demo-project/zones/us-east1-b/instanceGroups/cache-servers',
+        kind: 'compute#instanceGroup',
+        creationTimestamp: '2024-05-10T11:20:30.000-07:00',
+        zone: 'us-east1-b',
+        groupType: 'Managed',
+        status: 'Error',
+        instanceCount: 0,
+        template: 'cache-template',
+        recommendation: 'Fix configuration',
+        autoscaling: 'Disabled',
+        inUseBy: '-',
+        namedPorts: [
+          { name: 'redis', port: 6379 }
+        ],
+        instances: []
+      }
+    ];
   }
 } 
