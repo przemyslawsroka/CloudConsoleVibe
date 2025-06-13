@@ -11,17 +11,19 @@ import { FormControl } from '@angular/forms';
 import { ComputeEngineService, VmInstance, Zone } from '../../services/compute-engine.service';
 import { ProjectService } from '../../services/project.service';
 import { Router } from '@angular/router';
+import { MultiCloudInstancesService } from '../../services/multi-cloud-instances.service';
+import { MultiCloudVmInstance } from '../../interfaces/multi-cloud.interface';
 
-interface TableVmInstance extends VmInstance {
+interface TableVmInstance extends MultiCloudVmInstance {
   displayZone: string;
   displayMachineType: string;
   displayNetwork: string;
   displayStatus: string;
-  statusColor: string;
   formattedCreationDate: string;
   bootDiskSize: string;
   hasExternalIp: boolean;
   preemptible: boolean;
+  providerIcon: string;
 }
 
 @Component({
@@ -38,6 +40,10 @@ interface TableVmInstance extends VmInstance {
           <button mat-raised-button color="primary" (click)="createInstance()">
             <mat-icon>add</mat-icon>
             Create Instance
+          </button>
+          <button mat-raised-button color="accent" (click)="configureAws()">
+            <mat-icon>settings</mat-icon>
+            Configure AWS
           </button>
           <button mat-icon-button [matMenuTriggerFor]="moreMenu">
             <mat-icon>more_vert</mat-icon>
@@ -159,13 +165,17 @@ interface TableVmInstance extends VmInstance {
             <td mat-cell *matCellDef="let instance">
               <div class="name-cell">
                 <span class="instance-name" (click)="viewInstanceDetails(instance)">{{ instance.name }}</span>
-                <div class="instance-labels" *ngIf="hasLabels(instance)">
-                  <mat-chip-listbox>
-                    <mat-chip *ngFor="let label of getInstanceLabels(instance)" class="label-chip">
-                      {{ label.key }}: {{ label.value }}
-                    </mat-chip>
-                  </mat-chip-listbox>
-                </div>
+              </div>
+            </td>
+          </ng-container>
+
+          <!-- Provider Column -->
+          <ng-container matColumnDef="provider">
+            <th mat-header-cell *matHeaderCellDef>Provider</th>
+            <td mat-cell *matCellDef="let instance">
+              <div class="provider-cell">
+                <mat-icon [style.color]="getProviderColor(instance.provider)">{{ instance.providerIcon }}</mat-icon>
+                <span>{{ instance.provider.toUpperCase() }}</span>
               </div>
             </td>
           </ng-container>
@@ -222,7 +232,7 @@ interface TableVmInstance extends VmInstance {
             <td mat-cell *matCellDef="let instance">
               <div class="boot-disk-cell">
                 <span>{{ instance.bootDiskSize }} GB</span>
-                <mat-icon class="disk-icon" *ngIf="instance.disks[0]?.type === 'PERSISTENT'">storage</mat-icon>
+                <mat-icon class="disk-icon" *ngIf="hasBootDisk(instance)">storage</mat-icon>
               </div>
             </td>
           </ng-container>
@@ -626,6 +636,24 @@ interface TableVmInstance extends VmInstance {
       --chip-background: #f1f3f4;
       --success-color: #137333;
     }
+
+    .provider-cell {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .provider-cell mat-icon {
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+    }
+
+    .provider-cell span {
+      font-weight: 500;
+      font-size: 12px;
+      text-transform: uppercase;
+    }
   `]
 })
 export class VmInstancesComponent implements OnInit, OnDestroy, AfterViewInit {
@@ -635,6 +663,7 @@ export class VmInstancesComponent implements OnInit, OnDestroy, AfterViewInit {
   displayedColumns: string[] = [
     'select',
     'name',
+    'provider',
     'zone',
     'machineType',
     'status',
@@ -665,7 +694,8 @@ export class VmInstancesComponent implements OnInit, OnDestroy, AfterViewInit {
     private projectService: ProjectService,
     private dialog: MatDialog,
     private snackBar: MatSnackBar,
-    private router: Router
+    private router: Router,
+    private multiCloudService: MultiCloudInstancesService
   ) {}
 
   ngOnInit() {
@@ -680,21 +710,27 @@ export class VmInstancesComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   private initializeComponent() {
-    // Subscribe to compute engine service observables
-    this.computeEngineService.instances$
+    // Subscribe to multi-cloud service observables
+    this.multiCloudService.instances$
       .pipe(takeUntil(this.destroy$))
       .subscribe(instances => {
-        console.log('VM Instances received:', instances);
-        this.dataSource.data = this.transformInstances(instances);
-        console.log('Transformed data:', this.dataSource.data);
-        this.applyFilters();
+        console.log('VM Component - Multi-cloud instances received:', instances);
+        try {
+          const transformedData = this.transformMultiCloudInstances(instances);
+          console.log('VM Component - Transformed data:', transformedData);
+          this.dataSource.data = transformedData;
+          this.applyFilters();
+        } catch (error) {
+          console.error('VM Component - Error transforming instances:', error);
+          this.error = 'Failed to display instances';
+        }
       });
 
-    this.computeEngineService.loading$
+    this.multiCloudService.loading$
       .pipe(takeUntil(this.destroy$))
       .subscribe(loading => this.loading = loading);
 
-    this.computeEngineService.error$
+    this.multiCloudService.error$
       .pipe(takeUntil(this.destroy$))
       .subscribe(error => this.error = error);
   }
@@ -733,19 +769,58 @@ export class VmInstancesComponent implements OnInit, OnDestroy, AfterViewInit {
     this.refreshInstances();
   }
 
-  private transformInstances(instances: VmInstance[]): TableVmInstance[] {
+  private transformMultiCloudInstances(instances: MultiCloudVmInstance[]): TableVmInstance[] {
     return instances.map(instance => ({
       ...instance,
-      displayZone: this.computeEngineService.extractZoneName(instance.zone),
-      displayMachineType: this.computeEngineService.extractMachineTypeName(instance.machineType),
-      displayNetwork: this.computeEngineService.extractNetworkName(instance.networkInterfaces[0]?.network || ''),
+      displayZone: instance.displayRegion,
+      displayMachineType: instance.displayInstanceType,
+      displayNetwork: this.getDisplayNetwork(instance),
       displayStatus: this.formatStatus(instance.status),
-      statusColor: this.computeEngineService.getStatusColor(instance.status),
-      formattedCreationDate: this.formatDate(instance.creationTimestamp),
-      bootDiskSize: instance.disks.find(d => d.boot)?.diskSizeGb || '0',
+      formattedCreationDate: this.formatDate(instance.createdAt),
+      bootDiskSize: this.getBootDiskSize(instance),
       hasExternalIp: !!instance.externalIp,
-      preemptible: instance.scheduling.preemptible
+      preemptible: this.getPreemptibleStatus(instance),
+      providerIcon: this.getProviderIcon(instance.provider)
     }));
+  }
+
+  private getDisplayNetwork(instance: MultiCloudVmInstance): string {
+    if (instance.provider === 'gcp' && instance.providerData.gcp) {
+      return this.computeEngineService.extractNetworkName(
+        instance.providerData.gcp.networkInterfaces[0]?.network || ''
+      );
+    } else if (instance.provider === 'aws' && instance.providerData.aws) {
+      return instance.providerData.aws.VpcId || 'default';
+    }
+    return 'unknown';
+  }
+
+  private getBootDiskSize(instance: MultiCloudVmInstance): string {
+    if (instance.provider === 'gcp' && instance.providerData.gcp) {
+      return instance.providerData.gcp.disks.find((d: any) => d.boot)?.diskSizeGb || '0';
+    } else if (instance.provider === 'aws' && instance.providerData.aws) {
+      const rootDevice = instance.providerData.aws.BlockDeviceMappings.find(
+        (device: any) => device.DeviceName === instance.providerData.aws?.RootDeviceName
+      );
+      return rootDevice?.Ebs?.VolumeSize?.toString() || '8';
+    }
+    return '0';
+  }
+
+  private getPreemptibleStatus(instance: MultiCloudVmInstance): boolean {
+    if (instance.provider === 'gcp' && instance.providerData.gcp) {
+      return instance.providerData.gcp.scheduling.preemptible;
+    }
+    // AWS spot instances would be similar concept
+    return false;
+  }
+
+  private getProviderIcon(provider: string): string {
+    switch (provider) {
+      case 'gcp': return 'cloud';
+      case 'aws': return 'storage';
+      default: return 'computer';
+    }
   }
 
   private formatStatus(status: string): string {
@@ -771,8 +846,7 @@ export class VmInstancesComponent implements OnInit, OnDestroy, AfterViewInit {
     this.dataSource.filterPredicate = (data: TableVmInstance, filter: string) => {
       const matchesSearch = !searchTerm || 
         data.name.toLowerCase().includes(searchTerm) ||
-        Object.values(data.labels).some(label => label.toLowerCase().includes(searchTerm)) ||
-        (data.description ? data.description.toLowerCase().includes(searchTerm) : false);
+        this.searchInLabels(data, searchTerm);
 
       const matchesZone = selectedZone === 'all' || data.displayZone === selectedZone;
       const matchesStatus = selectedStatus === 'all' || data.status === selectedStatus;
@@ -817,30 +891,57 @@ export class VmInstancesComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   // Instance helper methods
-  hasLabels(instance: VmInstance): boolean {
-    return Object.keys(instance.labels).length > 0;
+  hasLabels(instance: MultiCloudVmInstance): boolean {
+    if (instance.provider === 'gcp' && instance.providerData.gcp) {
+      return Object.keys(instance.providerData.gcp.labels || {}).length > 0;
+    } else if (instance.provider === 'aws' && instance.providerData.aws) {
+      return (instance.providerData.aws.Tags || []).length > 0;
+    }
+    return false;
   }
 
-  getInstanceLabels(instance: VmInstance) {
-    return Object.entries(instance.labels).map(([key, value]) => ({ key, value }));
+  hasBootDisk(instance: MultiCloudVmInstance): boolean {
+    if (instance.provider === 'gcp' && instance.providerData.gcp) {
+      const bootDisk = instance.providerData.gcp.disks?.find((d: any) => d.boot);
+      return bootDisk?.type === 'PERSISTENT';
+    } else if (instance.provider === 'aws' && instance.providerData.aws) {
+      // AWS instances typically have EBS volumes
+      return true;
+    }
+    return false;
+  }
+
+  getInstanceLabels(instance: MultiCloudVmInstance): Array<{ key: string; value: string }> {
+    if (instance.provider === 'gcp' && instance.providerData.gcp) {
+      return Object.entries(instance.providerData.gcp.labels || {}).map(([key, value]) => ({ 
+        key, 
+        value: String(value) 
+      }));
+    } else if (instance.provider === 'aws' && instance.providerData.aws) {
+      return (instance.providerData.aws.Tags || []).map(tag => ({ 
+        key: tag.Key, 
+        value: tag.Value 
+      }));
+    }
+    return [];
   }
 
   // Action validation methods
   canStartSelected(): boolean {
     return this.selection.selected.some(instance => 
-      instance.status === 'STOPPED' || instance.status === 'SUSPENDED'
+      instance.status === 'stopped' || instance.status === 'terminated'
     );
   }
 
   canStopSelected(): boolean {
     return this.selection.selected.some(instance => 
-      instance.status === 'RUNNING'
+      instance.status === 'running'
     );
   }
 
   canRestartSelected(): boolean {
     return this.selection.selected.some(instance => 
-      instance.status === 'RUNNING'
+      instance.status === 'running'
     );
   }
 
@@ -850,11 +951,15 @@ export class VmInstancesComponent implements OnInit, OnDestroy, AfterViewInit {
 
   // Action methods
   refreshInstances() {
-    this.computeEngineService.loadInstances().subscribe();
+    this.multiCloudService.loadAllInstances();
   }
 
   createInstance() {
     this.router.navigate(['/vm-instances/create']);
+  }
+
+  configureAws() {
+    this.router.navigate(['/aws-config']);
   }
 
   viewInstanceDetails(instance: VmInstance) {
@@ -888,56 +993,48 @@ export class VmInstancesComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   // Single instance actions
-  startInstance(instance: VmInstance) {
-    this.computeEngineService.startInstance(instance.zone, instance.name).subscribe({
-      next: () => {
-        this.snackBar.open(`Starting ${instance.name}...`, 'Close', { duration: 3000 });
-      },
-      error: (error) => {
-        this.snackBar.open(`Failed to start ${instance.name}: ${error.message}`, 'Close', { duration: 5000 });
-      }
-    });
+  async startInstance(instance: MultiCloudVmInstance) {
+    const success = await this.multiCloudService.startInstance(instance);
+    if (success) {
+      this.snackBar.open(`Starting ${instance.name}...`, 'Close', { duration: 3000 });
+    } else {
+      this.snackBar.open(`Failed to start ${instance.name}`, 'Close', { duration: 5000 });
+    }
   }
 
-  stopInstance(instance: VmInstance) {
-    this.computeEngineService.stopInstance(instance.zone, instance.name).subscribe({
-      next: () => {
-        this.snackBar.open(`Stopping ${instance.name}...`, 'Close', { duration: 3000 });
-      },
-      error: (error) => {
-        this.snackBar.open(`Failed to stop ${instance.name}: ${error.message}`, 'Close', { duration: 5000 });
-      }
-    });
+  async stopInstance(instance: MultiCloudVmInstance) {
+    const success = await this.multiCloudService.stopInstance(instance);
+    if (success) {
+      this.snackBar.open(`Stopping ${instance.name}...`, 'Close', { duration: 3000 });
+    } else {
+      this.snackBar.open(`Failed to stop ${instance.name}`, 'Close', { duration: 5000 });
+    }
   }
 
-  restartInstance(instance: VmInstance) {
-    this.computeEngineService.restartInstance(instance.zone, instance.name).subscribe({
-      next: () => {
-        this.snackBar.open(`Restarting ${instance.name}...`, 'Close', { duration: 3000 });
-      },
-      error: (error) => {
-        this.snackBar.open(`Failed to restart ${instance.name}: ${error.message}`, 'Close', { duration: 5000 });
-      }
-    });
+  async restartInstance(instance: MultiCloudVmInstance) {
+    const success = await this.multiCloudService.restartInstance(instance);
+    if (success) {
+      this.snackBar.open(`Restarting ${instance.name}...`, 'Close', { duration: 3000 });
+    } else {
+      this.snackBar.open(`Failed to restart ${instance.name}`, 'Close', { duration: 5000 });
+    }
   }
 
-  deleteInstance(instance: VmInstance) {
+  async deleteInstance(instance: MultiCloudVmInstance) {
     if (confirm(`Are you sure you want to delete ${instance.name}? This action cannot be undone.`)) {
-      this.computeEngineService.deleteInstance(instance.zone, instance.name).subscribe({
-        next: () => {
-          this.snackBar.open(`Deleting ${instance.name}...`, 'Close', { duration: 3000 });
-        },
-        error: (error) => {
-          this.snackBar.open(`Failed to delete ${instance.name}: ${error.message}`, 'Close', { duration: 5000 });
-        }
-      });
+      const success = await this.multiCloudService.deleteInstance(instance);
+      if (success) {
+        this.snackBar.open(`Deleting ${instance.name}...`, 'Close', { duration: 3000 });
+      } else {
+        this.snackBar.open(`Failed to delete ${instance.name}`, 'Close', { duration: 5000 });
+      }
     }
   }
 
   // Bulk actions
   startSelectedInstances() {
     const instances = this.selection.selected.filter(instance => 
-      instance.status === 'STOPPED' || instance.status === 'SUSPENDED'
+      instance.status === 'stopped' || instance.status === 'terminated'
     );
     
     instances.forEach(instance => this.startInstance(instance));
@@ -946,7 +1043,7 @@ export class VmInstancesComponent implements OnInit, OnDestroy, AfterViewInit {
 
   stopSelectedInstances() {
     const instances = this.selection.selected.filter(instance => 
-      instance.status === 'RUNNING'
+      instance.status === 'running'
     );
     
     instances.forEach(instance => this.stopInstance(instance));
@@ -955,7 +1052,7 @@ export class VmInstancesComponent implements OnInit, OnDestroy, AfterViewInit {
 
   restartSelectedInstances() {
     const instances = this.selection.selected.filter(instance => 
-      instance.status === 'RUNNING'
+      instance.status === 'running'
     );
     
     instances.forEach(instance => this.restartInstance(instance));
@@ -970,5 +1067,21 @@ export class VmInstancesComponent implements OnInit, OnDestroy, AfterViewInit {
       instances.forEach(instance => this.deleteInstance(instance));
       this.selection.clear();
     }
+  }
+
+  getProviderColor(provider: string): string {
+    switch (provider) {
+      case 'gcp': return '#4285f4';
+      case 'aws': return '#ff9900';
+      default: return '#666666';
+    }
+  }
+
+  private searchInLabels(instance: TableVmInstance, searchTerm: string): boolean {
+    const labels = this.getInstanceLabels(instance);
+    return labels.some(label => 
+      label.key.toLowerCase().includes(searchTerm) || 
+      label.value.toLowerCase().includes(searchTerm)
+    );
   }
 }

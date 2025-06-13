@@ -116,6 +116,7 @@ import { SecureWebProxyComponent } from './components/secure-web-proxy/secure-we
 import { SecureWebProxyService } from './services/secure-web-proxy.service';
 import { VmInstancesComponent } from './components/vm-instances/vm-instances.component';
 import { CreateVmInstanceComponent } from './components/vm-instances/create-vm-instance.component';
+import { AwsConfigComponent } from './components/aws-config/aws-config.component';
 import { ComputeEngineService } from './services/compute-engine.service';
 
 @NgModule({
@@ -186,7 +187,8 @@ import { ComputeEngineService } from './services/compute-engine.service';
     GoogleWANWizardComponent,
     SecureWebProxyComponent,
     VmInstancesComponent,
-    CreateVmInstanceComponent
+    CreateVmInstanceComponent,
+    AwsConfigComponent
   ],
   imports: [
     BrowserModule,

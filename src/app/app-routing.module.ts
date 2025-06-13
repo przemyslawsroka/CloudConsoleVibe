@@ -48,6 +48,7 @@ import { GoogleWANWizardComponent } from './components/google-wan-wizard/google-
 import { SecureWebProxyComponent } from './components/secure-web-proxy/secure-web-proxy.component';
 import { VmInstancesComponent } from './components/vm-instances/vm-instances.component';
 import { CreateVmInstanceComponent } from './components/vm-instances/create-vm-instance.component';
+import { AwsConfigComponent } from './components/aws-config/aws-config.component';
 
 const routes: Routes = [
   { path: '', redirectTo: '/vpc', pathMatch: 'full' },
@@ -128,7 +129,8 @@ const routes: Routes = [
     path: 'monitoring',
     loadChildren: () => import('./components/monitoring/monitoring.module').then(m => m.MonitoringModule),
     canActivate: [AuthGuard]
-  }
+  },
+  { path: 'aws-config', component: AwsConfigComponent },
 ];
 
 @NgModule({
