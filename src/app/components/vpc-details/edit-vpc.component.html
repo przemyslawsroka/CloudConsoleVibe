@@ -1,0 +1,236 @@
+<div class="edit-vpc-container">
+  <!-- Header -->
+  <div class="header">
+    <div class="header-left">
+      <button mat-icon-button (click)="goBack()" class="back-button">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <div class="header-title">
+        <h1>Edit VPC Network</h1>
+        <p class="subtitle" *ngIf="vpcNetwork">{{ vpcNetwork.name }}</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button mat-button (click)="onCancel()" [disabled]="isSaving">
+        Cancel
+      </button>
+      <button mat-raised-button color="primary" 
+              [disabled]="!vpcForm.valid || !hasChanges() || isSaving" 
+              (click)="onSave()">
+        <mat-icon *ngIf="isSaving">hourglass_empty</mat-icon>
+        <mat-icon *ngIf="!isSaving">save</mat-icon>
+        {{ isSaving ? 'Saving...' : 'Save' }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-container">
+    <mat-spinner diameter="50"></mat-spinner>
+    <p>Loading VPC network details...</p>
+  </div>
+
+  <!-- Main Content -->
+  <div *ngIf="!isLoading && vpcNetwork" class="content">
+    <form [formGroup]="vpcForm" class="vpc-form">
+      
+      <!-- Basic Information Card -->
+      <mat-card class="form-card">
+        <mat-card-header>
+          <mat-card-title>Basic Information</mat-card-title>
+          <mat-card-subtitle>Configure basic network properties</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <!-- Name field (read-only) -->
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Name</mat-label>
+            <input matInput [value]="vpcNetwork.name" readonly>
+            <mat-hint>Name cannot be changed after creation</mat-hint>
+          </mat-form-field>
+
+          <!-- Description field (read-only as per user note) -->
+          <div class="readonly-field-container">
+            <label class="field-label">Description</label>
+            <mat-form-field appearance="outline" class="full-width readonly-field">
+              <mat-label>Description</mat-label>
+              <input matInput [value]="vpcNetwork.description || 'No description'" readonly>
+              <mat-hint>Description cannot be edited for VPC networks</mat-hint>
+            </mat-form-field>
+          </div>
+
+          <!-- Maximum transmission unit -->
+          <div class="form-field-container">
+            <label class="field-label">Maximum transmission unit</label>
+            <mat-form-field appearance="outline" class="mtu-field">
+              <input matInput type="number" formControlName="mtu" min="1300" max="8896">
+            </mat-form-field>
+            <div class="field-hint">
+              Updating the maximum transmission unit of a VPC network can result in packet loss and thus is not supported in the Google Cloud. 
+              <a href="#" class="learn-more-link">Changing the MTU of a network</a>
+            </div>
+          </div>
+
+          <!-- VPC network ULA internal IPv6 range -->
+          <div class="form-field-container">
+            <label class="field-label">VPC network ULA internal IPv6 range</label>
+            <mat-radio-group formControlName="enableUlaInternalIpv6" class="radio-group-horizontal">
+              <mat-radio-button [value]="false" class="radio-option-horizontal">Disabled</mat-radio-button>
+              <mat-radio-button [value]="true" class="radio-option-horizontal">Enabled</mat-radio-button>
+            </mat-radio-group>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Network Configuration Card -->
+      <mat-card class="form-card">
+        <mat-card-header>
+          <mat-card-title>Network Configuration</mat-card-title>
+          <mat-card-subtitle>Configure routing and security settings</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <!-- Subnet creation mode -->
+          <div class="form-field-container">
+            <label class="field-label">Subnet creation mode</label>
+            <mat-radio-group formControlName="autoCreateSubnetworks" class="radio-group-horizontal">
+              <mat-radio-button [value]="true" class="radio-option-horizontal">Auto</mat-radio-button>
+              <mat-radio-button [value]="false" class="radio-option-horizontal">Custom</mat-radio-button>
+            </mat-radio-group>
+            <div class="warning-box" *ngIf="vpcForm.get('autoCreateSubnetworks')?.value !== vpcNetwork.autoCreateSubnetworks">
+              <mat-icon class="warning-icon">warning</mat-icon>
+              <span>Switching from auto-subnet to custom-subnet VPC network allows you to manually define subnet prefixes for each region in your VPC network. You cannot undo this action.</span>
+            </div>
+          </div>
+
+          <!-- Dynamic routing mode -->
+          <div class="form-field-container">
+            <label class="field-label">Dynamic routing mode</label>
+            <mat-radio-group formControlName="routingMode" class="radio-group">
+              <mat-radio-button value="REGIONAL" class="radio-option">
+                <div class="radio-content">
+                  <div class="radio-title">Regional</div>
+                  <div class="radio-description">Cloud Routers will learn routes only in the region in which they were created</div>
+                </div>
+              </mat-radio-button>
+              <mat-radio-button value="GLOBAL" class="radio-option">
+                <div class="radio-content">
+                  <div class="radio-title">Global</div>
+                  <div class="radio-description">Global routing lets you dynamically learn routes to and from all regions with a single VPN or interconnect and Cloud Router</div>
+                </div>
+              </mat-radio-button>
+            </mat-radio-group>
+          </div>
+
+          <!-- Best path selection mode -->
+          <div class="form-field-container">
+            <label class="field-label">Best path selection mode</label>
+            <mat-radio-group formControlName="bestPathSelectionMode" class="radio-group-horizontal">
+              <mat-radio-button value="LEGACY" class="radio-option-horizontal">Legacy (default)</mat-radio-button>
+              <mat-radio-button value="STANDARD" class="radio-option-horizontal">Standard</mat-radio-button>
+            </mat-radio-group>
+          </div>
+
+          <!-- Network Firewall Policy Enforcement (custom field) -->
+          <div class="form-field-container">
+            <label class="field-label">Network firewall policy enforcement order</label>
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Enforcement Order</mat-label>
+              <mat-select formControlName="networkFirewallPolicyEnforcementOrder">
+                <mat-option value="AFTER_CLASSIC_FIREWALL">After Classic Firewall</mat-option>
+                <mat-option value="BEFORE_CLASSIC_FIREWALL">Before Classic Firewall</mat-option>
+              </mat-select>
+              <mat-hint>
+                Controls when network firewall policies are evaluated relative to classic firewall rules.
+              </mat-hint>
+            </mat-form-field>
+          </div>
+
+          <!-- Tags -->
+          <div class="form-field-container">
+            <label class="field-label">Tags</label>
+            <div class="tags-container">
+              <div class="tag-item" *ngFor="let tag of vpcForm.get('tags')?.value || []">
+                <mat-icon class="tag-icon">local_offer</mat-icon>
+                <span class="tag-text">{{ tag }}</span>
+                <button mat-icon-button class="tag-edit-button" (click)="editTag(tag)">
+                  <mat-icon>edit</mat-icon>
+                </button>
+              </div>
+              <div class="tag-item" *ngIf="!vpcForm.get('tags')?.value?.length">
+                <span class="no-tags-text">No tags</span>
+              </div>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Summary Card -->
+      <mat-card class="form-card summary-card">
+        <mat-card-header>
+          <mat-card-title>Summary</mat-card-title>
+          <mat-card-subtitle>Review your changes</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="summary-grid">
+            <div class="summary-item">
+              <span class="label">Name:</span>
+              <span class="value">{{ vpcNetwork.name }}</span>
+            </div>
+            <div class="summary-item">
+              <span class="label">Description:</span>
+              <span class="value">{{ vpcNetwork.description || 'No description' }}</span>
+            </div>
+            <div class="summary-item">
+              <span class="label">MTU:</span>
+              <span class="value">{{ vpcForm.get('mtu')?.value }}</span>
+            </div>
+            <div class="summary-item">
+              <span class="label">ULA Internal IPv6:</span>
+              <span class="value">{{ getUlaIpv6Display(vpcForm.get('enableUlaInternalIpv6')?.value) }}</span>
+            </div>
+            <div class="summary-item">
+              <span class="label">Subnet Creation Mode:</span>
+              <span class="value">{{ getSubnetModeDisplay(vpcForm.get('autoCreateSubnetworks')?.value) }}</span>
+            </div>
+            <div class="summary-item">
+              <span class="label">Routing Mode:</span>
+              <span class="value">{{ getRoutingModeDisplay(vpcForm.get('routingMode')?.value) }}</span>
+            </div>
+            <div class="summary-item">
+              <span class="label">Best Path Selection:</span>
+              <span class="value">{{ getBestPathSelectionDisplay(vpcForm.get('bestPathSelectionMode')?.value) }}</span>
+            </div>
+            <div class="summary-item">
+              <span class="label">Firewall Policy Enforcement:</span>
+              <span class="value">{{ getFirewallPolicyDisplay(vpcForm.get('networkFirewallPolicyEnforcementOrder')?.value) }}</span>
+            </div>
+            <div class="summary-item">
+              <span class="label">Subnets:</span>
+              <span class="value">{{ vpcNetwork.subnetworks?.length || 0 }} subnet(s)</span>
+            </div>
+            <div class="summary-item">
+              <span class="label">Tags:</span>
+              <span class="value">{{ vpcForm.get('tags')?.value?.length || 0 }} tag(s)</span>
+            </div>
+          </div>
+          
+          <!-- Changes indicator -->
+          <div class="changes-indicator" *ngIf="hasChanges()">
+            <mat-icon class="changes-icon">edit</mat-icon>
+            <span>You have unsaved changes</span>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+    </form>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="!isLoading && !vpcNetwork" class="error-container">
+    <mat-icon class="error-icon">error</mat-icon>
+    <h2>VPC Network Not Found</h2>
+    <p>The requested VPC network could not be loaded.</p>
+    <button mat-raised-button color="primary" (click)="goBack()">
+      Go Back
+    </button>
+  </div>
+</div> 

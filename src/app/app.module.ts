@@ -39,6 +39,7 @@ import { SharedModule } from './shared/shared.module';
 import { AppComponent } from './app.component';
 import { VpcListComponent } from './components/vpc-list/vpc-list.component';
 import { VpcDetailsComponent } from './components/vpc-details/vpc-details.component';
+import { EditVpcComponent } from './components/vpc-details/edit-vpc.component';
 import { LoginComponent } from './components/login/login.component';
 import { AuthCallbackComponent } from './components/auth-callback/auth-callback.component';
 import { RoutesComponent } from './components/routes/routes.component';
@@ -124,6 +125,7 @@ import { ComputeEngineService } from './services/compute-engine.service';
     AppComponent,
     VpcListComponent,
     VpcDetailsComponent,
+    EditVpcComponent,
     LoginComponent,
     AuthCallbackComponent,
     RoutesComponent,

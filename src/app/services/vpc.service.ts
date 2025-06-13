@@ -11,11 +11,15 @@ export interface VpcNetwork {
   selfLink: string;
   autoCreateSubnetworks: boolean;
   creationTimestamp: string;
-  subnetworks: string[];
+  subnetworks?: string[];
   routingConfig?: {
     routingMode: string;
   };
   networkFirewallPolicyEnforcementOrder?: string;
+  mtu?: number;
+  enableUlaInternalIpv6?: boolean;
+  bestPathSelectionMode?: string;
+  tags?: string[];
   subnetDetails?: SubnetDetails[];
 }
 
@@ -171,6 +175,10 @@ export class VpcService {
           routingMode: 'REGIONAL'
         },
         networkFirewallPolicyEnforcementOrder: 'AFTER_CLASSIC_FIREWALL',
+        mtu: 1460,
+        enableUlaInternalIpv6: false,
+        bestPathSelectionMode: 'LEGACY',
+        tags: ['gcp-environment:prober', 'gcp-product:network_intelligence'],
         subnetDetails: [
           {
             name: 'prod-us-central1',
@@ -483,6 +491,42 @@ export class VpcService {
       
       poll();
     });
+  }
+
+  updateVpcNetwork(projectId: string, networkName: string, updates: Partial<VpcNetwork>): Observable<any> {
+    if (this.authService.isDemoMode()) {
+      console.log('🎭 Demo mode: Simulating VPC network update');
+      return of({ status: 'success', ...updates });
+    }
+
+    const url = `${this.baseUrl}/projects/${projectId}/global/networks/${networkName}`;
+    
+    // Prepare the update payload according to GCP Compute API requirements
+    const updatePayload: any = {};
+    
+    if (updates.description !== undefined) {
+      updatePayload.description = updates.description;
+    }
+    
+    if (updates.routingConfig?.routingMode) {
+      updatePayload.routingConfig = {
+        routingMode: updates.routingConfig.routingMode
+      };
+    }
+    
+    if (updates.networkFirewallPolicyEnforcementOrder) {
+      updatePayload.networkFirewallPolicyEnforcementOrder = updates.networkFirewallPolicyEnforcementOrder;
+    }
+
+    return this.http.patch(url, updatePayload, { headers: this.getHeaders() }).pipe(
+      switchMap((operation: any) => {
+        return this.waitForOperation(projectId, operation);
+      }),
+      catchError(error => {
+        console.error('Error updating VPC network:', error);
+        throw error;
+      })
+    );
   }
 
   deleteVpcNetwork(projectId: string, networkName: string): Observable<any> {

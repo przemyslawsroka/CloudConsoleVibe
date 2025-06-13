@@ -1,5 +1,5 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { VpcService, VpcNetwork, SubnetDetails } from '../../services/vpc.service';
 import { ProjectService, Project } from '../../services/project.service';
 
@@ -12,6 +12,12 @@ import { ProjectService, Project } from '../../services/project.service';
           <mat-icon>arrow_back</mat-icon>
         </button>
         <h1>VPC Network Details</h1>
+        <div class="header-actions">
+          <button mat-raised-button color="primary" (click)="editVpcNetwork()" *ngIf="vpcNetwork">
+            <mat-icon>edit</mat-icon>
+            Edit
+          </button>
+        </div>
       </div>
 
       <div *ngIf="isLoading" class="loading-container">
@@ -117,6 +123,11 @@ import { ProjectService, Project } from '../../services/project.service';
       align-items: center;
       gap: 16px;
       margin-bottom: 20px;
+      justify-content: space-between;
+    }
+    .header-actions {
+      display: flex;
+      gap: 8px;
     }
     .details-grid {
       display: grid;
@@ -174,6 +185,7 @@ export class VpcDetailsComponent implements OnInit {
 
   constructor(
     private route: ActivatedRoute,
+    private router: Router,
     private vpcService: VpcService,
     private cdr: ChangeDetectorRef,
     private projectService: ProjectService
@@ -246,5 +258,12 @@ export class VpcDetailsComponent implements OnInit {
       default:
         return order;
     }
+  }
+
+  editVpcNetwork() {
+    if (!this.vpcNetwork) return;
+    
+    // Navigate to the edit page
+    this.router.navigate(['/vpc', this.vpcNetwork.name, 'edit']);
   }
 } 

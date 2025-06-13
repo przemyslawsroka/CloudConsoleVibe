@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { VpcListComponent } from './components/vpc-list/vpc-list.component';
 import { VpcDetailsComponent } from './components/vpc-details/vpc-details.component';
+import { EditVpcComponent } from './components/vpc-details/edit-vpc.component';
 import { LoginComponent } from './components/login/login.component';
 import { AuthCallbackComponent } from './components/auth-callback/auth-callback.component';
 import { RoutesComponent } from './components/routes/routes.component';
@@ -65,9 +66,14 @@ const routes: Routes = [
     component: CreateVpcNetworkComponent,
     canActivate: [AuthGuard]
   },
-  { 
-    path: 'vpc/:name', 
+    {
+    path: 'vpc/:name',
     component: VpcDetailsComponent,
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'vpc/:name/edit',
+    component: EditVpcComponent,
     canActivate: [AuthGuard]
   },
   { path: 'routes', component: RoutesComponent, canActivate: [AuthGuard] },
