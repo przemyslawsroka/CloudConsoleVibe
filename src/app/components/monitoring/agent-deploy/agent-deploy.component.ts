@@ -3,10 +3,19 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+import { HttpClient } from '@angular/common/http';
 
 import { GcpDeploymentService, DeploymentConfig, DeploymentJob } from '../services/gcp-deployment.service';
 import { VpcService, VpcNetwork, SubnetDetails } from '../../../services/vpc.service';
 import { ProjectService } from '../../../services/project.service';
+
+interface DeploymentProgress {
+  step: number;
+  message: string;
+  percentage: number;
+  status: 'in-progress' | 'completed' | 'failed';
+  error?: string;
+}
 
 @Component({
   selector: 'app-agent-deploy',
@@ -35,6 +44,10 @@ export class AgentDeployComponent implements OnInit, OnDestroy {
   deploymentError: string | null = null;
   deployedAgentId: string | null = null;
   deployedVmName: string | null = null;
+  deploymentId: string | null = null;
+  
+  // Backend URL
+  private backendUrl = 'http://localhost:8080/api/v1/monitoring';
   
   // Deployment steps for progress tracking
   deploymentSteps = [
@@ -52,7 +65,8 @@ export class AgentDeployComponent implements OnInit, OnDestroy {
     private gcpService: GcpDeploymentService,
     private vpcService: VpcService,
     private snackBar: MatSnackBar,
-    private projectService: ProjectService
+    private projectService: ProjectService,
+    private http: HttpClient
   ) {
     this.initializeForm();
   }
@@ -210,6 +224,7 @@ export class AgentDeployComponent implements OnInit, OnDestroy {
     this.deploymentError = null;
     this.deploymentLogs = [];
     this.isDeploying = true;
+    this.deploymentId = null;
 
     // Reset deployment steps
     this.deploymentSteps.forEach(step => {
@@ -217,66 +232,155 @@ export class AgentDeployComponent implements OnInit, OnDestroy {
       step.completed = false;
     });
 
-    // Start deployment simulation
-    this.simulateDeployment();
+    // Start real deployment
+    this.startRealDeployment();
   }
 
-  private simulateDeployment(): void {
-    const steps = [
-      { step: 0, delay: 1000, message: 'Validating network configuration...' },
-      { step: 1, delay: 2000, message: 'Creating e2-micro VM instance...' },
-      { step: 2, delay: 3000, message: 'Installing monitoring agent software...' },
-      { step: 3, delay: 2000, message: 'Configuring network monitoring targets...' },
-      { step: 4, delay: 1500, message: 'Starting monitoring services...' }
-    ];
-
-    let currentStep = 0;
+  private startRealDeployment(): void {
+    const formValues = this.deploymentForm.value;
+    const currentProject = this.projectService.getCurrentProject();
     
-    const executeStep = () => {
-      if (currentStep < steps.length) {
-        const stepInfo = steps[currentStep];
-        
-        // Mark current step as active
-        this.deploymentSteps[stepInfo.step].active = true;
-        this.addLog(stepInfo.message);
-        
-        setTimeout(() => {
-          // Mark current step as completed
-          this.deploymentSteps[stepInfo.step].active = false;
-          this.deploymentSteps[stepInfo.step].completed = true;
-          this.deploymentProgress = ((currentStep + 1) / steps.length) * 100;
-          
-          currentStep++;
-          executeStep();
-        }, stepInfo.delay);
-      } else {
-        // Deployment completed
-        this.completeDeployment();
-      }
+    if (!currentProject) {
+      this.showError('No project selected');
+      return;
+    }
+
+    const deploymentConfig = {
+      agentName: formValues.agentName,
+      network: formValues.network,
+      subnetwork: formValues.subnetwork,
+      collectionInterval: formValues.collectionInterval,
+      defaultTargets: this.defaultTargets,
+      customTargets: this.customTargets,
+      projectId: currentProject.id
     };
 
-    executeStep();
+    console.log('🚀 Starting real deployment with config:', deploymentConfig);
+    this.addLog('Starting deployment of GoLang monitoring agent...');
+
+    // Call backend to start deployment
+    this.http.post<{success: boolean, deploymentId: string, message: string}>
+      (`${this.backendUrl}/deploy`, deploymentConfig)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response) => {
+          if (response.success) {
+            this.deploymentId = response.deploymentId;
+            this.addLog(`Deployment started with ID: ${this.deploymentId}`);
+            console.log('✅ Deployment started:', response);
+            
+            // Start polling for progress
+            this.pollDeploymentProgress();
+          } else {
+            this.handleDeploymentError('Failed to start deployment');
+          }
+        },
+        error: (error) => {
+          console.error('❌ Failed to start deployment:', error);
+          this.handleDeploymentError(error.message || 'Failed to start deployment');
+        }
+      });
   }
 
-  private completeDeployment(): void {
+  private pollDeploymentProgress(): void {
+    if (!this.deploymentId) return;
+
+    const pollInterval = setInterval(() => {
+      if (!this.deploymentId || this.deploymentComplete || this.deploymentError) {
+        clearInterval(pollInterval);
+        return;
+      }
+
+      this.http.get<{success: boolean, deployment: any}>
+        (`${this.backendUrl}/deploy/${this.deploymentId}`)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: (response) => {
+            if (response.success && response.deployment) {
+              this.updateDeploymentProgress(response.deployment);
+            }
+          },
+          error: (error) => {
+            console.error('❌ Failed to get deployment status:', error);
+            clearInterval(pollInterval);
+          }
+        });
+    }, 2000); // Poll every 2 seconds
+  }
+
+  private updateDeploymentProgress(deployment: any): void {
+    console.log('📊 Deployment progress update:', deployment);
+    
+    if (deployment.steps && deployment.steps.length > 0) {
+      const latestStep = deployment.steps[deployment.steps.length - 1];
+      
+      // Update progress
+      this.deploymentProgress = latestStep.percentage || 0;
+      
+      // Update step status
+      if (latestStep.step >= 0 && latestStep.step < this.deploymentSteps.length) {
+        // Mark previous steps as completed
+        for (let i = 0; i < latestStep.step; i++) {
+          this.deploymentSteps[i].active = false;
+          this.deploymentSteps[i].completed = true;
+        }
+        
+        // Update current step
+        if (latestStep.status === 'in-progress') {
+          this.deploymentSteps[latestStep.step].active = true;
+          this.deploymentSteps[latestStep.step].completed = false;
+        } else if (latestStep.status === 'completed') {
+          this.deploymentSteps[latestStep.step].active = false;
+          this.deploymentSteps[latestStep.step].completed = true;
+        }
+      }
+      
+      // Add log message
+      if (latestStep.message) {
+        this.addLog(latestStep.message);
+      }
+      
+      // Check if deployment is complete
+      if (deployment.status === 'completed') {
+        this.completeRealDeployment(deployment);
+      } else if (deployment.status === 'failed') {
+        this.handleDeploymentError(deployment.error || 'Deployment failed');
+      }
+    }
+  }
+
+  private completeRealDeployment(deployment: any): void {
     this.deploymentInProgress = false;
     this.deploymentComplete = true;
     this.isDeploying = false;
+    this.deploymentProgress = 100;
     
-    // Generate deployment results
-    const formValues = this.deploymentForm.value;
-    const timestamp = Date.now();
+    // Extract deployment results
+    if (deployment.result) {
+      this.deployedAgentId = deployment.result.agentId;
+      this.deployedVmName = deployment.result.vmInstance;
+      
+      this.addLog('✅ GoLang monitoring agent deployed successfully!');
+      this.addLog(`🤖 Agent ID: ${this.deployedAgentId}`);
+      this.addLog(`💻 VM Instance: ${this.deployedVmName}`);
+      this.addLog(`🌐 External IP: ${deployment.result.externalIP}`);
+      this.addLog(`🔒 Internal IP: ${deployment.result.internalIP}`);
+      this.addLog('📊 Agent is now collecting network metrics...');
+    }
     
-    this.deployedAgentId = `agent-${timestamp}`;
-    this.deployedVmName = `${formValues.agentName}-vm-${timestamp.toString().slice(-6)}`;
-    
-    this.addLog('Monitoring agent deployed successfully!');
-    this.addLog(`Agent ID: ${this.deployedAgentId}`);
-    this.addLog(`VM Instance: ${this.deployedVmName}`);
-    this.addLog('Agent is now collecting network metrics...');
-    
-    this.showSuccess('Monitoring agent deployed successfully!');
+    this.showSuccess('GoLang monitoring agent deployed successfully!');
   }
+
+  private handleDeploymentError(errorMessage: string): void {
+    this.deploymentInProgress = false;
+    this.deploymentError = errorMessage;
+    this.isDeploying = false;
+    
+    this.addLog(`❌ Deployment failed: ${errorMessage}`);
+    this.showError(`Deployment failed: ${errorMessage}`);
+  }
+
+
 
   private addLog(message: string): void {
     this.deploymentLogs.push({
@@ -306,6 +410,7 @@ export class AgentDeployComponent implements OnInit, OnDestroy {
     this.deploymentError = null;
     this.deployedAgentId = null;
     this.deployedVmName = null;
+    this.deploymentId = null;
     this.deploymentProgress = 0;
     this.deploymentLogs = [];
     this.isDeploying = false;

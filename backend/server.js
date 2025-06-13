@@ -8,6 +8,7 @@
 require('dotenv').config();
 
 const express = require('express');
+const expressWs = require('express-ws');
 const http = require('http');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -19,6 +20,7 @@ const winston = require('winston');
 const agentRoutes = require('./routes/agents');
 const metricsRoutes = require('./routes/metrics');
 const dashboardRoutes = require('./routes/dashboard');
+const monitoringRoutes = require('./routes/monitoring');
 
 // Import WebSocket handler
 const { initializeWebSocket } = require('./websocket/handler');
@@ -54,6 +56,9 @@ if (process.env.NODE_ENV !== 'production') {
 // Create Express app
 const app = express();
 const server = http.createServer(app);
+
+// Enable WebSocket support
+const wsInstance = expressWs(app, server);
 
 // Configure middleware
 app.use(helmet({
@@ -95,6 +100,7 @@ app.get('/health', (req, res) => {
 app.use('/api/v1/agents', agentRoutes);
 app.use('/api/v1/metrics', metricsRoutes);
 app.use('/api/v1/dashboard', dashboardRoutes);
+app.use('/api/v1/monitoring', monitoringRoutes);
 
 // Proxy routes for Google Cloud APIs (maintain compatibility)
 // Temporarily disabled to simplify deployment
@@ -133,13 +139,21 @@ app.use('*', (req, res) => {
 // Initialize database and WebSocket
 async function startServer() {
   try {
-    // Initialize database
-    await initializeDatabase();
-    logger.info('Database initialized successfully');
+    // Initialize database (skip for now to test deployment)
+    try {
+      await initializeDatabase();
+      logger.info('Database initialized successfully');
+    } catch (error) {
+      logger.warn('Database initialization failed, continuing without database:', error.message);
+    }
 
-    // Initialize WebSocket server
-    const wss = initializeWebSocket(server, logger);
-    logger.info('WebSocket server initialized');
+    // Initialize WebSocket server (skip for now)
+    try {
+      const wss = initializeWebSocket(server, logger);
+      logger.info('WebSocket server initialized');
+    } catch (error) {
+      logger.warn('WebSocket initialization failed, continuing without WebSocket:', error.message);
+    }
 
     // Start HTTP server
     const PORT = process.env.PORT || 8080;

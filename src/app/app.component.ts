@@ -101,6 +101,7 @@ interface NavItem {
                    *ngFor="let item of category.items" 
                    [routerLink]="item.route" 
                    routerLinkActive="active"
+                   [routerLinkActiveOptions]="{ exact: item.route === '/monitoring' }"
                    class="nav-item">
                   <mat-icon class="item-icon">{{ item.icon }}</mat-icon>
                   <span>{{ item.name }}</span>
