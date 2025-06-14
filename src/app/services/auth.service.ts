@@ -27,6 +27,17 @@ export class AuthService {
     }
   }
 
+  getEnvironmentInfo() {
+    return {
+      production: environment.production,
+      googleClientId: environment.googleClientId,
+      apiBaseUrl: environment.apiBaseUrl,
+      authDomain: environment.authDomain,
+      currentUrl: window.location.origin,
+      expectedRedirectUri: window.location.origin + '/auth/callback'
+    };
+  }
+
   login() {
     const clientId = environment.googleClientId;
     const redirectUri = window.location.origin + '/auth/callback';

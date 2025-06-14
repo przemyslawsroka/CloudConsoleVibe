@@ -14,6 +14,33 @@ import { GoogleAnalyticsService } from '../../services/google-analytics.service'
         <mat-card-content>
           <p class="welcome-text">Welcome to Google Cloud Console Vibe</p>
           
+          <!-- Debug Information -->
+          <div class="debug-info">
+            <mat-card class="debug-card">
+              <mat-card-header>
+                <mat-card-title class="debug-title">🔧 Debug Information</mat-card-title>
+              </mat-card-header>
+              <mat-card-content class="debug-content">
+                <div class="debug-item">
+                  <strong>Environment:</strong> {{ envInfo.production ? 'Production' : 'Development' }}
+                </div>
+                <div class="debug-item">
+                  <strong>Google Client ID:</strong> 
+                  <code class="client-id">{{ envInfo.googleClientId || 'NOT SET' }}</code>
+                </div>
+                <div class="debug-item">
+                  <strong>API Base URL:</strong> {{ envInfo.apiBaseUrl }}
+                </div>
+                <div class="debug-item">
+                  <strong>Current URL:</strong> {{ envInfo.currentUrl }}
+                </div>
+                <div class="debug-item">
+                  <strong>Expected Redirect URI:</strong> {{ envInfo.expectedRedirectUri }}
+                </div>
+              </mat-card-content>
+            </mat-card>
+          </div>
+          
           <!-- Authentication Options -->
           <div class="auth-options">
             <!-- Google Sign In -->
@@ -86,7 +113,7 @@ import { GoogleAnalyticsService } from '../../services/google-analytics.service'
       transition: background-color 0.3s ease;
     }
     .login-card {
-      max-width: 550px;
+      max-width: 650px;
       width: 100%;
       text-align: center;
       padding: 32px;
@@ -100,7 +127,45 @@ import { GoogleAnalyticsService } from '../../services/google-analytics.service'
     .welcome-text {
       font-size: 18px;
       color: var(--text-secondary-color);
+      margin-bottom: 24px;
+    }
+    
+    .debug-info {
       margin-bottom: 32px;
+    }
+    
+    .debug-card {
+      background-color: var(--hover-color);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      text-align: left;
+    }
+    
+    .debug-title {
+      font-size: 16px !important;
+      color: var(--primary-color);
+    }
+    
+    .debug-content {
+      padding: 16px !important;
+    }
+    
+    .debug-item {
+      margin-bottom: 8px;
+      font-size: 14px;
+      color: var(--text-color);
+    }
+    
+    .client-id {
+      background-color: var(--surface-color);
+      color: var(--primary-color);
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      word-break: break-all;
+      display: inline-block;
+      max-width: 100%;
     }
     
     .auth-options {
@@ -307,10 +372,16 @@ import { GoogleAnalyticsService } from '../../services/google-analytics.service'
       .info-icon {
         align-self: flex-start;
       }
+      
+      .debug-item {
+        word-break: break-word;
+      }
     }
   `]
 })
 export class LoginComponent implements OnInit {
+  envInfo: any = {};
+
   constructor(
     private authService: AuthService,
     private router: Router,
@@ -318,6 +389,9 @@ export class LoginComponent implements OnInit {
   ) {}
 
   ngOnInit() {
+    // Get environment information for debugging
+    this.envInfo = this.authService.getEnvironmentInfo();
+    
     // Track login page view
     this.googleAnalyticsService.trackPageView('/login', 'Login Page');
     

@@ -13,8 +13,13 @@ RUN npm ci --silent
 # Copy source code
 COPY . .
 
-# Create environment.ts from template for build process
-RUN cp src/environments/environment.ts.template src/environments/environment.ts
+# Create environment.ts for build process
+# If environment.prod.ts exists, use it; otherwise use template
+RUN if [ -f src/environments/environment.prod.ts ]; then \
+        cp src/environments/environment.prod.ts src/environments/environment.ts; \
+    else \
+        cp src/environments/environment.ts.template src/environments/environment.ts; \
+    fi
 
 # Build the Angular app for production
 RUN npm run build
