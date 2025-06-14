@@ -182,3 +182,4 @@ ssl/
 
 # Angular CLI cache
 .angular/
+src/environments/environment.prod.ts

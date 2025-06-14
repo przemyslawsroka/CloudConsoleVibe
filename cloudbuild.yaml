@@ -37,7 +37,7 @@ steps:
       - '--min-instances=0'
       - '--concurrency=100'
       - '--timeout=300'
-      - '--set-env-vars=ENVIRONMENT=production,LOG_LEVEL=info,API_BASE_URL=https://cloudconsolevibe-backend-6anbejtsta-uc.a.run.app,AUTH_DOMAIN=accounts.google.com,GOOGLE_CLIENT_ID=733352132096-kpsaeb0ac7lu230kjug231hfl097qq8d.apps.googleusercontent.com,GOOGLE_ANALYTICS_ID=G-TCLR1BZ0N7,GEMINI_API_KEY=AIzaSyBxxrS3p4jIR2ik0jL24rdV9j6PG6VTam4,ENABLE_ANALYTICS=true,APPNETA_API_BASE_URL=https://demo.pm.appneta.com/api/v3,APPNETA_API_KEY=4805b615c62f4d8d84f0a25bdeb740cc,APPNETA_DEMO_MODE=false'
+      - '--set-env-vars=ENVIRONMENT=production'
 
 # Store images in Container Registry
 images:
