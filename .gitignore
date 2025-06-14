@@ -61,6 +61,7 @@ Thumbs.db
 
 # Angular environment files with sensitive data
 src/environments/environment.ts
+src/environments/environment.prod.ts
 
 # Logs
 logs
