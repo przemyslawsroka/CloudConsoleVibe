@@ -1,8 +1,10 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, BehaviorSubject } from 'rxjs';
-import { map, catchError } from 'rxjs/operators';
+import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
+import { Observable, BehaviorSubject, throwError } from 'rxjs';
+import { map, catchError, retry } from 'rxjs/operators';
 import { of } from 'rxjs';
+import { environment } from '../../environments/environment';
+import { AppNetaNetworkPath, mapAppNetaPathToNetworkPath } from '../interfaces/appneta-api.interface';
 
 export interface NetworkPath {
   id: string;
@@ -73,8 +75,11 @@ export interface NetworkInsightsSummary {
   providedIn: 'root'
 })
 export class AppNetaService {
-  private readonly API_BASE_URL = 'https://api.appneta.com/v2';
-  private readonly ACCESS_TOKEN = '6e15633455954589a10a2fba23345b72';
+  private readonly API_BASE_URL = environment.production 
+    ? environment.appneta.apiBaseUrl 
+    : '/appneta-api'; // Use proxy in development
+  private readonly API_KEY = environment.appneta.apiKey;
+  private readonly DEMO_MODE = environment.appneta.demoMode;
   
   private networkPathsSubject = new BehaviorSubject<NetworkPath[]>([]);
   private webPathsSubject = new BehaviorSubject<WebPath[]>([]);
@@ -87,18 +92,78 @@ export class AppNetaService {
   public monitoringPolicies$ = this.monitoringPoliciesSubject.asObservable();
 
   constructor(private http: HttpClient) {
-    this.initializeMockData();
+    // Check if we have a valid API key, if not, force demo mode
+    const hasValidApiKey = this.API_KEY && this.API_KEY !== 'your-appneta-api-key-here' && this.API_KEY.length > 10;
+    
+    if (this.DEMO_MODE || !hasValidApiKey) {
+      if (!hasValidApiKey) {
+        console.log('AppNeta Service: No valid API key found, running in DEMO MODE');
+      } else {
+        console.log('AppNeta Service running in DEMO MODE - using mock data');
+      }
+      this.initializeMockData();
+    } else {
+      console.log('AppNeta Service running in LIVE MODE - using real API');
+      this.loadRealData();
+    }
   }
 
   private getHeaders(): HttpHeaders {
     return new HttpHeaders({
-      'Authorization': `Bearer ${this.ACCESS_TOKEN}`,
+      'Authorization': `Token ${this.API_KEY}`,
       'Content-Type': 'application/json',
       'Accept': 'application/json'
     });
   }
 
-  // Initialize with mock data for demonstration (replace with actual API calls)
+  private handleError(error: HttpErrorResponse): Observable<never> {
+    let errorMessage = 'An error occurred';
+    
+    if (error.error instanceof ErrorEvent) {
+      // Client-side error
+      errorMessage = `Error: ${error.error.message}`;
+    } else {
+      // Server-side error
+      errorMessage = `Error Code: ${error.status}\nMessage: ${error.message}`;
+    }
+    
+    console.error('AppNeta API Error:', errorMessage);
+    
+    // In case of API error, fall back to demo mode
+    if (!this.DEMO_MODE) {
+      console.warn('Falling back to demo mode due to API error');
+      this.initializeMockData();
+    }
+    
+    return throwError(errorMessage);
+  }
+
+  private loadRealData(): void {
+    this.loadNetworkPathsFromAPI();
+    // TODO: Add other data loading methods when we have more API endpoints
+  }
+
+  private loadNetworkPathsFromAPI(): void {
+    const url = `${this.API_BASE_URL}/api/v3/path`;
+    
+    this.http.get<AppNetaNetworkPath[]>(url, { headers: this.getHeaders() })
+      .pipe(
+        retry(2),
+        map(paths => paths.map(path => mapAppNetaPathToNetworkPath(path))),
+        catchError(this.handleError.bind(this))
+      )
+      .subscribe({
+        next: (networkPaths) => {
+          console.log('Loaded network paths from AppNeta API:', networkPaths);
+          this.networkPathsSubject.next(networkPaths);
+        },
+        error: (error) => {
+          console.error('Failed to load network paths:', error);
+        }
+      });
+  }
+
+  // Initialize with mock data for demonstration (used in demo mode or as fallback)
   private initializeMockData(): void {
     const mockNetworkPaths: NetworkPath[] = [
       {
@@ -206,8 +271,18 @@ export class AppNetaService {
         type: 'Physical',
         status: 'Maintenance',
         lastSeen: new Date(Date.now() - 1800000),
-        ipAddress: '10.0.3.33',
+        ipAddress: '10.0.3.45',
         version: '12.4.8'
+      },
+      {
+        id: '4',
+        name: 'asia-east-monitor',
+        location: 'asia-east1-a',
+        type: 'Cloud',
+        status: 'Offline',
+        lastSeen: new Date(Date.now() - 3600000),
+        ipAddress: '10.0.4.12',
+        version: '12.5.0'
       }
     ];
 
@@ -220,11 +295,11 @@ export class AppNetaService {
         targets: ['gmt.pm.appneta.com', 'db.internal.com'],
         thresholds: {
           latency: 100,
-          packetLoss: 5,
-          availability: 99
+          packetLoss: 1,
+          availability: 99.5
         },
         alertingEnabled: true,
-        createdDate: new Date(Date.now() - 86400000 * 30)
+        createdDate: new Date(Date.now() - 86400000 * 7)
       },
       {
         id: '2',
@@ -233,23 +308,38 @@ export class AppNetaService {
         enabled: true,
         targets: ['https://example.com', 'https://api.example.com'],
         thresholds: {
-          availability: 98
+          availability: 99.0
         },
         alertingEnabled: true,
-        createdDate: new Date(Date.now() - 86400000 * 15)
+        createdDate: new Date(Date.now() - 86400000 * 3)
+      },
+      {
+        id: '3',
+        name: 'Development Environment',
+        type: 'Infrastructure',
+        enabled: false,
+        targets: ['dev.internal.com'],
+        thresholds: {
+          latency: 200,
+          availability: 95.0
+        },
+        alertingEnabled: false,
+        createdDate: new Date(Date.now() - 86400000 * 14)
       }
     ];
 
+    // Set the mock data
     this.networkPathsSubject.next(mockNetworkPaths);
     this.webPathsSubject.next(mockWebPaths);
     this.monitoringPointsSubject.next(mockMonitoringPoints);
     this.monitoringPoliciesSubject.next(mockMonitoringPolicies);
   }
 
-  // Network Paths API methods
+  // Public API methods
   getNetworkPaths(): Observable<NetworkPath[]> {
-    // In production, replace with actual API call
-    // return this.http.get<NetworkPath[]>(`${this.API_BASE_URL}/network-paths`, { headers: this.getHeaders() });
+    if (!this.DEMO_MODE) {
+      this.loadNetworkPathsFromAPI();
+    }
     return this.networkPaths$;
   }
 
@@ -260,24 +350,27 @@ export class AppNetaService {
   }
 
   createNetworkPath(path: Partial<NetworkPath>): Observable<NetworkPath> {
+    // TODO: Implement real API call for creating network paths
     const newPath: NetworkPath = {
       id: Date.now().toString(),
-      name: path.name || '',
+      name: path.name || 'New Network Path',
       status: 'OK',
       source: path.source || '',
       destination: path.destination || '',
       monitoringPoint: path.monitoringPoint || '',
-      target: path.target || '',
+      target: path.target || path.destination || '',
       lastUpdate: new Date(),
-      ...path
+      latency: 0,
+      packetLoss: 0,
+      jitter: 0
     };
 
     const currentPaths = this.networkPathsSubject.value;
     this.networkPathsSubject.next([...currentPaths, newPath]);
+    
     return of(newPath);
   }
 
-  // Web Paths API methods
   getWebPaths(): Observable<WebPath[]> {
     return this.webPaths$;
   }
@@ -289,22 +382,25 @@ export class AppNetaService {
   }
 
   createWebPath(path: Partial<WebPath>): Observable<WebPath> {
+    // TODO: Implement real API call for creating web paths
     const newPath: WebPath = {
       id: Date.now().toString(),
-      name: path.name || '',
+      name: path.name || 'New Web Path',
       status: 'OK',
       url: path.url || '',
       monitoringPoint: path.monitoringPoint || '',
+      responseTime: 0,
+      availability: 100,
       lastUpdate: new Date(),
-      ...path
+      httpStatus: 200
     };
 
     const currentPaths = this.webPathsSubject.value;
     this.webPathsSubject.next([...currentPaths, newPath]);
+    
     return of(newPath);
   }
 
-  // Monitoring Points API methods
   getMonitoringPoints(): Observable<MonitoringPoint[]> {
     return this.monitoringPoints$;
   }
@@ -315,30 +411,29 @@ export class AppNetaService {
     );
   }
 
-  // Monitoring Policies API methods
   getMonitoringPolicies(): Observable<MonitoringPolicy[]> {
     return this.monitoringPolicies$;
   }
 
   createMonitoringPolicy(policy: Partial<MonitoringPolicy>): Observable<MonitoringPolicy> {
+    // TODO: Implement real API call for creating monitoring policies
     const newPolicy: MonitoringPolicy = {
       id: Date.now().toString(),
-      name: policy.name || '',
+      name: policy.name || 'New Policy',
       type: policy.type || 'Network',
       enabled: policy.enabled !== undefined ? policy.enabled : true,
       targets: policy.targets || [],
       thresholds: policy.thresholds || {},
       alertingEnabled: policy.alertingEnabled !== undefined ? policy.alertingEnabled : true,
-      createdDate: new Date(),
-      ...policy
+      createdDate: new Date()
     };
 
     const currentPolicies = this.monitoringPoliciesSubject.value;
     this.monitoringPoliciesSubject.next([...currentPolicies, newPolicy]);
+    
     return of(newPolicy);
   }
 
-  // Summary and analytics methods
   getNetworkInsightsSummary(): Observable<NetworkInsightsSummary> {
     return this.networkPaths$.pipe(
       map(networkPaths => {
@@ -360,8 +455,34 @@ export class AppNetaService {
     );
   }
 
-  // Refresh data (simulate API refresh)
   refreshData(): void {
-    this.initializeMockData();
+    if (this.DEMO_MODE) {
+      console.log('Refreshing mock data...');
+      this.initializeMockData();
+    } else {
+      console.log('Refreshing data from AppNeta API...');
+      this.loadRealData();
+    }
+  }
+
+  // Method to check if we're in demo mode
+  isDemoMode(): boolean {
+    const hasValidApiKey = this.API_KEY && this.API_KEY !== 'your-appneta-api-key-here' && this.API_KEY.length > 10;
+    return this.DEMO_MODE || !hasValidApiKey;
+  }
+
+  // Method to test API connectivity
+  testConnection(): Observable<boolean> {
+    if (this.DEMO_MODE) {
+      return of(true);
+    }
+
+    const url = `${this.API_BASE_URL}/api/v3/path?limit=1`;
+    
+    return this.http.get(url, { headers: this.getHeaders() })
+      .pipe(
+        map(() => true),
+        catchError(() => of(false))
+      );
   }
 } 

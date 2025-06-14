@@ -49,6 +49,11 @@ import { CreateMonitoringPolicyDialogComponent } from './create-monitoring-polic
               <mat-icon>refresh</mat-icon>
               Refresh Data
             </button>
+            <button mat-menu-item (click)="testConnection()" [disabled]="connectionTesting">
+              <mat-icon>wifi</mat-icon>
+              Test Connection
+            </button>
+            <mat-divider></mat-divider>
             <button mat-menu-item (click)="exportData()">
               <mat-icon>download</mat-icon>
               Export Data
@@ -71,14 +76,27 @@ import { CreateMonitoringPolicyDialogComponent } from './create-monitoring-polic
           </div>
           <div class="integration-text">
             <h3>Powered by Google Cloud + Broadcom AppNeta Integration</h3>
-            <p>Real-time network performance monitoring with enterprise-grade observability</p>
+            <p *ngIf="!isDemoMode">Real-time network performance monitoring with enterprise-grade observability</p>
+            <p *ngIf="isDemoMode">Demo environment with sample data - Configure API key to connect to live AppNeta data</p>
           </div>
         </div>
         <div class="integration-status">
           <mat-chip-set>
-            <mat-chip color="primary" selected>
+            <mat-chip *ngIf="isDemoMode" color="accent" selected>
+              <mat-icon matChipAvatar>science</mat-icon>
+              Demo Mode
+            </mat-chip>
+            <mat-chip *ngIf="!isDemoMode && connectionTesting" color="primary" selected>
+              <mat-icon matChipAvatar>sync</mat-icon>
+              Testing...
+            </mat-chip>
+            <mat-chip *ngIf="!isDemoMode && !connectionTesting && isConnected" color="primary" selected>
               <mat-icon matChipAvatar>check_circle</mat-icon>
               Connected
+            </mat-chip>
+            <mat-chip *ngIf="!isDemoMode && !connectionTesting && !isConnected" color="warn" selected>
+              <mat-icon matChipAvatar>error</mat-icon>
+              Disconnected
             </mat-chip>
           </mat-chip-set>
         </div>
@@ -573,6 +591,9 @@ export class CloudNetworkInsightsComponent implements OnInit, OnDestroy {
   selectedTabIndex = 0;
   appNetaEnabled = true;
   refreshInterval = 5;
+  isDemoMode = false;
+  isConnected = false;
+  connectionTesting = false;
   
   // Table column definitions
   monitoringPointColumns = ['status', 'name', 'type', 'ipAddress', 'version', 'lastSeen', 'actions'];
@@ -585,7 +606,9 @@ export class CloudNetworkInsightsComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
+    this.isDemoMode = this.appNetaService.isDemoMode();
     this.loadData();
+    this.testConnection();
   }
 
   ngOnDestroy(): void {
@@ -815,7 +838,21 @@ export class CloudNetworkInsightsComponent implements OnInit, OnDestroy {
   }
 
   testConnection(): void {
-    console.log('Testing AppNeta connection...');
+    this.connectionTesting = true;
+    this.appNetaService.testConnection()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (connected) => {
+          this.isConnected = connected;
+          this.connectionTesting = false;
+          console.log('AppNeta connection test result:', connected);
+        },
+        error: (error) => {
+          this.isConnected = false;
+          this.connectionTesting = false;
+          console.error('AppNeta connection test failed:', error);
+        }
+      });
   }
 
   saveSettings(): void {

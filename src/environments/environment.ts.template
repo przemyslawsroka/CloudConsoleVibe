@@ -1,0 +1,18 @@
+// Copy this file to environment.ts and fill in your actual values
+// DO NOT commit environment.ts to git!
+
+export const environment = {
+  production: false,
+  googleClientId: 'your-google-client-id-here',
+  apiBaseUrl: 'https://cloudconsolevibe-backend-6anbejtsta-uc.a.run.app',
+  authDomain: 'accounts.google.com',
+  logLevel: 'error',
+  googleAnalyticsId: 'your-analytics-id-here',
+  enableAnalytics: true,
+  geminiApiKey: 'your-gemini-api-key-here',
+  appneta: {
+    apiBaseUrl: 'https://demo.pm.appneta.com/api/v3',
+    apiKey: 'your-appneta-api-key-here',
+    demoMode: true // Set to false to use real API with your key
+  }
+}; 

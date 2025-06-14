@@ -2,6 +2,12 @@
 
 This is a comprehensive clone of the Google Cloud Console built with Angular, focusing on VPC network management and cloud networking functionality.
 
+## ⚠️ Security Notice
+
+**API keys and sensitive configuration have been removed from this repository for security reasons.** 
+
+Before running the application, please see [SECURITY_SETUP.md](SECURITY_SETUP.md) for instructions on configuring your environment with the required API keys.
+
 ## Features
 
 ### Core Infrastructure

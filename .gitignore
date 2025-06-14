@@ -59,6 +59,9 @@ Thumbs.db
 .env.production.local
 .envrc
 
+# Angular environment files with sensitive data
+src/environments/environment.ts
+
 # Logs
 logs
 *.log
