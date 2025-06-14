@@ -1,5 +1,121 @@
 # Security Setup Guide
 
+## 🔒 Environment Configuration Security
+
+This project uses a template-based approach to manage sensitive environment variables securely.
+
+## 📁 File Structure
+
+```
+src/environments/
+├── environment.ts.template     # Template with placeholder values (in git)
+├── environment.ts             # Actual config with real values (gitignored, for local dev)
+├── environment.prod.ts        # Production config using env vars (in git)
+```
+
+## 🚀 Initial Setup
+
+### For New Developers
+
+1. **Clone the repository**
+2. **Create environment file from template:**
+   ```bash
+   cp src/environments/environment.ts.template src/environments/environment.ts
+   ```
+3. **Update the API keys in `environment.ts`:**
+   ```typescript
+   export const environment = {
+     production: false,
+     // ... other config ...
+     geminiApiKey: 'YOUR_ACTUAL_GEMINI_API_KEY',
+     appneta: {
+       apiBaseUrl: 'https://demo.pm.appneta.com/api/v3',
+       apiKey: 'YOUR_ACTUAL_APPNETA_API_KEY',
+       demoMode: false
+     }
+   };
+   ```
+
+### Automated Setup Script
+
+Run the setup script to automatically configure your development environment:
+
+```bash
+./setup-dev-environment.sh
+```
+
+## 🔄 Development Workflow
+
+### Local Development
+- `environment.ts` contains real API keys for local development
+- This file is gitignored and never committed
+- Use `npm start` or `ng serve` as normal
+
+### Production Deployment
+- Production uses `environment.prod.ts` which reads from environment variables
+- API keys are injected via Cloud Run environment variables
+- The Dockerfile creates `environment.ts` from template during build
+- Use `./deploy-cloudbuild.sh` to deploy
+
+## ⚠️ Important Notes
+
+### DO NOT COMMIT `environment.ts`
+- This file contains real API keys and is gitignored
+- If you accidentally add it to git, run:
+  ```bash
+  git rm --cached src/environments/environment.ts
+  git commit -m "Remove environment.ts from tracking"
+  ```
+
+### Local Development Requires `environment.ts`
+- The Angular compiler needs this file to build locally
+- Always create it from the template after cloning
+- Keep your local copy updated with real API keys for development
+
+### Production Deployment is Secure
+- No real API keys in the repository
+- Environment variables injected at runtime
+- Template-based approach maintains security
+
+## 🔧 Troubleshooting
+
+### "Cannot find module environment" Error
+This means `environment.ts` is missing. Fix with:
+```bash
+cp src/environments/environment.ts.template src/environments/environment.ts
+```
+
+### Local Development Not Working
+1. Ensure `environment.ts` exists and has real API keys
+2. Check that the file is not empty or corrupted
+3. Verify API keys are valid and properly formatted
+
+### Production Deployment Issues
+1. Check that `environment.ts.template` exists in repository
+2. Verify Cloud Run environment variables are set correctly
+3. Ensure Dockerfile creates environment.ts from template
+
+## 🛡️ Security Best Practices
+
+1. **Never commit real API keys**
+2. **Always use the template for new setups**
+3. **Keep production keys in Cloud Run environment variables**
+4. **Regularly rotate API keys**
+5. **Use different keys for development and production when possible**
+
+## 📋 Verification
+
+Run the verification script to check your setup:
+```bash
+./verify-setup.sh
+```
+
+This will verify:
+- Template file exists
+- Environment file is properly configured
+- Build process works
+- Security measures are in place
+
 ## ⚠️ CRITICAL SECURITY NOTICE
 
 **API keys and sensitive configuration data have been removed from the repository for security reasons.**

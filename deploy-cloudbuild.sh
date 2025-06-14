@@ -3,9 +3,9 @@
 set -e
 
 # Configuration
-PROJECT_ID=${PROJECT_ID:-"przemeksroka-joonix-log-test"}
+PROJECT_ID=${PROJECT_ID:-"przemeksroka-joonix-service"}
 REGION=${REGION:-"us-central1"}
-SERVICE_NAME="cloud-console-vibe"
+SERVICE_NAME="cloudconsolevibe-frontend"
 
 echo "🚀 Deploying Cloud Console Vibe to Cloud Run using Cloud Build..."
 echo "Project: $PROJECT_ID"
