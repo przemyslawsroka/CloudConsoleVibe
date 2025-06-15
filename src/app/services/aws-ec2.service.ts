@@ -78,9 +78,9 @@ export class AWSEC2Service {
   async loadInstances(): Promise<AWSInstance[]> {
     console.log('🔄 AWSEC2Service.loadInstances() called');
     
-    // First check if we're in demo mode
-    if (this.awsAuth.isAuthenticated() === false && this.authService.isDemoMode()) {
-      console.log('🎭 Demo mode: Using mock AWS instances');
+    // First check if we're in demo mode - if so, always show demo data
+    if (this.authService.isDemoMode()) {
+      console.log('🎭 Demo mode: Using mock AWS instances (web-server-aws, database-server-aws)');
       const mockInstances = this.getMockInstances();
       this.instancesSubject.next(mockInstances);
       this.loadingSubject.next(false);
