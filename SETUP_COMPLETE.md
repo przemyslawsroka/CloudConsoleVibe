@@ -15,10 +15,10 @@
 - ✅ **Verification tools created** - Scripts to test setup
 
 ### 🔑 **API Keys Configured**
-- ✅ **Google Client ID**: `733352132096-kpsaeb0ac7lu230kjug231hfl097qq8d.apps.googleusercontent.com`
+- ✅ **Google Client ID**: `<your-google-client-id>`
 - ✅ **Google Analytics ID**: `G-TCLR1BZ0N7`
-- ✅ **Gemini API Key**: `AIzaSyBxxrS3p4jIR2ik0jL24rdV9j6PG6VTam4`
-- ✅ **AppNeta API Key**: `4805b615c62f4d8d84f0a25bdeb740cc`
+- ✅ **Gemini API Key**: `<your-gemini-api-key>`
+- ✅ **AppNeta API Key**: `<your-appneta-api-key>`
 - ✅ **AppNeta Endpoint**: `https://demo.pm.appneta.com/api/v3`
 
 ## 🚀 **How to Use**
@@ -49,91 +49,77 @@ CloudConsoleVibe/
 ├── env.template                          # Environment variables template
 ├── setup-dev-environment.sh             # Automated setup script
 ├── verify-setup.sh                      # Setup verification script
-├── SECURITY_SETUP.md                    # Detailed security guide
-└── SETUP_COMPLETE.md                    # This summary
+└── .gitignore                           # Protects sensitive files
 ```
 
 ## 🔐 **Security Features**
 
-### ✅ **Repository Security**
-- No API keys committed to git
-- Template-based environment setup
-- environment.ts excluded from git tracking
-- Only safe template files committed
-- Clear documentation for developers
+### ✅ **What's Protected**
+- All API keys stored in local files only (not in git)
+- Template files provide safe reference without exposing secrets
+- Automatic demo mode fallback when keys are missing
+- Environment variables used in production
 
-### ✅ **Application Security**
-- Smart API key validation
-- Automatic demo mode fallback
-- Environment-based configuration
-- Secure production deployment ready
+### ✅ **What's Safe to Commit**
+- Template files with placeholder values
+- Configuration scripts without hardcoded secrets
+- Documentation with generic examples
+- Build and deployment scripts
 
-### ✅ **Development Security**
-- Separate environments for different use cases
-- Local development with real keys
-- Demo mode for testing without keys
-- Clear separation of concerns
+## 🎯 **Quick Start**
 
-## 🌐 **AppNeta Integration Status**
-
-### ✅ **Real API Connection**
-- **Endpoint**: `https://demo.pm.appneta.com/api/v3/path`
-- **Authentication**: `Authorization: Token <api_key>`
-- **Status**: ✅ Connected and working
-- **Data**: Real network paths from AppNeta demo environment
-
-### ✅ **Features Working**
-- Real-time network path data
-- Connection status monitoring
-- Demo mode fallback
-- Error handling and retry logic
-- Proxy configuration for development
-
-## 📊 **Current Data**
-
-The AppNeta integration is now pulling real data:
-- **5 Network Paths** from demo environment
-- **Real Performance Metrics** (latency, packet loss, jitter)
-- **Live Status Updates** (OK, Failed, Connectivity Loss)
-- **Monitoring Points** across different locations
-
-## 🎯 **Next Steps**
-
-1. **Start Development**:
+1. **Clone the repository**
+2. **Run setup script:**
    ```bash
-   npm run start:local
+   ./setup-dev-environment.sh
+   ```
+3. **Start development:**
+   ```bash
+   npm start
+   ```
+4. **Verify everything works:**
+   ```bash
+   ./verify-setup.sh
    ```
 
-2. **Visit Cloud Network Insights**:
-   ```
-   http://localhost:4200/cloud-network-insights
-   ```
+## 🌐 **Production Deployment**
 
-3. **Verify Real Data**:
-   - Check that "Demo Mode" indicator is OFF
-   - Verify network paths show real AppNeta data
-   - Test connection status features
+When ready to deploy:
+```bash
+./deploy-cloudbuild.sh
+```
 
-4. **Production Deployment**:
-   - Set environment variables in production
-   - Use `environment.prod.ts` configuration
-   - Follow deployment guide in `SECURITY_SETUP.md`
+Environment variables will be injected automatically during deployment.
 
-## 🆘 **Support**
+## 📋 **Verification Checklist**
 
-If you encounter any issues:
+- [ ] Template files exist and are safe
+- [ ] Real environment files are gitignored
+- [ ] API keys are configured locally
+- [ ] Application builds successfully
+- [ ] Demo mode works as fallback
+- [ ] Production deployment ready
 
-1. **Run verification**: `./verify-setup.sh`
-2. **Check documentation**: `SECURITY_SETUP.md`
-3. **Verify API keys**: Ensure they're correctly configured
-4. **Check console**: Look for error messages in browser dev tools
+## 🆘 **Troubleshooting**
+
+### If setup fails:
+1. Check that all template files exist
+2. Verify API keys are properly formatted
+3. Ensure .gitignore is protecting sensitive files
+4. Run verification script for detailed diagnostics
+
+### If deployment fails:
+1. Verify all environment variables are set
+2. Check Cloud Run service configuration
+3. Review build logs for errors
+4. Ensure OAuth client is properly configured
 
 ## 🎉 **Success!**
 
 Your CloudConsoleVibe application is now:
-- ✅ **Secure** - No API keys in repository
-- ✅ **Functional** - Real AppNeta integration working
-- ✅ **Flexible** - Demo mode and live mode support
-- ✅ **Production-ready** - Environment-based configuration
+- ✅ Secure (no secrets in git)
+- ✅ Professional (clean code structure)
+- ✅ Deployable (production-ready)
+- ✅ Maintainable (template-based configuration)
 
-**Happy coding! 🚀** 
+**Ready to show your Google peers! 🚀** 

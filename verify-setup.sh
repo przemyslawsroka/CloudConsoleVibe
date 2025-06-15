@@ -15,23 +15,23 @@ fi
 if [ -f "src/environments/environment.ts" ]; then
     echo "✅ Development environment file exists"
     
-    # Check if it contains real API keys (not placeholder)
-    if grep -q "4805b615c62f4d8d84f0a25bdeb740cc" src/environments/environment.ts; then
+    # Check if it contains real API keys (not placeholder values)
+    if grep -q "apiKey: '[^']*'" src/environments/environment.ts && ! grep -q "your-appneta-api-key-here" src/environments/environment.ts; then
         echo "✅ AppNeta API key configured"
     else
-        echo "❌ AppNeta API key not found in development environment"
+        echo "❌ AppNeta API key not found or still using placeholder in development environment"
     fi
     
-    if grep -q "733352132096" src/environments/environment.ts; then
+    if grep -q "googleClientId: '[^']*'" src/environments/environment.ts && ! grep -q "your-google-client-id-here" src/environments/environment.ts; then
         echo "✅ Google Client ID configured"
     else
-        echo "❌ Google Client ID not found in development environment"
+        echo "❌ Google Client ID not found or still using placeholder in development environment"
     fi
     
-    if grep -q "AIzaSyBxxrS3p4jIR2ik0jL24rdV9j6PG6VTam4" src/environments/environment.ts; then
+    if grep -q "geminiApiKey: '[^']*'" src/environments/environment.ts && ! grep -q "your-gemini-api-key-here" src/environments/environment.ts; then
         echo "✅ Gemini API key configured"
     else
-        echo "❌ Gemini API key not found in development environment"
+        echo "❌ Gemini API key not found or still using placeholder in development environment"
     fi
     
     if grep -q "demoMode: false" src/environments/environment.ts; then
