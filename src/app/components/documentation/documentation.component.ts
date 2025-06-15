@@ -90,33 +90,88 @@ interface DocumentationSection {
             </ol>
 
             <h3>Key Features</h3>
-            <h4>VPC Management</h4>
+            <h4>VPC Networks & Subnets</h4>
             <ul>
-              <li>View and manage Virtual Private Cloud networks</li>
-              <li>Configure subnets and routing</li>
-              <li>Monitor network topology with interactive visualizations</li>
-              <li>Analyze traffic flows between subnets</li>
+              <li>Create and manage Virtual Private Cloud networks</li>
+              <li>Configure subnets with custom IP ranges and routing</li>
+              <li>Interactive 3D network topology visualization</li>
+              <li>Real-time traffic flow analysis between subnets</li>
+              <li>Regional subnet clustering and management</li>
             </ul>
 
-            <h4>Connectivity Testing</h4>
+            <h4>Cloud Network Insights (AppNeta Integration)</h4>
             <ul>
-              <li>Create and run network connectivity tests</li>
-              <li>Troubleshoot network connectivity issues</li>
-              <li>View detailed test results and recommendations</li>
+              <li>Enterprise-grade network path monitoring</li>
+              <li>Real-time network performance metrics</li>
+              <li>Web application monitoring and testing</li>
+              <li>Cross-cloud connectivity analysis</li>
+              <li>Monitoring point management and deployment</li>
             </ul>
 
-            <h4>Security Management</h4>
+            <h4>Security & Firewall Management</h4>
             <ul>
-              <li>Manage firewall rules and policies</li>
-              <li>Configure Cloud Armor security policies</li>
-              <li>Monitor security events and alerts</li>
+              <li>Advanced firewall rule configuration</li>
+              <li>Cloud Armor security policies</li>
+              <li>TLS inspection policies</li>
+              <li>Address groups and network tags</li>
+              <li>Security event monitoring and analysis</li>
             </ul>
 
-            <h4>Load Balancing</h4>
+            <h4>Load Balancing & Traffic Management</h4>
             <ul>
-              <li>Set up and configure Google Cloud Load Balancers</li>
-              <li>Monitor load balancer performance</li>
-              <li>Manage backend services and health checks</li>
+              <li>HTTP(S) and TCP/UDP load balancers</li>
+              <li>Advanced health check configuration</li>
+              <li>Backend service management</li>
+              <li>SSL certificate management</li>
+              <li>Global and regional load balancing</li>
+            </ul>
+
+            <h4>Cloud NAT & Routing</h4>
+            <ul>
+              <li>Cloud NAT gateway configuration</li>
+              <li>Cloud Router management and BGP sessions</li>
+              <li>Dynamic routing and route advertisement</li>
+              <li>NAT logging and monitoring</li>
+            </ul>
+
+            <h4>Connectivity Testing & Diagnostics</h4>
+            <ul>
+              <li>Network connectivity testing tools</li>
+              <li>Path analysis and hop-by-hop diagnostics</li>
+              <li>Reachability verification</li>
+              <li>Network troubleshooting utilities</li>
+            </ul>
+
+            <h4>VPC Flow Logs & Analytics</h4>
+            <ul>
+              <li>Advanced VPC Flow Logs analysis</li>
+              <li>Traffic pattern visualization</li>
+              <li>Security monitoring and threat detection</li>
+              <li>Bandwidth analysis and cost optimization</li>
+            </ul>
+
+            <h4>VM & Compute Management</h4>
+            <ul>
+              <li>VM instance lifecycle management</li>
+              <li>Instance templates and managed instance groups</li>
+              <li>Automated deployment and scaling</li>
+              <li>Health monitoring and maintenance</li>
+            </ul>
+
+            <h4>Network Solutions Wizards</h4>
+            <ul>
+              <li>Distributed application architecture wizard</li>
+              <li>Global frontend deployment wizard</li>
+              <li>Google WAN connectivity wizard</li>
+              <li>Best practice architecture templates</li>
+            </ul>
+
+            <h4>DNS Management</h4>
+            <ul>
+              <li>Cloud DNS zone management</li>
+              <li>DNS record configuration</li>
+              <li>Private DNS zones</li>
+              <li>DNSSEC security features</li>
             </ul>
           </div>
         </section>
@@ -245,66 +300,180 @@ interface DocumentationSection {
           </div>
         </section>
 
-        <section id="google-apis" class="doc-section">
+        <section id="api-reference" class="doc-section">
           <h2>
-            <mat-icon>api</mat-icon>
-            Google Cloud APIs Integration
+            <mat-icon>code</mat-icon>
+            API Reference
           </h2>
           <div class="section-content">
-            <p>CloudConsoleVibe integrates with multiple Google Cloud APIs to provide comprehensive networking management capabilities. Each API is used for specific functionality within the application.</p>
+            <p>CloudConsoleVibe integrates with multiple API systems to provide comprehensive network management capabilities. This section covers Google Cloud APIs, AppNeta APIs, and the internal monitoring backend.</p>
 
-            <div class="api-cards-full">
-              <mat-card class="api-card-full" *ngFor="let api of googleApis">
-                <mat-card-header>
-                  <mat-icon mat-card-avatar [style.color]="api.color">{{ api.icon }}</mat-icon>
-                  <mat-card-title>{{ api.name }}</mat-card-title>
-                  <mat-card-subtitle>{{ api.baseUrl }}</mat-card-subtitle>
-                </mat-card-header>
-                <mat-card-content>
-                  <div class="api-content-grid">
-                    <div class="api-description">
-                      <p><strong>Purpose:</strong> {{ api.purpose }}</p>
-                      <p><strong>Used For:</strong> {{ api.usedFor }}</p>
+            <div class="api-category">
+              <h3>Google Cloud APIs</h3>
+              <p>The application integrates with various Google Cloud APIs for network management and monitoring:</p>
+              
+              <div class="api-cards-full">
+                <mat-card class="api-card-full" *ngFor="let api of googleApis">
+                  <mat-card-header>
+                    <mat-icon mat-card-avatar [style.color]="api.color">{{ api.icon }}</mat-icon>
+                    <mat-card-title>{{ api.name }}</mat-card-title>
+                    <mat-card-subtitle>{{ api.baseUrl }}</mat-card-subtitle>
+                  </mat-card-header>
+                  <mat-card-content>
+                    <div class="api-content-grid">
+                      <div class="api-description">
+                        <p><strong>Purpose:</strong> {{ api.purpose }}</p>
+                        <p><strong>Used For:</strong> {{ api.usedFor }}</p>
+                        
+                        <h4>Key Features in Application:</h4>
+                        <ul>
+                          <li *ngFor="let feature of api.features">{{ feature }}</li>
+                        </ul>
+                      </div>
                       
-                      <h4>Key Features in Application:</h4>
-                      <ul>
-                        <li *ngFor="let feature of api.features">{{ feature }}</li>
-                      </ul>
-                    </div>
-                    
-                    <div class="api-endpoints">
-                      <h4>API Endpoints Used:</h4>
-                      <div class="endpoints-list">
-                        <div class="endpoint" *ngFor="let endpoint of api.endpoints">
-                          <div class="endpoint-header">
-                            <span class="http-method" [class]="endpoint.method.toLowerCase()">{{ endpoint.method }}</span>
-                            <code class="endpoint-path">{{ endpoint.path }}</code>
+                      <div class="api-endpoints">
+                        <h4>API Endpoints Used:</h4>
+                        <div class="endpoints-list">
+                          <div class="endpoint" *ngFor="let endpoint of api.endpoints">
+                            <div class="endpoint-header">
+                              <span class="http-method" [class]="endpoint.method.toLowerCase()">{{ endpoint.method }}</span>
+                              <code class="endpoint-path">{{ endpoint.path }}</code>
+                            </div>
+                            <p class="endpoint-description">{{ endpoint.description }}</p>
+                            <div class="endpoint-usage" *ngIf="endpoint.usage">
+                              <strong>Usage in App:</strong> {{ endpoint.usage }}
+                            </div>
                           </div>
-                          <p class="endpoint-description">{{ endpoint.description }}</p>
-                          <div class="endpoint-usage" *ngIf="endpoint.usage">
-                            <strong>Usage in App:</strong> {{ endpoint.usage }}
+                        </div>
+                        
+                        <div class="scopes-required" *ngIf="api.scopes">
+                          <h4>OAuth Scopes Required:</h4>
+                          <div class="scopes-list">
+                            <mat-chip *ngFor="let scope of api.scopes">{{ scope }}</mat-chip>
                           </div>
                         </div>
                       </div>
+                    </div>
+                  </mat-card-content>
+                </mat-card>
+              </div>
+            </div>
+
+            <div class="api-category">
+              <h3>Monitoring Backend API</h3>
+              <p>Internal monitoring system for network agent management and real-time metrics collection:</p>
+              
+              <div class="api-cards-full">
+                <mat-card class="api-card-full" *ngFor="let api of backendApis">
+                  <mat-card-header>
+                    <mat-icon mat-card-avatar [style.color]="api.color">{{ api.icon }}</mat-icon>
+                    <mat-card-title>{{ api.name }}</mat-card-title>
+                    <mat-card-subtitle>{{ api.baseUrl }}</mat-card-subtitle>
+                  </mat-card-header>
+                  <mat-card-content>
+                    <div class="api-content-grid">
+                      <div class="api-description">
+                        <p><strong>Purpose:</strong> {{ api.purpose }}</p>
+                        <p><strong>Used For:</strong> {{ api.usedFor }}</p>
+                        
+                        <h4>Key Features:</h4>
+                        <ul>
+                          <li *ngFor="let feature of api.features">{{ feature }}</li>
+                        </ul>
+                      </div>
                       
-                      <div class="scopes-required" *ngIf="api.scopes">
-                        <h4>OAuth Scopes Required:</h4>
-                        <div class="scopes-list">
-                          <mat-chip *ngFor="let scope of api.scopes">{{ scope }}</mat-chip>
+                      <div class="api-endpoints">
+                        <h4>REST Endpoints:</h4>
+                        <div class="endpoints-list">
+                          <div class="endpoint" *ngFor="let endpoint of api.endpoints">
+                            <div class="endpoint-header">
+                              <span class="http-method" [class]="endpoint.method.toLowerCase()">{{ endpoint.method }}</span>
+                              <code class="endpoint-path">{{ endpoint.path }}</code>
+                            </div>
+                            <p class="endpoint-description">{{ endpoint.description }}</p>
+                            <div class="endpoint-usage" *ngIf="endpoint.usage">
+                              <strong>Usage:</strong> {{ endpoint.usage }}
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div class="websocket-endpoints" *ngIf="api.websockets">
+                          <h4>WebSocket Endpoints:</h4>
+                          <div class="websocket-list" *ngFor="let ws of api.websockets">
+                            <div class="websocket-header">
+                              <span class="websocket-method">WS</span>
+                              <code class="endpoint-path">{{ ws.path }}</code>
+                            </div>
+                            <p class="endpoint-description">{{ ws.description }}</p>
+                            <div class="websocket-events" *ngIf="ws.events">
+                              <h5>Events:</h5>
+                              <ul>
+                                <li *ngFor="let event of ws.events">{{ event }}</li>
+                              </ul>
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                </mat-card-content>
-              </mat-card>
+                  </mat-card-content>
+                </mat-card>
+              </div>
+            </div>
+
+            <div class="api-category">
+              <h3>Authentication & Security</h3>
+              <div class="auth-info">
+                <div class="auth-section">
+                  <h4>Google Cloud OAuth 2.0</h4>
+                  <p>The application uses Google OAuth 2.0 for secure authentication and API access.</p>
+                  <p><strong>Required Scopes:</strong></p>
+                  <ul>
+                    <li><code>https://www.googleapis.com/auth/cloud-platform</code></li>
+                    <li><code>https://www.googleapis.com/auth/compute</code></li>
+                    <li><code>https://www.googleapis.com/auth/monitoring</code></li>
+                    <li><code>https://www.googleapis.com/auth/logging.read</code></li>
+                  </ul>
+                </div>
+                
+                <div class="auth-section">
+                  <h4>AppNeta API Authentication</h4>
+                  <p>Token-based authentication for AppNeta integration:</p>
+                  <pre><code>Authorization: Token &lt;your-appneta-api-key&gt;</code></pre>
+                </div>
+              </div>
+            </div>
+
+            <div class="api-category">
+              <h3>Development & Deployment</h3>
+              <div class="deployment-info">
+                <h4>Required Google Cloud APIs</h4>
+                <p>Enable the following APIs in your Google Cloud project:</p>
+                <pre><code>gcloud services enable compute.googleapis.com
+gcloud services enable networkmanagement.googleapis.com
+gcloud services enable cloudresourcemanager.googleapis.com
+gcloud services enable iam.googleapis.com
+gcloud services enable dns.googleapis.com
+gcloud services enable networksecurity.googleapis.com
+gcloud services enable logging.googleapis.com
+gcloud services enable monitoring.googleapis.com</code></pre>
+                
+                <h4>Deployment Architecture</h4>
+                <p>Multi-service deployment on Google Cloud Run:</p>
+                <ul>
+                  <li><strong>Frontend:</strong> Angular application with Nginx</li>
+                  <li><strong>Backend:</strong> Node.js API with WebSocket support</li>
+                  <li><strong>Database:</strong> SQLite for metrics storage</li>
+                  <li><strong>Container Registry:</strong> Google Container Registry</li>
+                </ul>
+              </div>
             </div>
           </div>
         </section>
 
-        <section id="authentication" class="doc-section">
+        <section id="development" class="doc-section">
           <h2>
-            <mat-icon>security</mat-icon>
-            Authentication
+            <mat-icon>build</mat-icon>
+            Development
           </h2>
           <div class="section-content">
             <div class="demo-notice">
@@ -317,68 +486,49 @@ interface DocumentationSection {
               </div>
             </div>
 
-            <h3>OAuth 2.0 Flow</h3>
-            <p>CloudConsoleVibe uses Google OAuth 2.0 for secure authentication and API access. The authentication process follows these steps:</p>
-            <ol>
-              <li><strong>User Login:</strong> User clicks "Sign in with Google" button</li>
-              <li><strong>OAuth Redirect:</strong> Application redirects to Google OAuth 2.0 authorization server</li>
-              <li><strong>User Consent:</strong> User grants permissions to access their Google Cloud resources</li>
-              <li><strong>Authorization Code:</strong> Google returns authorization code to application</li>
-              <li><strong>Token Exchange:</strong> Application exchanges code for access token and refresh token</li>
-              <li><strong>API Access:</strong> Access token is used for all subsequent Google Cloud API requests</li>
-            </ol>
-
-            <h3>Required OAuth Scopes</h3>
-            <p>The application requests the following OAuth scopes to access Google Cloud APIs:</p>
+            <h3>Environment Setup</h3>
+            <h4>Prerequisites</h4>
             <ul>
-              <li><code>https://www.googleapis.com/auth/cloud-platform</code> - Full access to Google Cloud Platform resources</li>
-              <li><code>https://www.googleapis.com/auth/compute</code> - Compute Engine API access</li>
-              <li><code>https://www.googleapis.com/auth/monitoring</code> - Cloud Monitoring API access</li>
-              <li><code>https://www.googleapis.com/auth/logging.read</code> - Cloud Logging API read access</li>
+              <li>Node.js 16+ and npm</li>
+              <li>Angular CLI 15+</li>
+              <li>Google Cloud Project with billing enabled</li>
+              <li>Docker (for containerized deployment)</li>
             </ul>
 
-            <h3>Development Mode Restrictions</h3>
-            <p>As referenced in the <a href="https://developers.google.com/workspace/guides/configure-oauth-consent" target="_blank">Google Workspace OAuth consent configuration guide</a>, 
-            applications in development mode have specific limitations:</p>
-            <ul>
-              <li><strong>Test Users Only:</strong> Only users explicitly added to the OAuth test users list can access the application</li>
-              <li><strong>Limited Access:</strong> Maximum of 100 test users during development phase</li>
-              <li><strong>No Public Access:</strong> General public cannot use the application until it's published</li>
-              <li><strong>Manual Approval:</strong> Each user must be manually added by the application administrator</li>
-            </ul>
-
-            <h3>Getting Access</h3>
-            <p>To request access to this development application:</p>
+            <h4>Local Development</h4>
             <ol>
-              <li><strong>Contact Administrator:</strong> Send your Gmail address to <a href="mailto:przemeksroka&#64;google.com">przemeksroka&#64;google.com</a></li>
-              <li><strong>Wait for Confirmation:</strong> You'll receive confirmation once added to the test users list</li>
-              <li><strong>Sign In:</strong> Use the "Sign in with Google" button with your approved Gmail account</li>
-              <li><strong>Grant Permissions:</strong> Accept the OAuth consent screen to access your Google Cloud resources</li>
+              <li>Clone the repository: <code>git clone https://github.com/przemyslawsroka/CloudConsoleVibe.git</code></li>
+              <li>Install dependencies: <code>npm install</code></li>
+              <li>Configure OAuth client ID in environment files</li>
+              <li>Start development server: <code>ng serve</code></li>
             </ol>
 
-            <h3>OAuth Configuration</h3>
-            <p>To configure OAuth 2.0 for your deployment:</p>
+            <h3>OAuth 2.0 Configuration</h3>
+            <p>CloudConsoleVibe uses Google OAuth 2.0 for secure authentication and API access:</p>
             <ol>
               <li>Go to Google Cloud Console > APIs & Services > Credentials</li>
               <li>Create OAuth 2.0 Client ID for web application</li>
               <li>Add authorized JavaScript origins (e.g., https://your-domain.com)</li>
               <li>Add authorized redirect URIs (e.g., https://your-domain.com/auth/callback)</li>
-              <li>Configure OAuth consent screen with appropriate scopes</li>
+              <li>Configure OAuth consent screen with required scopes</li>
               <li>Update application configuration with client ID</li>
             </ol>
-          </div>
-        </section>
 
-        <section id="deployment" class="doc-section">
-          <h2>
-            <mat-icon>cloud_upload</mat-icon>
-            Deployment
-          </h2>
-          <div class="section-content">
+            <h3>Required IAM Permissions</h3>
+            <p>Users need the following IAM roles or equivalent permissions:</p>
+            <ul>
+              <li><strong>Compute Network Viewer:</strong> View VPC networks and subnets</li>
+              <li><strong>Compute Security Admin:</strong> Manage firewall rules and policies</li>
+              <li><strong>Network Management Admin:</strong> Create and run connectivity tests</li>
+              <li><strong>Load Balancer Admin:</strong> Configure load balancers and backend services</li>
+              <li><strong>DNS Administrator:</strong> Manage DNS zones and records</li>
+              <li><strong>Monitoring Viewer:</strong> View monitoring metrics and data</li>
+              <li><strong>Logging Viewer:</strong> Read VPC Flow Logs and other logging data</li>
+            </ul>
+
             <h3>Deployment Architecture</h3>
-            <p>CloudConsoleVibe is deployed as a full-stack application with both frontend and backend services on Google Cloud Run, providing scalable and cost-effective hosting for the complete monitoring solution.</p>
-
-            <h3>Multi-Service Deployment</h3>
+            <p>CloudConsoleVibe is deployed as a full-stack application with both frontend and backend services on Google Cloud Run:</p>
+            
             <div class="deployment-services">
               <div class="service-card">
                 <h4>Frontend Service</h4>
@@ -400,365 +550,185 @@ interface DocumentationSection {
               </div>
             </div>
 
-            <h3>Deployment Process</h3>
-            <ol>
-              <li><strong>Frontend Build:</strong> <code>ng build --configuration production</code> creates optimized Angular build</li>
-              <li><strong>Backend Build:</strong> <code>npm install</code> and dependency setup for Node.js server</li>
-              <li><strong>Containerization:</strong> Separate Docker containers for frontend (Nginx) and backend (Node.js)</li>
-              <li><strong>Image Registry:</strong> Container images pushed to Google Container Registry</li>
-              <li><strong>Cloud Run Deployment:</strong> Both services deployed to Google Cloud Run with different configurations</li>
-              <li><strong>Service Communication:</strong> Frontend configured to communicate with backend via HTTPS and WSS</li>
-            </ol>
-
-            <h3>Infrastructure Components</h3>
-            <ul>
-              <li><strong>Google Cloud Run:</strong> Serverless container hosting for both frontend and backend</li>
-              <li><strong>Google Container Registry:</strong> Container image storage and versioning</li>
-              <li><strong>Nginx:</strong> Web server for serving Angular application</li>
-              <li><strong>Node.js/Express:</strong> Backend API server with WebSocket support</li>
-              <li><strong>SQLite:</strong> Embedded database for metrics and configuration storage</li>
-              <li><strong>Cloud Build:</strong> CI/CD pipeline for automated multi-service deployments</li>
-            </ul>
-
-            <h3>Environment Configuration</h3>
-            <p>Application configuration is managed through environment variables and runtime configuration:</p>
-            <ul>
-              <li><strong>OAuth Client ID:</strong> Configured via environment variables</li>
-              <li><strong>API Endpoints:</strong> Uses official Google Cloud API endpoints</li>
-              <li><strong>CORS Configuration:</strong> Relies on Google Cloud APIs' CORS policies</li>
-            </ul>
-
-            <h3>Required Google Cloud APIs</h3>
-            <p>Enable the following APIs in your Google Cloud project:</p>
-            <pre><code>gcloud services enable compute.googleapis.com
-gcloud services enable networkmanagement.googleapis.com
-gcloud services enable cloudresourcemanager.googleapis.com
-gcloud services enable iam.googleapis.com
-gcloud services enable dns.googleapis.com
-gcloud services enable networksecurity.googleapis.com
-gcloud services enable logging.googleapis.com
-gcloud services enable monitoring.googleapis.com</code></pre>
+            <h3>Monitoring Agent Information</h3>
+            <div class="agent-info">
+              <h4>{{ monitoringAgentInfo.name }}</h4>
+              <p><strong>Language:</strong> {{ monitoringAgentInfo.language }} | <strong>Version:</strong> {{ monitoringAgentInfo.version }}</p>
+              <p>{{ monitoringAgentInfo.description }}</p>
+              
+              <h4>Features:</h4>
+              <ul>
+                <li *ngFor="let feature of monitoringAgentInfo.features">{{ feature }}</li>
+              </ul>
+              
+              <h4>Collected Metrics:</h4>
+              <ul>
+                <li *ngFor="let metric of monitoringAgentInfo.metrics">{{ metric }}</li>
+              </ul>
+              
+              <h4>Deployment Options:</h4>
+              <ul>
+                <li *ngFor="let deployment of monitoringAgentInfo.deployment">{{ deployment }}</li>
+              </ul>
+            </div>
           </div>
         </section>
 
-        <section id="configuration" class="doc-section">
+        <section id="appneta-integration" class="doc-section">
           <h2>
-            <mat-icon>settings</mat-icon>
-            Configuration
+            <mat-icon>network_check</mat-icon>
+            AppNeta Integration
           </h2>
           <div class="section-content">
-            <h3>Environment Setup</h3>
-            <h4>Prerequisites</h4>
-            <ul>
-              <li>Node.js 16+ and npm</li>
-              <li>Angular CLI 15+</li>
-              <li>Google Cloud Project with billing enabled</li>
-              <li>Docker (for containerized deployment)</li>
-            </ul>
-
-            <h4>Local Development</h4>
-            <ol>
-              <li>Clone the repository: <code>git clone https://github.com/przemyslawsroka/CloudConsoleVibe.git</code></li>
-              <li>Install dependencies: <code>npm install</code></li>
-              <li>Configure OAuth client ID in environment files</li>
-              <li>Start development server: <code>ng serve</code></li>
-            </ol>
-
-            <h3>IAM Permissions</h3>
-            <p>Users need the following IAM roles or equivalent permissions:</p>
-            <ul>
-              <li><strong>Compute Network Viewer:</strong> View VPC networks and subnets</li>
-              <li><strong>Compute Security Admin:</strong> Manage firewall rules and policies</li>
-              <li><strong>Network Management Admin:</strong> Create and run connectivity tests</li>
-              <li><strong>Load Balancer Admin:</strong> Configure load balancers and backend services</li>
-              <li><strong>DNS Administrator:</strong> Manage DNS zones and records</li>
-              <li><strong>Monitoring Viewer:</strong> View monitoring metrics and data</li>
-              <li><strong>Logging Viewer:</strong> Read VPC Flow Logs and other logging data</li>
-            </ul>
-
-            <h3>OAuth 2.0 Configuration</h3>
-            <p>Set up OAuth 2.0 credentials in Google Cloud Console:</p>
-            <ol>
-              <li>Navigate to APIs & Services > Credentials</li>
-              <li>Create OAuth 2.0 Client ID for web application</li>
-              <li>Configure authorized JavaScript origins and redirect URIs</li>
-              <li>Set up OAuth consent screen with required scopes</li>
-              <li>Download client configuration and update application</li>
-            </ol>
-          </div>
-        </section>
-
-        <section id="monitoring" class="doc-section">
-          <h2>
-            <mat-icon>monitoring</mat-icon>
-            Monitoring System
-          </h2>
-          <div class="section-content">
-            <p>CloudConsoleVibe includes a comprehensive monitoring system with real-time metrics collection, agent management, and dashboard visualization. The system consists of a backend API, WebSocket communication, and lightweight Go monitoring agents.</p>
-
-            <div class="architecture-diagram">
-              <h3>Monitoring Architecture</h3>
-              <div class="layer">
-                <h4>Frontend Dashboard</h4>
-                <p>Angular monitoring module with real-time visualization</p>
-                <div class="layer-details">
-                  <strong>Components:</strong>
-                  <ul>
-                    <li><code>MetricsDashboardComponent</code> - Real-time charts and system overview</li>
-                    <li><code>AgentListComponent</code> - Agent management and filtering</li>
-                    <li><code>AgentDeployComponent</code> - Multi-platform deployment wizard</li>
-                  </ul>
-                </div>
-              </div>
+            <div class="integration-overview">
+              <h3>Enterprise Network Monitoring</h3>
+              <p>
+                CloudConsoleVibe integrates seamlessly with <strong>Broadcom AppNeta</strong> to provide enterprise-grade network performance monitoring and analysis. 
+                This white-label integration delivers real-time insights into network paths, web application performance, and monitoring points directly within the Google Cloud Console experience.
+              </p>
               
-              <div class="layer">
-                <h4>WebSocket Communication</h4>
-                <p>Real-time bidirectional communication between frontend and backend</p>
-                <div class="layer-details">
-                  <strong>Features:</strong>
-                  <ul>
-                    <li>Live metric updates from agents</li>
-                    <li>Agent connection/disconnection events</li>
-                    <li>Alert notifications and system events</li>
-                    <li>Configuration updates and commands</li>
-                  </ul>
-                </div>
-              </div>
-              
-              <div class="layer">
-                <h4>Backend API Server</h4>
-                <p>Node.js/Express server with SQLite database</p>
-                <div class="layer-details">
-                  <strong>Responsibilities:</strong>
-                  <ul>
-                    <li>Agent registration and management</li>
-                    <li>Metrics storage and aggregation</li>
-                    <li>Alert rule processing</li>
-                    <li>WebSocket connection management</li>
-                    <li>API endpoints for CRUD operations</li>
-                  </ul>
-                </div>
-              </div>
-              
-              <div class="layer">
-                <h4>Monitoring Agents</h4>
-                <p>Lightweight Go agents collecting network metrics</p>
-                <div class="layer-details">
-                  <strong>Agent Information:</strong>
-                  <ul>
-                    <li><strong>Language:</strong> {{ monitoringAgentInfo.language }}</li>
-                    <li><strong>Version:</strong> {{ monitoringAgentInfo.version }}</li>
-                    <li><strong>Description:</strong> {{ monitoringAgentInfo.description }}</li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-
-            <h3>Agent Features</h3>
-            <div class="feature-grid">
-              <mat-card *ngFor="let feature of monitoringAgentInfo.features" class="feature-card">
-                <mat-card-content>
-                  <mat-icon>check_circle</mat-icon>
-                  <p>{{ feature }}</p>
-                </mat-card-content>
-              </mat-card>
-            </div>
-
-            <h3>Collected Metrics</h3>
-            <div class="metrics-grid">
-              <div class="metric-category">
-                <h4>Network Interface Metrics</h4>
-                <ul>
-                  <li *ngFor="let metric of monitoringAgentInfo.metrics.slice(0, 8)">
-                    <code>{{ metric.split(':')[0] }}</code>: {{ metric.split(':')[1] }}
-                  </li>
-                </ul>
-              </div>
-              <div class="metric-category">
-                <h4>Connectivity Metrics</h4>
-                <ul>
-                  <li *ngFor="let metric of monitoringAgentInfo.metrics.slice(8)">
-                    <code>{{ metric.split(':')[0] }}</code>: {{ metric.split(':')[1] }}
-                  </li>
-                </ul>
-              </div>
-            </div>
-
-            <h3>Deployment Options</h3>
-            <div class="deployment-options">
-              <mat-card *ngFor="let deployment of monitoringAgentInfo.deployment" class="deployment-card">
-                <mat-card-content>
-                  <h4>{{ deployment.split(':')[0] }}</h4>
-                  <p>{{ deployment.split(':')[1] }}</p>
-                </mat-card-content>
-              </mat-card>
-            </div>
-
-            <h3>Getting Started with Monitoring</h3>
-            <ol>
-              <li><strong>Access Monitoring:</strong> Navigate to /monitoring in the application</li>
-              <li><strong>Deploy Agents:</strong> Use the deployment wizard to install agents on your infrastructure</li>
-              <li><strong>Configure Targets:</strong> Set up connectivity testing targets</li>
-              <li><strong>Monitor Metrics:</strong> View real-time dashboards and set up alert rules</li>
-            </ol>
-          </div>
-        </section>
-
-        <section id="backend" class="doc-section">
-          <h2>
-            <mat-icon>api</mat-icon>
-            Backend API
-          </h2>
-          <div class="section-content">
-            <p>The CloudConsoleVibe backend provides API endpoints for monitoring agent management, metrics collection, and real-time communication via WebSockets.</p>
-
-            <div class="api-cards-full">
-              <mat-card class="api-card-full" *ngFor="let api of backendApis">
-                <mat-card-header>
-                  <mat-icon mat-card-avatar [style.color]="api.color">{{ api.icon }}</mat-icon>
-                  <mat-card-title>{{ api.name }}</mat-card-title>
-                  <mat-card-subtitle>{{ api.baseUrl }}</mat-card-subtitle>
-                </mat-card-header>
-                <mat-card-content>
-                  <div class="api-content-grid">
-                    <div class="api-description">
-                      <p><strong>Purpose:</strong> {{ api.purpose }}</p>
-                      <p><strong>Used For:</strong> {{ api.usedFor }}</p>
-                      
-                      <h4>Key Features:</h4>
-                      <ul>
-                        <li *ngFor="let feature of api.features">{{ feature }}</li>
-                      </ul>
-                    </div>
-                    
-                    <div class="api-endpoints">
-                      <h4>REST API Endpoints:</h4>
-                      <div class="endpoints-list">
-                        <div class="endpoint" *ngFor="let endpoint of api.endpoints">
-                          <div class="endpoint-header">
-                            <span class="http-method" [class]="endpoint.method.toLowerCase()">{{ endpoint.method }}</span>
-                            <code class="endpoint-path">{{ endpoint.path }}</code>
-                          </div>
-                          <p class="endpoint-description">{{ endpoint.description }}</p>
-                          <div class="endpoint-usage" *ngIf="endpoint.usage">
-                            <strong>Usage:</strong> {{ endpoint.usage }}
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <h4>WebSocket Endpoints:</h4>
-                      <div class="websocket-info" *ngFor="let ws of api.websockets">
-                        <div class="websocket-header">
-                          <span class="websocket-method">WS</span>
-                          <code class="endpoint-path">{{ ws.path }}</code>
-                        </div>
-                        <p class="endpoint-description">{{ ws.description }}</p>
-                        <div class="websocket-events">
-                          <h5>Events:</h5>
-                          <ul>
-                            <li *ngFor="let event of ws.events">
-                              <code>{{ event.split(':')[0] }}</code>: {{ event.split(':')[1] }}
-                            </li>
-                          </ul>
-                        </div>
-                      </div>
-                    </div>
+              <div class="appneta-features">
+                <h4>Key AppNeta Features</h4>
+                <div class="features-grid">
+                  <div class="feature-card">
+                    <mat-card>
+                      <mat-card-header>
+                        <mat-icon mat-card-avatar>network_check</mat-icon>
+                        <mat-card-title>Network Path Monitoring</mat-card-title>
+                      </mat-card-header>
+                      <mat-card-content>
+                        <ul>
+                          <li>Hop-by-hop network path analysis</li>
+                          <li>Real-time latency, packet loss, and jitter metrics</li>
+                          <li>Cross-cloud connectivity monitoring</li>
+                          <li>Network performance thresholds and alerting</li>
+                        </ul>
+                      </mat-card-content>
+                    </mat-card>
                   </div>
-                </mat-card-content>
-              </mat-card>
-            </div>
-
-            <h3>Database Schema</h3>
-            <div class="database-schema">
-              <h4>Tables</h4>
-              <div class="table-info">
-                <mat-card>
-                  <mat-card-header>
-                    <mat-card-title>agents</mat-card-title>
-                    <mat-card-subtitle>Registered monitoring agents</mat-card-subtitle>
-                  </mat-card-header>
-                  <mat-card-content>
-                    <ul>
-                      <li><code>id</code> - Unique agent identifier</li>
-                      <li><code>name</code> - Agent display name</li>
-                      <li><code>hostname</code> - Agent hostname</li>
-                      <li><code>ip_address</code> - Agent IP address</li>
-                      <li><code>status</code> - Current status (online/offline)</li>
-                      <li><code>last_seen</code> - Last activity timestamp</li>
-                      <li><code>metadata</code> - Additional agent information</li>
-                    </ul>
-                  </mat-card-content>
-                </mat-card>
-
-                <mat-card>
-                  <mat-card-header>
-                    <mat-card-title>metrics</mat-card-title>
-                    <mat-card-subtitle>Individual metric records</mat-card-subtitle>
-                  </mat-card-header>
-                  <mat-card-content>
-                    <ul>
-                      <li><code>id</code> - Unique metric identifier</li>
-                      <li><code>agent_id</code> - Associated agent ID</li>
-                      <li><code>metric_name</code> - Metric name/type</li>
-                      <li><code>value</code> - Metric value</li>
-                      <li><code>timestamp</code> - Collection timestamp</li>
-                      <li><code>labels</code> - Metric labels (JSON)</li>
-                    </ul>
-                  </mat-card-content>
-                </mat-card>
-
-                <mat-card>
-                  <mat-card-header>
-                    <mat-card-title>metric_batches</mat-card-title>
-                    <mat-card-subtitle>Batched metric submissions</mat-card-subtitle>
-                  </mat-card-header>
-                  <mat-card-content>
-                    <ul>
-                      <li><code>id</code> - Unique batch identifier</li>
-                      <li><code>agent_id</code> - Source agent ID</li>
-                      <li><code>batch_data</code> - Metrics batch (JSON)</li>
-                      <li><code>timestamp</code> - Batch submission time</li>
-                    </ul>
-                  </mat-card-content>
-                </mat-card>
-
-                <mat-card>
-                  <mat-card-header>
-                    <mat-card-title>alert_rules</mat-card-title>
-                    <mat-card-subtitle>Configured alert conditions</mat-card-subtitle>
-                  </mat-card-header>
-                  <mat-card-content>
-                    <ul>
-                      <li><code>id</code> - Unique rule identifier</li>
-                      <li><code>name</code> - Rule display name</li>
-                      <li><code>condition</code> - Alert condition</li>
-                      <li><code>threshold</code> - Alert threshold value</li>
-                      <li><code>enabled</code> - Rule activation status</li>
-                    </ul>
-                  </mat-card-content>
-                </mat-card>
+                  
+                  <div class="feature-card">
+                    <mat-card>
+                      <mat-card-header>
+                        <mat-icon mat-card-avatar>web</mat-icon>
+                        <mat-card-title>Web Application Monitoring</mat-card-title>
+                      </mat-card-header>
+                      <mat-card-content>
+                        <ul>
+                          <li>End-to-end web application performance</li>
+                          <li>Response time and availability tracking</li>
+                          <li>HTTP status code monitoring</li>
+                          <li>Geographic monitoring from multiple locations</li>
+                        </ul>
+                      </mat-card-content>
+                    </mat-card>
+                  </div>
+                  
+                  <div class="feature-card">
+                    <mat-card>
+                      <mat-card-header>
+                        <mat-icon mat-card-avatar>my_location</mat-icon>
+                        <mat-card-title>Monitoring Points</mat-card-title>
+                      </mat-card-header>
+                      <mat-card-content>
+                        <ul>
+                          <li>Cloud-native monitoring point deployment</li>
+                          <li>Physical, virtual, and container-based agents</li>
+                          <li>Multi-region monitoring coverage</li>
+                          <li>Automated discovery and health monitoring</li>
+                        </ul>
+                      </mat-card-content>
+                    </mat-card>
+                  </div>
+                </div>
               </div>
             </div>
 
-            <h3>Deployment Information</h3>
-            <div class="deployment-info">
-              <mat-card>
-                <mat-card-header>
-                  <mat-card-title>Production Deployment</mat-card-title>
-                </mat-card-header>
-                <mat-card-content>
-                  <ul>
-                    <li><strong>Platform:</strong> Google Cloud Run</li>
-                    <li><strong>URL:</strong> https://cloudconsolevibe-backend-931553324054.us-central1.run.app</li>
-                    <li><strong>Runtime:</strong> Node.js 18</li>
-                    <li><strong>Database:</strong> SQLite (file-based)</li>
-                    <li><strong>Memory:</strong> 2GB</li>
-                    <li><strong>CPU:</strong> 2 vCPU</li>
-                    <li><strong>Timeout:</strong> 3600s (WebSocket support)</li>
-                    <li><strong>Concurrency:</strong> 1000 concurrent requests</li>
-                  </ul>
-                </mat-card-content>
-              </mat-card>
+            <h3>Configuration & Setup</h3>
+            <div class="config-section">
+              <h4>Environment Configuration</h4>
+              <pre><code>// Development Environment
+APPNETA_API_BASE_URL=https://demo.pm.appneta.com/api/v3
+APPNETA_DEMO_MODE=true
+
+// Production Environment  
+APPNETA_API_BASE_URL=https://your-org.pm.appneta.com/api/v3
+APPNETA_API_KEY=your-appneta-api-key
+APPNETA_DEMO_MODE=false</code></pre>
+
+              <h4>Authentication</h4>
+              <p>AppNeta API uses Token-based authentication:</p>
+              <pre><code>Authorization: Token &lt;your-appneta-api-key&gt;</code></pre>
+            </div>
+
+            <h3>AppNeta API Endpoints</h3>
+            <div class="api-endpoints">
+              <div class="endpoint-group">
+                <h4>Network Paths</h4>
+                <div class="endpoint-list">
+                  <div class="endpoint-item">
+                    <span class="method get">GET</span>
+                    <span class="path">/api/v3/path</span>
+                    <span class="description">Retrieve network path configurations with status and performance data</span>
+                  </div>
+                  <div class="endpoint-item">
+                    <span class="method get">GET</span>
+                    <span class="path">/api/v3/path/{{ '{' }}id{{ '}' }}/data</span>
+                    <span class="description">Get detailed performance metrics for a specific network path</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="endpoint-group">
+                <h4>Web Paths</h4>
+                <div class="endpoint-list">
+                  <div class="endpoint-item">
+                    <span class="method get">GET</span>
+                    <span class="path">/api/v3/webPath</span>
+                    <span class="description">List web application monitoring configurations and status</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="endpoint-group">
+                <h4>Monitoring Points</h4>
+                <div class="endpoint-list">
+                  <div class="endpoint-item">
+                    <span class="method get">GET</span>
+                    <span class="path">/api/v3/appliance</span>
+                    <span class="description">List monitoring appliances/agents with health and location data</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="endpoint-group">
+                <h4>Monitoring Policies</h4>
+                <div class="endpoint-list">
+                  <div class="endpoint-item">
+                    <span class="method get">GET</span>
+                    <span class="path">/api/v3/monitoringPolicy</span>
+                    <span class="description">Retrieve monitoring policies with thresholds and alerting rules</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <h3>Integration Features</h3>
+            <div class="integration-features">
+              <h4>Demo Mode vs Live Mode</h4>
+              <p><strong>Demo Mode:</strong> Uses mock data for demonstration purposes without external API calls.</p>
+              <p><strong>Live Mode:</strong> Connects to real AppNeta API with automatic fallback to demo mode on errors.</p>
+              
+              <h4>Error Handling</h4>
+              <ul>
+                <li>Graceful fallback to demo mode on API connection failures</li>
+                <li>Real-time connection status monitoring</li>
+                <li>User-friendly error messages and retry mechanisms</li>
+                <li>Connection testing capabilities through the UI</li>
+              </ul>
+              
+              <h4>Data Mapping</h4>
+              <p>The integration includes comprehensive data mapping from AppNeta API format to internal application format, including status determination logic and performance metric conversion.</p>
             </div>
           </div>
         </section>
@@ -1654,50 +1624,83 @@ export class DocumentationComponent implements OnInit, OnDestroy {
     { id: 'overview', title: 'Overview', icon: 'info' },
     { id: 'user-guide', title: 'User Guide', icon: 'person' },
     { id: 'architecture', title: 'Architecture', icon: 'architecture' },
-    { id: 'monitoring', title: 'Monitoring System', icon: 'monitoring' },
-    { id: 'backend', title: 'Backend API', icon: 'api' },
-    { id: 'google-apis', title: 'Google Cloud APIs', icon: 'cloud' },
-    { id: 'authentication', title: 'Authentication', icon: 'security' },
-    { id: 'deployment', title: 'Deployment', icon: 'cloud_upload' },
-    { id: 'configuration', title: 'Configuration', icon: 'settings' }
+    { id: 'appneta-integration', title: 'AppNeta Integration', icon: 'network_check' },
+    { id: 'api-reference', title: 'API Reference', icon: 'code' },
+    { id: 'development', title: 'Development', icon: 'build' }
   ];
 
   applicationModules = [
     {
-      title: 'VPC Management',
+      title: 'VPC Networks & Subnets',
       icon: 'cloud',
-      description: 'Manage Virtual Private Cloud networks, subnets, and routing with interactive topology visualization.',
-      features: ['Network Topology', 'Traffic Analysis', 'Subnet Management', 'Route Configuration']
+      description: 'Comprehensive VPC network management with subnet configuration, routing, and network topology visualization.',
+      features: ['VPC Creation & Management', 'Subnet Configuration', 'Network Topology Visualization', 'Traffic Flow Analysis', 'Route Management']
     },
     {
-      title: 'Connectivity Testing',
+      title: 'Cloud Network Insights',
       icon: 'network_check',
-      description: 'Test and troubleshoot network connectivity between resources using Network Management API.',
-      features: ['Connectivity Tests', 'Path Analysis', 'Reachability Testing', 'Network Diagnostics']
-    },
-    {
-      title: 'Security Management',
-      icon: 'security',
-      description: 'Configure firewall rules, Cloud Armor policies, and network security settings.',
-      features: ['Firewall Rules', 'Security Policies', 'Cloud Armor', 'Network Security']
+      description: 'Enterprise-grade network monitoring powered by Broadcom AppNeta integration for real-time network path analysis.',
+      features: ['AppNeta Integration', 'Network Path Monitoring', 'Web Application Performance', 'Monitoring Point Management', 'Real-time Metrics']
     },
     {
       title: 'Load Balancing',
       icon: 'balance',
-      description: 'Set up and manage Google Cloud Load Balancers with health checks and backend services.',
-      features: ['Load Balancer Config', 'Health Checks', 'Backend Services', 'Traffic Distribution']
+      description: 'Google Cloud Load Balancer management with health checks, backend services, and SSL configuration.',
+      features: ['HTTP(S) Load Balancers', 'Health Check Configuration', 'Backend Service Management', 'SSL Certificate Management', 'Traffic Distribution']
     },
     {
-      title: 'Flow Analysis',
+      title: 'Cloud NAT & Router',
+      icon: 'router',
+      description: 'Manage Cloud NAT gateways and Cloud Routers for secure outbound internet access and dynamic routing.',
+      features: ['Cloud NAT Configuration', 'Cloud Router Management', 'BGP Session Management', 'Route Advertisement', 'NAT Logging']
+    },
+    {
+      title: 'Security & Firewall',
+      icon: 'security',
+      description: 'Advanced security management with firewall rules, Cloud Armor policies, and TLS inspection.',
+      features: ['Firewall Rule Management', 'Cloud Armor Policies', 'TLS Inspection Policies', 'Address Groups', 'Security Analysis']
+    },
+    {
+      title: 'Connectivity Testing',
+      icon: 'network_ping',
+      description: 'Network connectivity testing and troubleshooting with detailed path analysis and reachability tests.',
+      features: ['Connectivity Tests', 'Path Analysis', 'Reachability Verification', 'Network Troubleshooting', 'Latency Measurement']
+    },
+    {
+      title: 'VPC Flow Logs Analysis',
       icon: 'analytics',
-      description: 'Analyze VPC Flow Logs for network traffic patterns, performance, and security insights.',
-      features: ['Flow Logs Analysis', 'Traffic Metrics', 'Latency Analysis', 'Real-time Queries']
+      description: 'Advanced VPC Flow Logs analysis with traffic patterns, security insights, and performance metrics.',
+      features: ['Flow Log Analysis', 'Traffic Visualization', 'Security Monitoring', 'Bandwidth Analysis', 'Custom Dashboards']
     },
     {
-      title: 'Monitoring System',
+      title: 'DNS Management',
+      icon: 'dns',
+      description: 'Cloud DNS management with zone configuration, record management, and DNS security features.',
+      features: ['DNS Zone Management', 'Record Configuration', 'DNS Security (DNSSEC)', 'Private DNS Zones', 'DNS Analytics']
+    },
+    {
+      title: 'Network Monitoring',
       icon: 'monitoring',
-      description: 'Real-time monitoring of network agents with metrics collection, alerting, and dashboard visualization.',
-      features: ['Agent Management', 'Real-time Metrics', 'WebSocket Communication', 'Network Monitoring', 'Alert Rules', 'Dashboard Visualization']
+      description: 'Real-time network monitoring with custom agents, metrics collection, and alerting capabilities.',
+      features: ['Agent Management', 'Real-time Metrics', 'Custom Dashboards', 'Alert Configuration', 'WebSocket Communication']
+    },
+    {
+      title: 'VM & Compute Management',
+      icon: 'computer',
+      description: 'Comprehensive VM instance management with templates, groups, and deployment automation.',
+      features: ['VM Instance Management', 'Instance Templates', 'Instance Groups', 'Automated Deployment', 'Health Monitoring']
+    },
+    {
+      title: 'Network Solutions Wizards',
+      icon: 'auto_fix_high',
+      description: 'Guided wizards for complex network architectures including distributed applications and global frontends.',
+      features: ['Distributed Application Wizard', 'Global Frontend Wizard', 'Google WAN Wizard', 'Architecture Templates', 'Best Practice Guidance']
+    },
+    {
+      title: 'Cloud CDN',
+      icon: 'language',
+      description: 'Content Delivery Network management with caching policies, origin configuration, and performance optimization.',
+      features: ['CDN Configuration', 'Cache Policies', 'Origin Management', 'Performance Analytics', 'Edge Locations']
     }
   ];
 
