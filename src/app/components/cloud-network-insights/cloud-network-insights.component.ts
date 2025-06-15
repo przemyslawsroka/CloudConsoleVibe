@@ -66,41 +66,7 @@ import { CreateMonitoringPolicyDialogComponent } from './create-monitoring-polic
         </div>
       </div>
 
-      <!-- Integration Banner -->
-      <div class="integration-banner">
-        <div class="integration-content">
-          <div class="integration-logos">
-            <img src="assets/google-cloud-logo.png" alt="Google Cloud" class="logo google-logo">
-            <mat-icon class="integration-icon">sync_alt</mat-icon>
-            <img src="assets/appneta-logo.png" alt="Broadcom AppNeta" class="logo appneta-logo">
-          </div>
-          <div class="integration-text">
-            <h3>Powered by Google Cloud + Broadcom AppNeta Integration</h3>
-            <p *ngIf="!isDemoMode">Real-time network performance monitoring with enterprise-grade observability</p>
-            <p *ngIf="isDemoMode">Demo environment with sample data - Configure API key to connect to live AppNeta data</p>
-          </div>
-        </div>
-        <div class="integration-status">
-          <mat-chip-set>
-            <mat-chip *ngIf="isDemoMode" color="accent" selected>
-              <mat-icon matChipAvatar>science</mat-icon>
-              Demo Mode
-            </mat-chip>
-            <mat-chip *ngIf="!isDemoMode && connectionTesting" color="primary" selected>
-              <mat-icon matChipAvatar>sync</mat-icon>
-              Testing...
-            </mat-chip>
-            <mat-chip *ngIf="!isDemoMode && !connectionTesting && isConnected" color="primary" selected>
-              <mat-icon matChipAvatar>check_circle</mat-icon>
-              Connected
-            </mat-chip>
-            <mat-chip *ngIf="!isDemoMode && !connectionTesting && !isConnected" color="warn" selected>
-              <mat-icon matChipAvatar>error</mat-icon>
-              Disconnected
-            </mat-chip>
-          </mat-chip-set>
-        </div>
-      </div>
+
 
       <!-- Summary Cards -->
       <div class="summary-section" *ngIf="summary">
@@ -979,6 +945,7 @@ export class CloudNetworkInsightsComponent implements OnInit, OnDestroy {
   }
 
   getWorkflowTypeClass(type: string): string {
+    if (!type) return '';
     switch (type.toLowerCase()) {
       case 'network': return 'type-network';
       case 'web': return 'type-web';
@@ -988,10 +955,11 @@ export class CloudNetworkInsightsComponent implements OnInit, OnDestroy {
   }
 
   getWorkflowTypeIcon(type: string): string {
+    if (!type) return 'policy';
     switch (type.toLowerCase()) {
       case 'network': return 'router';
       case 'web': return 'web';
-      case 'infrastructure': return 'dns';
+      case 'infrastructure': return 'type-infrastructure';
       default: return 'policy';
     }
   }
@@ -1035,9 +1003,9 @@ export class CloudNetworkInsightsComponent implements OnInit, OnDestroy {
     this.filteredMonitoringPolicies.sort((a, b) => {
       switch (this.policySortBy) {
         case 'name':
-          return a.name.localeCompare(b.name);
+          return (a.name || '').localeCompare(b.name || '');
         case 'type':
-          return a.type.localeCompare(b.type);
+          return (a.type || '').localeCompare(b.type || '');
         case 'created':
           return new Date(b.createdDate).getTime() - new Date(a.createdDate).getTime();
         case 'updated':

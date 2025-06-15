@@ -1,7 +1,6 @@
 .insights-container {
   padding: 24px;
-  max-width: 1400px;
-  margin: 0 auto;
+  width: 100%;
   background-color: var(--background-color);
   min-height: 100vh;
   color: var(--text-color);
@@ -80,67 +79,7 @@
   color: var(--text-secondary-color);
 }
 
-/* Integration Banner */
-.integration-banner {
-  background: linear-gradient(135deg, #4285f4 0%, #34a853 100%);
-  color: white;
-  padding: 24px;
-  border-radius: 12px;
-  margin-bottom: 32px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  box-shadow: 0 4px 20px rgba(66, 133, 244, 0.3);
-}
 
-.integration-content {
-  display: flex;
-  align-items: center;
-  gap: 24px;
-}
-
-.integration-logos {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.logo {
-  height: 40px;
-  width: auto;
-  background: white;
-  padding: 8px;
-  border-radius: 8px;
-}
-
-.integration-icon {
-  font-size: 32px;
-  color: rgba(255, 255, 255, 0.9);
-}
-
-.integration-text h3 {
-  margin: 0 0 8px 0;
-  font-size: 20px;
-  font-weight: 500;
-}
-
-.integration-text p {
-  margin: 0;
-  opacity: 0.9;
-  font-size: 14px;
-}
-
-.integration-status {
-  mat-chip {
-    background-color: rgba(255, 255, 255, 0.2);
-    color: white;
-    border: 1px solid rgba(255, 255, 255, 0.3);
-
-    mat-icon {
-      color: #34a853;
-    }
-  }
-}
 
 /* Summary Section */
 .summary-section {
