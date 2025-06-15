@@ -13,6 +13,7 @@ import {
 import { CreateNetworkPathDialogComponent } from './create-network-path-dialog.component';
 import { CreateWebPathDialogComponent } from './create-web-path-dialog.component';
 import { CreateMonitoringPolicyDialogComponent } from './create-monitoring-policy-dialog.component';
+import { NetworkPathDetailsComponent } from './network-path-details.component';
 
 @Component({
   selector: 'app-cloud-network-insights',
@@ -855,7 +856,21 @@ export class CloudNetworkInsightsComponent implements OnInit, OnDestroy {
 
   // Detail view methods
   viewNetworkPathDetails(path: NetworkPath): void {
-    console.log('Viewing network path details:', path);
+    const dialogRef = this.dialog.open(NetworkPathDetailsComponent, {
+      width: '95vw',
+      maxWidth: '1600px',
+      height: '90vh',
+      maxHeight: '1200px',
+      data: { networkPath: path },
+      panelClass: 'network-path-details-dialog'
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        // Handle any actions from the dialog if needed
+        console.log('Network path details dialog closed with result:', result);
+      }
+    });
   }
 
   viewWebPathDetails(path: WebPath): void {

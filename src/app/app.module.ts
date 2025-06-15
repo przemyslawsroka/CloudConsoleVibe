@@ -92,6 +92,7 @@ import { CloudNetworkInsightsComponent } from './components/cloud-network-insigh
 import { CreateNetworkPathDialogComponent } from './components/cloud-network-insights/create-network-path-dialog.component';
 import { CreateWebPathDialogComponent } from './components/cloud-network-insights/create-web-path-dialog.component';
 import { CreateMonitoringPolicyDialogComponent } from './components/cloud-network-insights/create-monitoring-policy-dialog.component';
+import { NetworkPathDetailsComponent } from './components/cloud-network-insights/network-path-details.component';
 import { AppNetaService } from './services/appneta.service';
 import { CNRComponent } from './components/cnr/cnr.component';
 import { CloudCdnComponent } from './components/cloud-cdn/cloud-cdn.component';
@@ -176,6 +177,7 @@ import { InstanceGroupsService } from './services/instance-groups.service';
     CreateNetworkPathDialogComponent,
     CreateWebPathDialogComponent,
     CreateMonitoringPolicyDialogComponent,
+    NetworkPathDetailsComponent,
     CNRComponent,
     CloudCdnComponent,
     CloudCdnDetailsComponent,

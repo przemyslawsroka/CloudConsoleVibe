@@ -16,6 +16,8 @@ export interface NetworkPath {
   monitoringPoint: string;
   target: string;
   lastUpdate: Date;
+  lastSeen?: Date;
+  protocol?: string;
   latency?: number;
   packetLoss?: number;
   jitter?: number;
@@ -70,6 +72,38 @@ export interface NetworkInsightsSummary {
   failedWebPaths: number;
   warningWebPaths: number;
   disabledWebPaths: number;
+}
+
+// Add new interfaces for network path details
+export interface NetworkPathMetrics {
+  timestamp: string;
+  capacity: number;
+  dataLoss: number;
+  dataJitter: number;
+  latency: number;
+  roundTripTime: number;
+  voiceLoss: number;
+  voiceJitter: number;
+  mos: number;
+}
+
+export interface RouteHop {
+  hopNumber: number;
+  ipAddress: string;
+  hostname?: string;
+  asn?: string;
+  location?: string;
+  latency: number;
+  packetLoss: number;
+  responseTime: number;
+}
+
+export interface NetworkEvent {
+  timestamp: string;
+  type: 'Alert Condition' | 'Route Change' | 'Connectivity' | 'Performance';
+  severity: 'critical' | 'warning' | 'info';
+  description: string;
+  details?: string;
 }
 
 @Injectable({
@@ -230,42 +264,48 @@ export class AppNetaService {
     const mockNetworkPaths: NetworkPath[] = [
       {
         id: '1',
-        name: 'appneta-gcp <-> Azure Target',
+        name: 'test-mp <> Google CCN POC (dual)',
         status: 'OK',
-        source: 'appneta-gcp',
+        source: 'test-mp',
         destination: 'gmt.pm.appneta.com',
-        monitoringPoint: 'appneta-gcp',
+        monitoringPoint: 'test-mp',
         target: 'gmt.pm.appneta.com',
         lastUpdate: new Date(),
-        latency: 45.2,
-        packetLoss: 0.1,
-        jitter: 2.3
+        lastSeen: new Date(),
+        protocol: 'UDP',
+        latency: 25,
+        packetLoss: 0,
+        jitter: 2
       },
       {
         id: '2',
-        name: 'gcp-west <-> database-cluster',
-        status: 'Connectivity Loss',
-        source: 'gcp-west',
+        name: 'test-mp <> Internal Database',
+        status: 'Failed',
+        source: 'test-mp',
         destination: 'db.internal.com',
-        monitoringPoint: 'gcp-west-monitor',
+        monitoringPoint: 'test-mp',
         target: 'db.internal.com',
         lastUpdate: new Date(Date.now() - 300000),
-        latency: 0,
-        packetLoss: 100,
-        jitter: 0
+        lastSeen: new Date(Date.now() - 300000),
+        protocol: 'TCP',
+        latency: 85,
+        packetLoss: 2.5,
+        jitter: 15
       },
       {
         id: '3',
-        name: 'europe-central <-> api-gateway',
-        status: 'OK',
-        source: 'europe-central',
-        destination: 'api.gateway.com',
-        monitoringPoint: 'eu-central-1',
-        target: 'api.gateway.com',
-        lastUpdate: new Date(),
-        latency: 23.8,
-        packetLoss: 0,
-        jitter: 1.1
+        name: 'test-mp <> Cloud Service',
+        status: 'Connectivity Loss',
+        source: 'test-mp',
+        destination: 'api.cloud.com',
+        monitoringPoint: 'test-mp',
+        target: 'api.cloud.com',
+        lastUpdate: new Date(Date.now() - 600000),
+        lastSeen: new Date(Date.now() - 600000),
+        protocol: 'UDP',
+        latency: 0,
+        packetLoss: 100,
+        jitter: 0
       }
     ];
 
@@ -546,5 +586,188 @@ export class AppNetaService {
         map(() => true),
         catchError(() => of(false))
       );
+  }
+
+  // Network Path Details Methods
+  getNetworkPathMetrics(pathId: string, timeRange: string = '1d'): Observable<NetworkPathMetrics[]> {
+    if (this.authService.isDemoMode()) {
+      return this.generateMockMetrics(timeRange);
+    }
+
+    // TODO: Implement real API call for network path metrics
+    const url = `${this.API_BASE_URL}/api/v3/path/${pathId}/metrics?orgId=19091&timeRange=${timeRange}`;
+    
+    return this.http.get<any[]>(url, { headers: this.getHeaders() })
+      .pipe(
+        map(data => this.mapApiMetricsToNetworkPathMetrics(data)),
+        catchError(() => this.generateMockMetrics(timeRange))
+      );
+  }
+
+  getNetworkPathEvents(pathId: string, timeRange: string = '1d'): Observable<NetworkEvent[]> {
+    if (this.authService.isDemoMode()) {
+      return this.generateMockEvents();
+    }
+
+    // TODO: Implement real API call for network path events
+    const url = `${this.API_BASE_URL}/api/v3/path/${pathId}/events?orgId=19091&timeRange=${timeRange}`;
+    
+    return this.http.get<any[]>(url, { headers: this.getHeaders() })
+      .pipe(
+        map(data => this.mapApiEventsToNetworkEvents(data)),
+        catchError(() => this.generateMockEvents())
+      );
+  }
+
+  getNetworkPathRoute(pathId: string): Observable<RouteHop[]> {
+    if (this.authService.isDemoMode()) {
+      return this.generateMockRoute();
+    }
+
+    // TODO: Implement real API call for network path route
+    const url = `${this.API_BASE_URL}/api/v3/path/${pathId}/route?orgId=19091`;
+    
+    return this.http.get<any[]>(url, { headers: this.getHeaders() })
+      .pipe(
+        map(data => this.mapApiRouteToRouteHops(data)),
+        catchError(() => this.generateMockRoute())
+      );
+  }
+
+  // Private helper methods for mock data generation
+  private generateMockMetrics(timeRange: string): Observable<NetworkPathMetrics[]> {
+    const now = new Date();
+    const timeRangeHours = this.getTimeRangeHours(timeRange);
+    const intervalMinutes = this.getIntervalMinutes(timeRangeHours);
+    const metrics: NetworkPathMetrics[] = [];
+    
+    for (let i = 0; i < timeRangeHours * (60 / intervalMinutes); i++) {
+      const timestamp = new Date(now.getTime() - (i * intervalMinutes * 60 * 1000));
+      metrics.unshift({
+        timestamp: timestamp.toISOString(),
+        capacity: this.generateMetricValue(800, 1200, 50),
+        dataLoss: this.generateMetricValue(0, 2, 0.1),
+        dataJitter: this.generateMetricValue(0.5, 5, 0.2),
+        latency: this.generateMetricValue(10, 50, 2),
+        roundTripTime: this.generateMetricValue(20, 100, 5),
+        voiceLoss: this.generateMetricValue(0, 1, 0.05),
+        voiceJitter: this.generateMetricValue(0.1, 2, 0.1),
+        mos: this.generateMetricValue(3.5, 4.5, 0.1)
+      });
+    }
+    
+    return of(metrics);
+  }
+
+  private generateMockEvents(): Observable<NetworkEvent[]> {
+    const events: NetworkEvent[] = [
+      {
+        timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+        type: 'Alert Condition',
+        severity: 'critical',
+        description: 'Connectivity has been lost (Could not connect to target)',
+        details: 'Network path test-mp <> gmt.pm.appneta.com failed connectivity check'
+      },
+      {
+        timestamp: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(),
+        type: 'Alert Condition',
+        severity: 'warning',
+        description: 'Connectivity has been restored',
+        details: 'Network path connectivity restored after 15 minutes of downtime'
+      },
+      {
+        timestamp: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(),
+        type: 'Route Change',
+        severity: 'info',
+        description: 'Network route has changed',
+        details: 'Route changed from 10 hops to 12 hops via different ISP backbone'
+      },
+      {
+        timestamp: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString(),
+        type: 'Performance',
+        severity: 'warning',
+        description: 'High latency detected',
+        details: 'Average latency increased to 85ms, exceeding threshold of 50ms'
+      }
+    ];
+    
+    return of(events);
+  }
+
+  private generateMockRoute(): Observable<RouteHop[]> {
+    const hops: RouteHop[] = [
+      { hopNumber: 1, ipAddress: '192.168.1.1', hostname: 'gateway.local', latency: 1, packetLoss: 0, responseTime: 1 },
+      { hopNumber: 2, ipAddress: '10.0.0.1', hostname: 'isp-router-1.example.com', latency: 5, packetLoss: 0, responseTime: 5 },
+      { hopNumber: 3, ipAddress: '203.0.113.1', hostname: 'backbone-1.isp.com', latency: 15, packetLoss: 0, responseTime: 15 },
+      { hopNumber: 4, ipAddress: '198.51.100.1', hostname: 'backbone-2.isp.com', latency: 25, packetLoss: 0, responseTime: 25 },
+      { hopNumber: 5, ipAddress: '203.0.113.50', hostname: 'edge-router.target.com', latency: 35, packetLoss: 0, responseTime: 35 }
+    ];
+    
+    return of(hops);
+  }
+
+  private generateMetricValue(min: number, max: number, variance: number): number {
+    const base = min + Math.random() * (max - min);
+    const variation = (Math.random() - 0.5) * variance * 2;
+    return Math.max(min, Math.min(max, base + variation));
+  }
+
+  private getTimeRangeHours(range: string): number {
+    switch (range) {
+      case '1h': return 1;
+      case '4h': return 4;
+      case '1d': return 24;
+      case '7d': return 168;
+      case '30d': return 720;
+      default: return 24;
+    }
+  }
+
+  private getIntervalMinutes(hours: number): number {
+    if (hours <= 4) return 1;
+    if (hours <= 24) return 5;
+    if (hours <= 168) return 30;
+    return 60;
+  }
+
+  // API mapping methods (to be implemented when real API is available)
+  private mapApiMetricsToNetworkPathMetrics(data: any[]): NetworkPathMetrics[] {
+    // TODO: Implement mapping from AppNeta API response to NetworkPathMetrics
+    return data.map(item => ({
+      timestamp: item.timestamp,
+      capacity: item.capacity || 0,
+      dataLoss: item.dataLoss || 0,
+      dataJitter: item.dataJitter || 0,
+      latency: item.latency || 0,
+      roundTripTime: item.roundTripTime || 0,
+      voiceLoss: item.voiceLoss || 0,
+      voiceJitter: item.voiceJitter || 0,
+      mos: item.mos || 0
+    }));
+  }
+
+  private mapApiEventsToNetworkEvents(data: any[]): NetworkEvent[] {
+    // TODO: Implement mapping from AppNeta API response to NetworkEvent
+    return data.map(item => ({
+      timestamp: item.timestamp,
+      type: item.type || 'Alert Condition',
+      severity: item.severity || 'info',
+      description: item.description || '',
+      details: item.details
+    }));
+  }
+
+  private mapApiRouteToRouteHops(data: any[]): RouteHop[] {
+    // TODO: Implement mapping from AppNeta API response to RouteHop
+    return data.map((item, index) => ({
+      hopNumber: index + 1,
+      ipAddress: item.ipAddress || '',
+      hostname: item.hostname,
+      asn: item.asn,
+      location: item.location,
+      latency: item.latency || 0,
+      packetLoss: item.packetLoss || 0,
+      responseTime: item.responseTime || 0
+    }));
   }
 } 
