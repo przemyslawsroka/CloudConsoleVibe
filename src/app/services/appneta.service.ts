@@ -146,7 +146,7 @@ export class AppNetaService {
   }
 
   private loadNetworkPathsFromAPI(): void {
-    const url = `${this.API_BASE_URL}/api/v3/path`;
+    const url = `${this.API_BASE_URL}/api/v3/path?orgId=19091`;
     
     this.http.get<AppNetaNetworkPath[]>(url, { headers: this.getHeaders() })
       .pipe(
@@ -539,7 +539,7 @@ export class AppNetaService {
       return of(true);
     }
 
-    const url = `${this.API_BASE_URL}/api/v3/path?limit=1`;
+    const url = `${this.API_BASE_URL}/api/v3/path?orgId=19091&limit=1`;
     
     return this.http.get(url, { headers: this.getHeaders() })
       .pipe(
