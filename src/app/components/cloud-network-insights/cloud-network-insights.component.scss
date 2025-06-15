@@ -954,4 +954,171 @@
     background-color: var(--surface-color);
     color: var(--text-color);
   }
+}
+
+/* Monitoring Policies Tab Styles */
+.policies-summary {
+  background: var(--surface-color);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 24px;
+}
+
+.table-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 0;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.group-controls, .sort-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.group-label, .sort-label {
+  font-weight: 500;
+  color: var(--text-secondary-color);
+  white-space: nowrap;
+}
+
+.view-controls {
+  margin-left: auto;
+}
+
+.monitoring-policies-table {
+  width: 100%;
+  background: var(--surface-color);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--border-color);
+
+  .mat-mdc-row:hover {
+    background-color: var(--hover-color) !important;
+  }
+
+  .mat-mdc-header-row {
+    background-color: var(--background-alt-color);
+  }
+
+  .mat-mdc-header-cell {
+    color: var(--text-secondary-color);
+    font-weight: 500;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .mat-mdc-cell {
+    color: var(--text-color);
+    border-bottom: 1px solid var(--border-light-color);
+  }
+}
+
+.policy-link {
+  color: #1a73e8;
+  text-decoration: none;
+  font-weight: 500;
+  
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+/* Workflow Type Chips */
+.type-network {
+  background-color: #e3f2fd;
+  color: #1976d2;
+  
+  mat-icon {
+    color: #1976d2;
+  }
+}
+
+.type-web {
+  background-color: #f3e5f5;
+  color: #7b1fa2;
+  
+  mat-icon {
+    color: #7b1fa2;
+  }
+}
+
+.type-infrastructure {
+  background-color: #fff3e0;
+  color: #f57c00;
+  
+  mat-icon {
+    color: #f57c00;
+  }
+}
+
+/* Status Chips */
+.success {
+  background-color: #e8f5e8;
+  color: #2e7d32;
+  
+  mat-icon {
+    color: #2e7d32;
+  }
+}
+
+.disabled {
+  background-color: #f5f5f5;
+  color: #757575;
+  
+  mat-icon {
+    color: #757575;
+  }
+}
+
+/* Dark mode adjustments */
+[data-theme="dark"] {
+  .type-network {
+    background-color: rgba(33, 150, 243, 0.2);
+    color: #64b5f6;
+    
+    mat-icon {
+      color: #64b5f6;
+    }
+  }
+
+  .type-web {
+    background-color: rgba(156, 39, 176, 0.2);
+    color: #ba68c8;
+    
+    mat-icon {
+      color: #ba68c8;
+    }
+  }
+
+  .type-infrastructure {
+    background-color: rgba(245, 124, 0, 0.2);
+    color: #ffb74d;
+    
+    mat-icon {
+      color: #ffb74d;
+    }
+  }
+
+  .success {
+    background-color: rgba(76, 175, 80, 0.2);
+    color: #81c784;
+    
+    mat-icon {
+      color: #81c784;
+    }
+  }
+
+  .disabled {
+    background-color: rgba(117, 117, 117, 0.2);
+    color: #bdbdbd;
+    
+    mat-icon {
+      color: #bdbdbd;
+    }
+  }
 } 

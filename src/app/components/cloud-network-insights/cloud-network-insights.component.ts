@@ -564,12 +564,176 @@ import { CreateMonitoringPolicyDialogComponent } from './create-monitoring-polic
                     </button>
                   </mat-card-actions>
                 </mat-card>
-              </div>
-            </div>
-          </mat-tab>
-        </mat-tab-group>
-      </mat-card>
-    </div>
+                             </div>
+             </div>
+           </mat-tab>
+
+           <!-- Monitoring Policies Tab -->
+           <mat-tab label="Monitoring Policies">
+             <div class="tab-content">
+               <div class="tab-header">
+                 <h3>Monitoring Policies</h3>
+                 <p>Configure and manage monitoring using monitoring policies designed to specify which networks and web applications to monitor, how to monitor them, and the Monitoring Points to use</p>
+                 <button mat-raised-button color="primary" (click)="createMonitoringPolicy()">
+                   <mat-icon>add</mat-icon>
+                   Add Monitoring
+                 </button>
+               </div>
+
+               <div class="filter-section">
+                 <mat-form-field appearance="outline">
+                   <mat-label>Filter by tag or keyword</mat-label>
+                   <input matInput (keyup)="applyMonitoringPolicyFilter($event)" placeholder="Filter monitoring policies">
+                   <mat-icon matSuffix>filter_list</mat-icon>
+                 </mat-form-field>
+               </div>
+
+               <div class="policies-summary">
+                 <div class="summary-stats">
+                   <div class="stat-item">
+                     <span class="stat-value">{{ filteredMonitoringPolicies.length }}</span>
+                     <span class="stat-label">Policy Groups</span>
+                   </div>
+                   <div class="stat-item">
+                     <span class="stat-value">{{ getEnabledPoliciesCount() }}</span>
+                     <span class="stat-label">Enabled</span>
+                   </div>
+                   <div class="stat-item">
+                     <span class="stat-value">{{ getTotalPoliciesCount() }}</span>
+                     <span class="stat-label">Total Policies</span>
+                   </div>
+                   <div class="stat-item">
+                     <span class="stat-value">{{ getEnabledPoliciesCount() }}</span>
+                     <span class="stat-label">Enabled</span>
+                   </div>
+                 </div>
+               </div>
+
+               <div class="table-controls">
+                 <div class="group-controls">
+                   <span class="group-label">Group By:</span>
+                   <mat-select [(value)]="policyGroupBy" (selectionChange)="onPolicyGroupByChange($event)">
+                     <mat-option value="policyGroup">Monitoring Policy Group</mat-option>
+                     <mat-option value="type">Workflow Type</mat-option>
+                     <mat-option value="none">None</mat-option>
+                   </mat-select>
+                 </div>
+                 <div class="sort-controls">
+                   <span class="sort-label">Sort By:</span>
+                   <mat-select [(value)]="policySortBy" (selectionChange)="onPolicySortByChange($event)">
+                     <mat-option value="name">Name</mat-option>
+                     <mat-option value="type">Type</mat-option>
+                     <mat-option value="created">Created</mat-option>
+                     <mat-option value="updated">Last Updated</mat-option>
+                   </mat-select>
+                 </div>
+                 <div class="view-controls">
+                   <button mat-button>Columns</button>
+                 </div>
+               </div>
+
+               <div class="table-container">
+                 <table mat-table [dataSource]="filteredMonitoringPolicies" class="monitoring-policies-table">
+                   <ng-container matColumnDef="status">
+                     <th mat-header-cell *matHeaderCellDef>Status</th>
+                     <td mat-cell *matCellDef="let policy">
+                       <mat-chip-set>
+                         <mat-chip [ngClass]="policy.enabled ? 'success' : 'disabled'" selected>
+                           <mat-icon matChipAvatar>{{ policy.enabled ? 'check_circle' : 'pause_circle' }}</mat-icon>
+                           {{ policy.enabled ? 'Enabled' : 'Disabled' }}
+                         </mat-chip>
+                       </mat-chip-set>
+                     </td>
+                   </ng-container>
+
+                   <ng-container matColumnDef="name">
+                     <th mat-header-cell *matHeaderCellDef>Name</th>
+                     <td mat-cell *matCellDef="let policy">
+                       <a href="#" class="policy-link" (click)="viewPolicyDetails(policy)">{{ policy.name }}</a>
+                     </td>
+                   </ng-container>
+
+                   <ng-container matColumnDef="policyGroup">
+                     <th mat-header-cell *matHeaderCellDef>Policy Group</th>
+                     <td mat-cell *matCellDef="let policy">{{ policy.policyGroup || 'Default' }}</td>
+                   </ng-container>
+
+                   <ng-container matColumnDef="target">
+                     <th mat-header-cell *matHeaderCellDef>Target</th>
+                     <td mat-cell *matCellDef="let policy">{{ policy.targets?.[0] || 'Not Set' }}</td>
+                   </ng-container>
+
+                   <ng-container matColumnDef="workflowType">
+                     <th mat-header-cell *matHeaderCellDef>Workflow Type</th>
+                     <td mat-cell *matCellDef="let policy">
+                       <mat-chip [ngClass]="getWorkflowTypeClass(policy.type)">
+                         <mat-icon matChipAvatar>{{ getWorkflowTypeIcon(policy.type) }}</mat-icon>
+                         {{ policy.type }}
+                       </mat-chip>
+                     </td>
+                   </ng-container>
+
+                   <ng-container matColumnDef="lastUpdated">
+                     <th mat-header-cell *matHeaderCellDef>Last Updated</th>
+                     <td mat-cell *matCellDef="let policy">{{ policy.createdDate | date:'short' }}</td>
+                   </ng-container>
+
+                   <ng-container matColumnDef="created">
+                     <th mat-header-cell *matHeaderCellDef>Created</th>
+                     <td mat-cell *matCellDef="let policy">{{ policy.createdDate | date:'short' }}</td>
+                   </ng-container>
+
+                   <ng-container matColumnDef="monitoringPointCount">
+                     <th mat-header-cell *matHeaderCellDef>Monitoring Point Count</th>
+                     <td mat-cell *matCellDef="let policy">{{ getMonitoringPointCount(policy) }}</td>
+                   </ng-container>
+
+                   <ng-container matColumnDef="inPolicyPaths">
+                     <th mat-header-cell *matHeaderCellDef>In Policy Paths</th>
+                     <td mat-cell *matCellDef="let policy">{{ getInPolicyPaths(policy) }}</td>
+                   </ng-container>
+
+                   <ng-container matColumnDef="outOfPolicyPaths">
+                     <th mat-header-cell *matHeaderCellDef>Out of Policy Paths</th>
+                     <td mat-cell *matCellDef="let policy">{{ getOutOfPolicyPaths(policy) }}</td>
+                   </ng-container>
+
+                   <ng-container matColumnDef="actions">
+                     <th mat-header-cell *matHeaderCellDef></th>
+                     <td mat-cell *matCellDef="let policy">
+                       <button mat-icon-button [matMenuTriggerFor]="policyMenu">
+                         <mat-icon>more_vert</mat-icon>
+                       </button>
+                       <mat-menu #policyMenu="matMenu">
+                         <button mat-menu-item (click)="viewPolicyDetails(policy)">
+                           <mat-icon>visibility</mat-icon>
+                           View Details
+                         </button>
+                         <button mat-menu-item (click)="editPolicy(policy)">
+                           <mat-icon>edit</mat-icon>
+                           Edit
+                         </button>
+                         <button mat-menu-item (click)="togglePolicy(policy, !policy.enabled)">
+                           <mat-icon>{{ policy.enabled ? 'pause' : 'play_arrow' }}</mat-icon>
+                           {{ policy.enabled ? 'Disable' : 'Enable' }}
+                         </button>
+                         <button mat-menu-item (click)="deletePolicy(policy)">
+                           <mat-icon>delete</mat-icon>
+                           Delete
+                         </button>
+                       </mat-menu>
+                     </td>
+                   </ng-container>
+
+                   <tr mat-header-row *matHeaderRowDef="monitoringPolicyColumns"></tr>
+                   <tr mat-row *matRowDef="let row; columns: monitoringPolicyColumns;"></tr>
+                 </table>
+               </div>
+             </div>
+           </mat-tab>
+         </mat-tab-group>
+       </mat-card>
+     </div>
   `,
   styleUrls: ['./cloud-network-insights.component.scss']
 })
@@ -586,6 +750,7 @@ export class CloudNetworkInsightsComponent implements OnInit, OnDestroy {
   // Filtered data for tables
   filteredNetworkPaths: NetworkPath[] = [];
   filteredWebPaths: WebPath[] = [];
+  filteredMonitoringPolicies: MonitoringPolicy[] = [];
   
   // UI state
   selectedTabIndex = 0;
@@ -595,10 +760,15 @@ export class CloudNetworkInsightsComponent implements OnInit, OnDestroy {
   isConnected = false;
   connectionTesting = false;
   
+  // Policy controls
+  policyGroupBy = 'policyGroup';
+  policySortBy = 'name';
+  
   // Table column definitions
   monitoringPointColumns = ['status', 'name', 'type', 'ipAddress', 'version', 'lastSeen', 'actions'];
   networkPathColumns = ['status', 'name', 'monitoringPoint', 'target', 'metrics', 'actions'];
   webPathColumns = ['status', 'name', 'url', 'monitoringPoint', 'performance', 'actions'];
+  monitoringPolicyColumns = ['status', 'name', 'policyGroup', 'target', 'workflowType', 'lastUpdated', 'created', 'monitoringPointCount', 'inPolicyPaths', 'outOfPolicyPaths', 'actions'];
 
   constructor(
     private appNetaService: AppNetaService,
@@ -645,6 +815,7 @@ export class CloudNetworkInsightsComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe(policies => {
         this.monitoringPolicies = policies;
+        this.filteredMonitoringPolicies = policies;
       });
 
     // Load summary
@@ -710,6 +881,15 @@ export class CloudNetworkInsightsComponent implements OnInit, OnDestroy {
     this.filteredWebPaths = this.webPaths.filter(path =>
       path.name.toLowerCase().includes(filterValue) ||
       path.url.toLowerCase().includes(filterValue)
+    );
+  }
+
+  applyMonitoringPolicyFilter(event: Event): void {
+    const filterValue = (event.target as HTMLInputElement).value.toLowerCase();
+    this.filteredMonitoringPolicies = this.monitoringPolicies.filter(policy =>
+      policy.name.toLowerCase().includes(filterValue) ||
+      policy.type.toLowerCase().includes(filterValue) ||
+      (policy.targets && policy.targets.some(target => target.toLowerCase().includes(filterValue)))
     );
   }
 
@@ -865,5 +1045,93 @@ export class CloudNetworkInsightsComponent implements OnInit, OnDestroy {
 
   viewDocumentation(): void {
     window.open('https://docs.appneta.com', '_blank');
+  }
+
+  // Monitoring Policies tab methods
+  getEnabledPoliciesCount(): number {
+    return this.filteredMonitoringPolicies.filter(policy => policy.enabled).length;
+  }
+
+  getTotalPoliciesCount(): number {
+    return this.filteredMonitoringPolicies.length;
+  }
+
+  getWorkflowTypeClass(type: string): string {
+    switch (type.toLowerCase()) {
+      case 'network': return 'type-network';
+      case 'web': return 'type-web';
+      case 'infrastructure': return 'type-infrastructure';
+      default: return '';
+    }
+  }
+
+  getWorkflowTypeIcon(type: string): string {
+    switch (type.toLowerCase()) {
+      case 'network': return 'router';
+      case 'web': return 'web';
+      case 'infrastructure': return 'dns';
+      default: return 'policy';
+    }
+  }
+
+  getMonitoringPointCount(policy: MonitoringPolicy): number {
+    // Generate consistent pseudo-random number based on policy ID
+    return this.simpleHash(policy.id) % 5 + 1;
+  }
+
+  getInPolicyPaths(policy: MonitoringPolicy): number {
+    // Generate consistent pseudo-random number based on policy ID
+    return this.simpleHash(policy.id) % 10 + 5;
+  }
+
+  getOutOfPolicyPaths(policy: MonitoringPolicy): number {
+    // Generate consistent pseudo-random number based on policy ID
+    return this.simpleHash(policy.id) % 3;
+  }
+
+  private simpleHash(str: string): number {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      const char = str.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash; // Convert to 32-bit integer
+    }
+    return Math.abs(hash);
+  }
+
+  onPolicyGroupByChange(event: any): void {
+    this.policyGroupBy = event.value;
+    this.sortPolicies();
+  }
+
+  onPolicySortByChange(event: any): void {
+    this.policySortBy = event.value;
+    this.sortPolicies();
+  }
+
+  private sortPolicies(): void {
+    this.filteredMonitoringPolicies.sort((a, b) => {
+      switch (this.policySortBy) {
+        case 'name':
+          return a.name.localeCompare(b.name);
+        case 'type':
+          return a.type.localeCompare(b.type);
+        case 'created':
+          return new Date(b.createdDate).getTime() - new Date(a.createdDate).getTime();
+        case 'updated':
+          return new Date(b.createdDate).getTime() - new Date(a.createdDate).getTime();
+        default:
+          return 0;
+      }
+    });
+  }
+
+  viewPolicyDetails(policy: MonitoringPolicy): void {
+    console.log('Viewing policy details:', policy);
+  }
+
+  deletePolicy(policy: MonitoringPolicy): void {
+    console.log('Deleting policy:', policy);
+    // Implement delete logic here
   }
 } 

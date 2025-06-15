@@ -1,4 +1,134 @@
 // AppNeta API v3 Response Interfaces
+
+export interface AppNetaMonitoringPolicy {
+  id: string;
+  name: string;
+  enabled: boolean;
+  type: 'Network' | 'Web' | 'Infrastructure';
+  policyGroup: string;
+  targets: string[];
+  createdDate: Date;
+  networkMonitoring: {
+    enabled: boolean;
+    frequency: number;
+    targets: Array<{
+      id: string;
+      address: string;
+      type: string;
+    }>;
+    protocols: {
+      icmp: boolean;
+      tcp: boolean;
+      udp: boolean;
+    };
+    thresholds: {
+      latency: number;
+      packetLoss: number;
+      jitter: number;
+    };
+  };
+  browserMonitoring: {
+    enabled: boolean;
+    frequency: number;
+    targets: Array<{
+      id: string;
+      url: string;
+      name: string;
+      steps: Array<{
+        action: string;
+        selector: string;
+        value?: string;
+      }>;
+    }>;
+    browserType: string;
+    location: string;
+    thresholds: {
+      responseTime: number;
+      availability: number;
+      errorRate: number;
+    };
+  };
+  httpMonitoring: {
+    enabled: boolean;
+    frequency: number;
+    targets: Array<{
+      id: string;
+      url: string;
+      method: string;
+      headers: Record<string, string>;
+      body?: string;
+    }>;
+    thresholds: {
+      responseTime: number;
+      availability: number;
+      statusCodes: number[];
+    };
+  };
+  targetLocation: {
+    id: number;
+    formattedAddress: string;
+    locality: string;
+    adminAreaLevelOne: string;
+    adminAreaLevelTwo: string;
+    country: string;
+    lat: number;
+    lng: number;
+    postalCode: string;
+    streetNumber: string;
+    route: string;
+    countryShortName: string;
+    region: string;
+  };
+  monitoringPointRules: Array<{
+    id: string;
+    name: string;
+    criteria: {
+      location?: string;
+      type?: string;
+      tags?: string[];
+    };
+    priority: number;
+    enabled: boolean;
+  }>;
+  alertingRules: Array<{
+    id: string;
+    name: string;
+    condition: string;
+    threshold: number;
+    duration: number;
+    severity: 'Critical' | 'Warning' | 'Info';
+    enabled: boolean;
+    notifications: Array<{
+      type: 'email' | 'webhook' | 'sms';
+      target: string;
+      enabled: boolean;
+    }>;
+  }>;
+  schedules: Array<{
+    id: string;
+    name: string;
+    timeZone: string;
+    periods: Array<{
+      start: string;
+      end: string;
+      days: string[];
+    }>;
+    enabled: boolean;
+  }>;
+  tags: Array<{
+    category: string;
+    value: string;
+    resourceType: string;
+    orgId: number;
+  }>;
+  metadata: {
+    createdBy: string;
+    lastModifiedBy: string;
+    lastModifiedDate: Date;
+    version: number;
+  };
+}
+
 export interface AppNetaNetworkPath {
   sourceAppliance: string;
   target: string;
@@ -89,5 +219,22 @@ export function mapAppNetaPathToNetworkPath(apiPath: AppNetaNetworkPath): import
     latency: undefined,
     packetLoss: undefined,
     jitter: undefined
+  };
+}
+
+export function mapAppNetaMonitoringPolicyToMonitoringPolicy(apiPolicy: AppNetaMonitoringPolicy): import('../services/appneta.service').MonitoringPolicy {
+  return {
+    id: apiPolicy.id,
+    name: apiPolicy.name,
+    type: apiPolicy.type,
+    enabled: apiPolicy.enabled,
+    targets: apiPolicy.targets,
+    thresholds: {
+      latency: apiPolicy.networkMonitoring?.thresholds?.latency,
+      packetLoss: apiPolicy.networkMonitoring?.thresholds?.packetLoss,
+      availability: apiPolicy.httpMonitoring?.thresholds?.availability || apiPolicy.browserMonitoring?.thresholds?.availability
+    },
+    alertingEnabled: apiPolicy.alertingRules?.some(rule => rule.enabled) || false,
+    createdDate: apiPolicy.createdDate
   };
 } 

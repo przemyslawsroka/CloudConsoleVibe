@@ -4,7 +4,8 @@ import { Observable, BehaviorSubject, throwError } from 'rxjs';
 import { map, catchError, retry } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { AppNetaNetworkPath, mapAppNetaPathToNetworkPath } from '../interfaces/appneta-api.interface';
+import { AppNetaNetworkPath, mapAppNetaPathToNetworkPath, AppNetaMonitoringPolicy, mapAppNetaMonitoringPolicyToMonitoringPolicy } from '../interfaces/appneta-api.interface';
+import { AuthService } from './auth.service';
 
 export interface NetworkPath {
   id: string;
@@ -79,7 +80,6 @@ export class AppNetaService {
     ? environment.appneta.apiBaseUrl 
     : '/appneta-api'; // Use proxy in development
   private readonly API_KEY = environment.appneta.apiKey;
-  private readonly DEMO_MODE = environment.appneta.demoMode;
   
   private networkPathsSubject = new BehaviorSubject<NetworkPath[]>([]);
   private webPathsSubject = new BehaviorSubject<WebPath[]>([]);
@@ -91,11 +91,11 @@ export class AppNetaService {
   public monitoringPoints$ = this.monitoringPointsSubject.asObservable();
   public monitoringPolicies$ = this.monitoringPoliciesSubject.asObservable();
 
-  constructor(private http: HttpClient) {
+  constructor(private http: HttpClient, private authService: AuthService) {
     // Check if we have a valid API key, if not, force demo mode
     const hasValidApiKey = this.API_KEY && this.API_KEY !== 'your-appneta-api-key-here' && this.API_KEY.length > 10;
     
-    if (this.DEMO_MODE || !hasValidApiKey) {
+    if (this.authService.isDemoMode() || !hasValidApiKey) {
       if (!hasValidApiKey) {
         console.log('AppNeta Service: No valid API key found, running in DEMO MODE');
       } else {
@@ -130,7 +130,7 @@ export class AppNetaService {
     console.error('AppNeta API Error:', errorMessage);
     
     // In case of API error, fall back to demo mode
-    if (!this.DEMO_MODE) {
+    if (!this.authService.isDemoMode()) {
       console.warn('Falling back to demo mode due to API error');
       this.initializeMockData();
     }
@@ -140,6 +140,7 @@ export class AppNetaService {
 
   private loadRealData(): void {
     this.loadNetworkPathsFromAPI();
+    this.loadMonitoringPoliciesFromAPI();
     // TODO: Add other data loading methods when we have more API endpoints
   }
 
@@ -159,6 +160,26 @@ export class AppNetaService {
         },
         error: (error) => {
           console.error('Failed to load network paths:', error);
+        }
+      });
+  }
+
+  private loadMonitoringPoliciesFromAPI(): void {
+    const url = `${this.API_BASE_URL}/api/v3/monitoringPolicy?orgId=19091`;
+    
+    this.http.get<AppNetaMonitoringPolicy[]>(url, { headers: this.getHeaders() })
+      .pipe(
+        retry(2),
+        map(policies => policies.map(policy => mapAppNetaMonitoringPolicyToMonitoringPolicy(policy))),
+        catchError(this.handleError.bind(this))
+      )
+      .subscribe({
+        next: (monitoringPolicies) => {
+          console.log('🔧 Loaded monitoring policies from AppNeta API:', monitoringPolicies);
+          this.monitoringPoliciesSubject.next(monitoringPolicies);
+        },
+        error: (error) => {
+          console.error('❌ Failed to load monitoring policies:', error);
         }
       });
   }
@@ -337,7 +358,7 @@ export class AppNetaService {
 
   // Public API methods
   getNetworkPaths(): Observable<NetworkPath[]> {
-    if (!this.DEMO_MODE) {
+    if (!this.authService.isDemoMode()) {
       this.loadNetworkPathsFromAPI();
     }
     return this.networkPaths$;
@@ -456,7 +477,7 @@ export class AppNetaService {
   }
 
   refreshData(): void {
-    if (this.DEMO_MODE) {
+    if (this.authService.isDemoMode()) {
       console.log('Refreshing mock data...');
       this.initializeMockData();
     } else {
@@ -468,12 +489,12 @@ export class AppNetaService {
   // Method to check if we're in demo mode
   isDemoMode(): boolean {
     const hasValidApiKey = this.API_KEY && this.API_KEY !== 'your-appneta-api-key-here' && this.API_KEY.length > 10;
-    return this.DEMO_MODE || !hasValidApiKey;
+    return this.authService.isDemoMode() || !hasValidApiKey;
   }
 
   // Method to test API connectivity
   testConnection(): Observable<boolean> {
-    if (this.DEMO_MODE) {
+    if (this.authService.isDemoMode()) {
       return of(true);
     }
 
