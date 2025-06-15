@@ -166,7 +166,7 @@ export class AppNetaService {
   }
 
   private loadWebPathsFromAPI(): void {
-    const url = `${this.API_BASE_URL}/api/v3/webPaths?orgId=19091`;
+    const url = `${this.API_BASE_URL}/api/v3/webPath?orgId=19091`;
     
     this.http.get<AppNetaWebPath[]>(url, { headers: this.getHeaders() })
       .pipe(
