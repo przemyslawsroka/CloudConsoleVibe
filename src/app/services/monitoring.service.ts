@@ -356,59 +356,152 @@ export class MonitoringService {
     const variance = (min: number, max: number) => Math.random() * (max - min) + min;
     
     return [
+      // === REGIONAL CLUSTERS - HIGH INTERNAL TRAFFIC ===
+      
+      // US Central region cluster (web-tier is the regional gateway)
       {
-        sourceSubnetwork: 'default-us-central1',
-        targetSubnetwork: 'custom-us-east1',
-        totalBytes: Math.floor(variance(4000000000, 6000000000)), // 4-6GB
-        sampleCount: Math.floor(variance(20, 30)),
-        sourceNetwork: 'default',
-        targetNetwork: 'custom-vpc',
-        protocols: ['TCP', 'UDP']
-      },
-      {
-        sourceSubnetwork: 'default-us-central1',
-        targetSubnetwork: 'default-europe-west1',
-        totalBytes: Math.floor(variance(1500000000, 2500000000)), // 1.5-2.5GB
-        sampleCount: Math.floor(variance(15, 25)),
+        sourceSubnetwork: 'us-central-default',
+        targetSubnetwork: 'web-tier',
+        totalBytes: Math.floor(variance(8000000000, 12000000000)), // 8-12GB (default->web)
+        sampleCount: Math.floor(variance(60, 80)),
         sourceNetwork: 'default',
         targetNetwork: 'default',
-        protocols: ['TCP']
+        protocols: ['TCP', 'HTTP', 'HTTPS']
       },
       {
-        sourceSubnetwork: 'custom-us-east1',
-        targetSubnetwork: 'default-europe-west1',
-        totalBytes: Math.floor(variance(800000000, 1200000000)), // 800MB-1.2GB
-        sampleCount: Math.floor(variance(10, 18)),
-        sourceNetwork: 'custom-vpc',
-        targetNetwork: 'default',
-        protocols: ['TCP', 'ICMP']
-      },
-      {
-        sourceSubnetwork: 'private-us-west2',
-        targetSubnetwork: 'default-us-central1',
-        totalBytes: Math.floor(variance(400000000, 700000000)), // 400-700MB
-        sampleCount: Math.floor(variance(8, 15)),
-        sourceNetwork: 'private-vpc',
-        targetNetwork: 'default',
-        protocols: ['TCP']
-      },
-      {
-        sourceSubnetwork: 'default-europe-west1',
-        targetSubnetwork: 'custom-us-east1',
-        totalBytes: Math.floor(variance(200000000, 400000000)), // 200-400MB
-        sampleCount: Math.floor(variance(5, 12)),
+        sourceSubnetwork: 'web-tier',
+        targetSubnetwork: 'app-tier',
+        totalBytes: Math.floor(variance(15000000000, 20000000000)), // 15-20GB (web->app)
+        sampleCount: Math.floor(variance(80, 100)),
         sourceNetwork: 'default',
-        targetNetwork: 'custom-vpc',
-        protocols: ['UDP']
+        targetNetwork: 'default',
+        protocols: ['TCP', 'HTTP']
       },
       {
-        sourceSubnetwork: 'custom-us-east1',
-        targetSubnetwork: 'private-us-west2',
-        totalBytes: Math.floor(variance(100000000, 300000000)), // 100-300MB
-        sampleCount: Math.floor(variance(3, 10)),
-        sourceNetwork: 'custom-vpc',
-        targetNetwork: 'private-vpc',
-        protocols: ['TCP', 'UDP']
+        sourceSubnetwork: 'app-tier',
+        targetSubnetwork: 'db-tier',
+        totalBytes: Math.floor(variance(12000000000, 18000000000)), // 12-18GB (app->db)
+        sampleCount: Math.floor(variance(70, 90)),
+        sourceNetwork: 'default',
+        targetNetwork: 'default',
+        protocols: ['TCP', 'MySQL', 'PostgreSQL']
+      },
+
+      // Europe West region cluster (api-backend is the regional gateway)
+      {
+        sourceSubnetwork: 'europe-default',
+        targetSubnetwork: 'web-frontend',
+        totalBytes: Math.floor(variance(6000000000, 9000000000)), // 6-9GB (default->frontend)
+        sampleCount: Math.floor(variance(45, 65)),
+        sourceNetwork: 'default',
+        targetNetwork: 'default',
+        protocols: ['TCP', 'HTTP', 'HTTPS']
+      },
+      {
+        sourceSubnetwork: 'web-frontend',
+        targetSubnetwork: 'api-backend',
+        totalBytes: Math.floor(variance(10000000000, 15000000000)), // 10-15GB (frontend->backend)
+        sampleCount: Math.floor(variance(60, 80)),
+        sourceNetwork: 'default',
+        targetNetwork: 'default',
+        protocols: ['TCP', 'HTTP', 'HTTPS']
+      },
+      {
+        sourceSubnetwork: 'api-backend',
+        targetSubnetwork: 'cache-layer',
+        totalBytes: Math.floor(variance(8000000000, 12000000000)), // 8-12GB (backend->cache)
+        sampleCount: Math.floor(variance(50, 70)),
+        sourceNetwork: 'default',
+        targetNetwork: 'default',
+        protocols: ['TCP', 'Redis', 'Memcached']
+      },
+
+      // Asia Southeast region cluster (mobile-api is the regional gateway)
+      {
+        sourceSubnetwork: 'asia-default',
+        targetSubnetwork: 'mobile-api',
+        totalBytes: Math.floor(variance(4000000000, 7000000000)), // 4-7GB (default->mobile)
+        sampleCount: Math.floor(variance(35, 50)),
+        sourceNetwork: 'default',
+        targetNetwork: 'default',
+        protocols: ['TCP', 'HTTP', 'WebSocket']
+      },
+      {
+        sourceSubnetwork: 'mobile-api',
+        targetSubnetwork: 'analytics',
+        totalBytes: Math.floor(variance(7000000000, 11000000000)), // 7-11GB (mobile->analytics)
+        sampleCount: Math.floor(variance(45, 65)),
+        sourceNetwork: 'default',
+        targetNetwork: 'default',
+        protocols: ['TCP', 'HTTP', 'WebSocket']
+      },
+      {
+        sourceSubnetwork: 'analytics',
+        targetSubnetwork: 'storage-tier',
+        totalBytes: Math.floor(variance(9000000000, 14000000000)), // 9-14GB (analytics->storage)
+        sampleCount: Math.floor(variance(55, 75)),
+        sourceNetwork: 'default',
+        targetNetwork: 'default',
+        protocols: ['TCP', 'gRPC', 'BigQuery']
+      },
+
+      // === INTER-REGION CONNECTIONS - ONLY THROUGH GATEWAY SUBNETS ===
+      
+      // US Central web-tier (gateway) <-> Europe West api-backend (gateway)
+      {
+        sourceSubnetwork: 'web-tier',
+        targetSubnetwork: 'api-backend',
+        totalBytes: Math.floor(variance(3000000000, 5000000000)), // 3-5GB cross-region
+        sampleCount: Math.floor(variance(25, 40)),
+        sourceNetwork: 'default',
+        targetNetwork: 'default',
+        protocols: ['TCP', 'HTTPS', 'API']
+      },
+
+      // Europe West api-backend (gateway) <-> Asia Southeast mobile-api (gateway)
+      {
+        sourceSubnetwork: 'api-backend',
+        targetSubnetwork: 'mobile-api',
+        totalBytes: Math.floor(variance(2500000000, 4000000000)), // 2.5-4GB cross-region
+        sampleCount: Math.floor(variance(20, 35)),
+        sourceNetwork: 'default',
+        targetNetwork: 'default',
+        protocols: ['TCP', 'HTTPS', 'API']
+      },
+
+      // US Central web-tier (gateway) <-> Asia Southeast mobile-api (gateway)
+      {
+        sourceSubnetwork: 'web-tier',
+        targetSubnetwork: 'mobile-api',
+        totalBytes: Math.floor(variance(1500000000, 3000000000)), // 1.5-3GB cross-region
+        sampleCount: Math.floor(variance(15, 30)),
+        sourceNetwork: 'default',
+        targetNetwork: 'default',
+        protocols: ['TCP', 'HTTPS', 'CDN']
+      },
+
+      // === ADDITIONAL REGIONAL CONNECTIONS FOR BETTER CLUSTERING ===
+      
+      // Some cache layer to database backup connection
+      {
+        sourceSubnetwork: 'cache-layer',
+        targetSubnetwork: 'db-tier',
+        totalBytes: Math.floor(variance(800000000, 1500000000)), // 800MB-1.5GB (cache fallback)
+        sampleCount: Math.floor(variance(8, 18)),
+        sourceNetwork: 'default',
+        targetNetwork: 'default',
+        protocols: ['TCP', 'MySQL']
+      },
+
+      // Analytics to storage backup in different region
+      {
+        sourceSubnetwork: 'analytics',
+        targetSubnetwork: 'cache-layer',
+        totalBytes: Math.floor(variance(600000000, 1200000000)), // 600MB-1.2GB (analytics->cache)
+        sampleCount: Math.floor(variance(6, 15)),
+        sourceNetwork: 'default',
+        targetNetwork: 'default',
+        protocols: ['TCP', 'gRPC']
       }
     ];
   }

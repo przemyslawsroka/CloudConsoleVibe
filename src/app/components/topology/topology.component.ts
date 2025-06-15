@@ -1297,25 +1297,28 @@ export class TopologyComponent implements OnInit, AfterViewInit {
   }
 
   private getNodeColor(node: any): string {
-    // Color nodes by region
+    // Color nodes by region - distinct colors for each of the 3 main regions
     const regionColors: { [key: string]: string } = {
-      'us-central1': '#1976d2',
-      'us-east1': '#388e3c',
-      'us-west1': '#f57c00',
-      'us-west2': '#7b1fa2',
-      'europe-west1': '#d32f2f',
-      'europe-west4': '#303f9f',
-      'asia-east1': '#689f38',
-      'asia-southeast1': '#0288d1'
+      'us-central1': '#1976d2',      // Blue - US region
+      'us-east1': '#1565c0',         // Darker blue
+      'us-west1': '#0d47a1',         // Navy blue
+      'us-west2': '#0277bd',         // Light blue
+      'europe-west1': '#d32f2f',     // Red - Europe region
+      'europe-west4': '#c62828',     // Darker red
+      'europe-north1': '#b71c1c',    // Dark red
+      'asia-southeast1': '#388e3c',  // Green - Asia region
+      'asia-east1': '#2e7d32',       // Darker green
+      'asia-northeast1': '#1b5e20'   // Dark green
     };
     
     return regionColors[node.region] || '#757575';
   }
 
   private getNodeGroup(subnet: SubnetDetails): number {
-    // Group by region for layout
-    const regions = ['us-central1', 'us-east1', 'us-west1', 'us-west2', 
-                    'europe-west1', 'europe-west4', 'asia-east1', 'asia-southeast1'];
+    // Group by region for layout - prioritize the 3 main regions used in demo
+    const regions = ['us-central1', 'europe-west1', 'asia-southeast1', 
+                    'us-east1', 'us-west1', 'us-west2', 
+                    'europe-west4', 'europe-north1', 'asia-east1', 'asia-northeast1'];
     const index = regions.indexOf(subnet.region);
     return index >= 0 ? index + 1 : 1;
   }
@@ -1336,13 +1339,14 @@ export class TopologyComponent implements OnInit, AfterViewInit {
 
   private getLinkColor(link: any): string {
     if (link.type === 'traffic') {
-      // Color by traffic volume
-      if (link.traffic > 1000000000) return '#d32f2f'; // Red for > 1GB
-      if (link.traffic > 100000000) return '#ff9800'; // Orange for > 100MB
-      if (link.traffic > 10000000) return '#ffc107'; // Yellow for > 10MB
-      return '#4caf50'; // Green for smaller amounts
+      // Color by traffic volume with more appealing colors
+      if (link.traffic > 10000000000) return '#2196f3'; // Blue for > 10GB (high-volume internal)
+      if (link.traffic > 5000000000) return '#00bcd4'; // Cyan for > 5GB (medium-high)
+      if (link.traffic > 1000000000) return '#4caf50'; // Green for > 1GB (medium)
+      if (link.traffic > 100000000) return '#ff9800'; // Orange for > 100MB (low-medium)
+      return '#9c27b0'; // Purple for smaller amounts
     }
-    return '#e0e0e0'; // Gray for regional connections
+    return '#757575'; // Gray for regional connections
   }
 
   private getLinkWidth(link: any): number {

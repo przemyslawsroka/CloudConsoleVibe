@@ -168,9 +168,21 @@ export class VpcService {
         autoCreateSubnetworks: true,
         creationTimestamp: '2024-01-01T00:00:00.000-08:00',
         subnetworks: [
-          'https://www.googleapis.com/compute/v1/projects/demo-project/regions/us-central1/subnetworks/default',
-          'https://www.googleapis.com/compute/v1/projects/demo-project/regions/us-east1/subnetworks/default',
-          'https://www.googleapis.com/compute/v1/projects/demo-project/regions/europe-west1/subnetworks/default'
+          // US Central region subnets
+          'https://www.googleapis.com/compute/v1/projects/demo-project/regions/us-central1/subnetworks/us-central-default',
+          'https://www.googleapis.com/compute/v1/projects/demo-project/regions/us-central1/subnetworks/web-tier',
+          'https://www.googleapis.com/compute/v1/projects/demo-project/regions/us-central1/subnetworks/app-tier',
+          'https://www.googleapis.com/compute/v1/projects/demo-project/regions/us-central1/subnetworks/db-tier',
+          // Europe West region subnets
+          'https://www.googleapis.com/compute/v1/projects/demo-project/regions/europe-west1/subnetworks/europe-default',
+          'https://www.googleapis.com/compute/v1/projects/demo-project/regions/europe-west1/subnetworks/web-frontend',
+          'https://www.googleapis.com/compute/v1/projects/demo-project/regions/europe-west1/subnetworks/api-backend',
+          'https://www.googleapis.com/compute/v1/projects/demo-project/regions/europe-west1/subnetworks/cache-layer',
+          // Asia Southeast region subnets
+          'https://www.googleapis.com/compute/v1/projects/demo-project/regions/asia-southeast1/subnetworks/asia-default',
+          'https://www.googleapis.com/compute/v1/projects/demo-project/regions/asia-southeast1/subnetworks/mobile-api',
+          'https://www.googleapis.com/compute/v1/projects/demo-project/regions/asia-southeast1/subnetworks/analytics',
+          'https://www.googleapis.com/compute/v1/projects/demo-project/regions/asia-southeast1/subnetworks/storage-tier'
         ],
         routingConfig: {
           routingMode: 'REGIONAL'
@@ -180,115 +192,97 @@ export class VpcService {
         enableUlaInternalIpv6: false,
         bestPathSelectionMode: 'LEGACY',
         subnetDetails: [
+          // US Central region subnets
           {
-            name: 'default',
+            name: 'us-central-default',
             region: 'us-central1',
             ipCidrRange: '10.128.0.0/20',
             gatewayAddress: '10.128.0.1',
-            selfLink: 'https://www.googleapis.com/compute/v1/projects/demo-project/regions/us-central1/subnetworks/default'
+            selfLink: 'https://www.googleapis.com/compute/v1/projects/demo-project/regions/us-central1/subnetworks/us-central-default'
           },
           {
-            name: 'default',
-            region: 'us-east1',
-            ipCidrRange: '10.142.0.0/20',
-            gatewayAddress: '10.142.0.1',
-            selfLink: 'https://www.googleapis.com/compute/v1/projects/demo-project/regions/us-east1/subnetworks/default'
+            name: 'web-tier',
+            region: 'us-central1',
+            ipCidrRange: '10.128.16.0/24',
+            gatewayAddress: '10.128.16.1',
+            selfLink: 'https://www.googleapis.com/compute/v1/projects/demo-project/regions/us-central1/subnetworks/web-tier'
           },
           {
-            name: 'default',
+            name: 'app-tier',
+            region: 'us-central1',
+            ipCidrRange: '10.128.17.0/24',
+            gatewayAddress: '10.128.17.1',
+            selfLink: 'https://www.googleapis.com/compute/v1/projects/demo-project/regions/us-central1/subnetworks/app-tier'
+          },
+          {
+            name: 'db-tier',
+            region: 'us-central1',
+            ipCidrRange: '10.128.18.0/24',
+            gatewayAddress: '10.128.18.1',
+            selfLink: 'https://www.googleapis.com/compute/v1/projects/demo-project/regions/us-central1/subnetworks/db-tier'
+          },
+          // Europe West region subnets
+          {
+            name: 'europe-default',
             region: 'europe-west1',
             ipCidrRange: '10.132.0.0/20',
             gatewayAddress: '10.132.0.1',
-            selfLink: 'https://www.googleapis.com/compute/v1/projects/demo-project/regions/europe-west1/subnetworks/default'
-          }
-        ]
-      },
-      {
-        id: '1234567890123456789',
-        name: 'production-vpc',
-        description: 'Production environment VPC network',
-        selfLink: 'https://www.googleapis.com/compute/v1/projects/demo-project/global/networks/production-vpc',
-        autoCreateSubnetworks: false,
-        creationTimestamp: '2024-01-15T10:30:00.000-08:00',
-        subnetworks: [
-          'https://www.googleapis.com/compute/v1/projects/demo-project/regions/us-central1/subnetworks/prod-us-central1',
-          'https://www.googleapis.com/compute/v1/projects/demo-project/regions/us-east1/subnetworks/prod-us-east1'
-        ],
-        routingConfig: {
-          routingMode: 'REGIONAL'
-        },
-        networkFirewallPolicyEnforcementOrder: 'AFTER_CLASSIC_FIREWALL',
-        mtu: 1460,
-        enableUlaInternalIpv6: false,
-        bestPathSelectionMode: 'LEGACY',
-        tags: ['gcp-environment:prober', 'gcp-product:network_intelligence'],
-        subnetDetails: [
-          {
-            name: 'prod-us-central1',
-            region: 'us-central1',
-            ipCidrRange: '10.0.1.0/24',
-            gatewayAddress: '10.0.1.1',
-            selfLink: 'https://www.googleapis.com/compute/v1/projects/demo-project/regions/us-central1/subnetworks/prod-us-central1'
+            selfLink: 'https://www.googleapis.com/compute/v1/projects/demo-project/regions/europe-west1/subnetworks/europe-default'
           },
           {
-            name: 'prod-us-east1',
-            region: 'us-east1',
-            ipCidrRange: '10.0.2.0/24',
-            gatewayAddress: '10.0.2.1',
-            selfLink: 'https://www.googleapis.com/compute/v1/projects/demo-project/regions/us-east1/subnetworks/prod-us-east1'
-          }
-        ]
-      },
-      {
-        id: '2345678901234567890',
-        name: 'development-vpc',
-        description: 'Development and testing environment',
-        selfLink: 'https://www.googleapis.com/compute/v1/projects/demo-project/global/networks/development-vpc',
-        autoCreateSubnetworks: false,
-        creationTimestamp: '2024-02-01T14:20:00.000-08:00',
-        subnetworks: [
-          'https://www.googleapis.com/compute/v1/projects/demo-project/regions/us-west1/subnetworks/dev-us-west1'
-        ],
-        routingConfig: {
-          routingMode: 'REGIONAL'
-        },
-        networkFirewallPolicyEnforcementOrder: 'BEFORE_CLASSIC_FIREWALL',
-        subnetDetails: [
+            name: 'web-frontend',
+            region: 'europe-west1',
+            ipCidrRange: '10.132.16.0/24',
+            gatewayAddress: '10.132.16.1',
+            selfLink: 'https://www.googleapis.com/compute/v1/projects/demo-project/regions/europe-west1/subnetworks/web-frontend'
+          },
           {
-            name: 'dev-us-west1',
-            region: 'us-west1',
-            ipCidrRange: '10.1.0.0/16',
-            gatewayAddress: '10.1.0.1',
-            selfLink: 'https://www.googleapis.com/compute/v1/projects/demo-project/regions/us-west1/subnetworks/dev-us-west1'
-          }
-        ]
-      },
-      {
-        id: '3456789012345678901',
-        name: 'staging-vpc',
-        description: 'Staging environment for pre-production testing',
-        selfLink: 'https://www.googleapis.com/compute/v1/projects/demo-project/global/networks/staging-vpc',
-        autoCreateSubnetworks: false,
-        creationTimestamp: '2024-02-15T09:45:00.000-08:00',
-        subnetworks: [
-          'https://www.googleapis.com/compute/v1/projects/demo-project/regions/us-central1/subnetworks/staging-us-central1'
-        ],
-        routingConfig: {
-          routingMode: 'REGIONAL'
-        },
-        networkFirewallPolicyEnforcementOrder: 'AFTER_CLASSIC_FIREWALL',
-        subnetDetails: [
+            name: 'api-backend',
+            region: 'europe-west1',
+            ipCidrRange: '10.132.17.0/24',
+            gatewayAddress: '10.132.17.1',
+            selfLink: 'https://www.googleapis.com/compute/v1/projects/demo-project/regions/europe-west1/subnetworks/api-backend'
+          },
           {
-            name: 'staging-us-central1',
-            region: 'us-central1',
-            ipCidrRange: '10.2.0.0/20',
-            gatewayAddress: '10.2.0.1',
-            selfLink: 'https://www.googleapis.com/compute/v1/projects/demo-project/regions/us-central1/subnetworks/staging-us-central1'
+            name: 'cache-layer',
+            region: 'europe-west1',
+            ipCidrRange: '10.132.18.0/24',
+            gatewayAddress: '10.132.18.1',
+            selfLink: 'https://www.googleapis.com/compute/v1/projects/demo-project/regions/europe-west1/subnetworks/cache-layer'
+          },
+          // Asia Southeast region subnets
+          {
+            name: 'asia-default',
+            region: 'asia-southeast1',
+            ipCidrRange: '10.148.0.0/20',
+            gatewayAddress: '10.148.0.1',
+            selfLink: 'https://www.googleapis.com/compute/v1/projects/demo-project/regions/asia-southeast1/subnetworks/asia-default'
+          },
+          {
+            name: 'mobile-api',
+            region: 'asia-southeast1',
+            ipCidrRange: '10.148.16.0/24',
+            gatewayAddress: '10.148.16.1',
+            selfLink: 'https://www.googleapis.com/compute/v1/projects/demo-project/regions/asia-southeast1/subnetworks/mobile-api'
+          },
+          {
+            name: 'analytics',
+            region: 'asia-southeast1',
+            ipCidrRange: '10.148.17.0/24',
+            gatewayAddress: '10.148.17.1',
+            selfLink: 'https://www.googleapis.com/compute/v1/projects/demo-project/regions/asia-southeast1/subnetworks/analytics'
+          },
+          {
+            name: 'storage-tier',
+            region: 'asia-southeast1',
+            ipCidrRange: '10.148.18.0/24',
+            gatewayAddress: '10.148.18.1',
+            selfLink: 'https://www.googleapis.com/compute/v1/projects/demo-project/regions/asia-southeast1/subnetworks/storage-tier'
           }
         ]
       }
     ];
-
+    
     console.log('🎭 Serving mock VPC networks for demo');
     return of(mockNetworks);
   }
