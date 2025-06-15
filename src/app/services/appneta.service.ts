@@ -4,7 +4,7 @@ import { Observable, BehaviorSubject, throwError } from 'rxjs';
 import { map, catchError, retry } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { AppNetaNetworkPath, mapAppNetaPathToNetworkPath, AppNetaMonitoringPolicy, mapAppNetaMonitoringPolicyToMonitoringPolicy } from '../interfaces/appneta-api.interface';
+import { AppNetaNetworkPath, mapAppNetaPathToNetworkPath, AppNetaMonitoringPolicy, mapAppNetaMonitoringPolicyToMonitoringPolicy, AppNetaAppliance, mapAppNetaApplianceToMonitoringPoint } from '../interfaces/appneta-api.interface';
 import { AuthService } from './auth.service';
 
 export interface NetworkPath {
@@ -141,7 +141,8 @@ export class AppNetaService {
   private loadRealData(): void {
     this.loadNetworkPathsFromAPI();
     this.loadMonitoringPoliciesFromAPI();
-    // TODO: Add other data loading methods when we have more API endpoints
+    this.loadMonitoringPointsFromAPI();
+    // TODO: Add web paths API when available
   }
 
   private loadNetworkPathsFromAPI(): void {
@@ -180,6 +181,26 @@ export class AppNetaService {
         },
         error: (error) => {
           console.error('❌ Failed to load monitoring policies:', error);
+        }
+      });
+  }
+
+  private loadMonitoringPointsFromAPI(): void {
+    const url = `${this.API_BASE_URL}/api/v3/appliance?orgId=19091`;
+    
+    this.http.get<AppNetaAppliance[]>(url, { headers: this.getHeaders() })
+      .pipe(
+        retry(2),
+        map(appliances => appliances.map(appliance => mapAppNetaApplianceToMonitoringPoint(appliance))),
+        catchError(this.handleError.bind(this))
+      )
+      .subscribe({
+        next: (monitoringPoints) => {
+          console.log('📍 Loaded monitoring points from AppNeta API:', monitoringPoints);
+          this.monitoringPointsSubject.next(monitoringPoints);
+        },
+        error: (error) => {
+          console.error('❌ Failed to load monitoring points:', error);
         }
       });
   }

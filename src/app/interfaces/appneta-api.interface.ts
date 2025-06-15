@@ -1,5 +1,49 @@
 // AppNeta API v3 Response Interfaces
 
+export interface AppNetaAppliance {
+  id: number;
+  guid: string;
+  name: string;
+  homeOrgId: number;
+  associatedOrgIds: number[];
+  resolvedIp: string;
+  version: string;
+  os: string;
+  sysInfo: string;
+  siteId: number;
+  siteKey: string;
+  connectionTimestamp: number;
+  connectionLostTimestamp: number | null;
+  connectionStatus: string;
+  tunnelStartTime: number | null;
+  hardwareId: string;
+  hardwareAddress: string;
+  hostname: string;
+  licenseStatus: string;
+  allowAutoUpgrade: boolean;
+  timezone: string;
+  region: string | null;
+  autoRename: boolean;
+  osVerDetail: string;
+  requiresUpgrade: boolean;
+  location: {
+    id: number;
+    formattedAddress: string;
+    locality: string;
+    adminAreaLevelOne: string;
+    adminAreaLevelTwo: string;
+    country: string;
+    lat: number;
+    lng: number;
+    countryShortName: string;
+    region: string;
+  } | null;
+  load: number;
+  localNetworkInterfaces: string[];
+  enablePersonalIdentifiableInfo: boolean;
+  autoLocation: boolean;
+}
+
 export interface AppNetaMonitoringPolicy {
   id: string;
   name: string;
@@ -197,6 +241,23 @@ export interface AppNetaApiResponse<T> {
 }
 
 // Mapping functions to convert AppNeta API responses to our internal interfaces
+export function mapAppNetaApplianceToMonitoringPoint(apiAppliance: AppNetaAppliance): import('../services/appneta.service').MonitoringPoint {
+  return {
+    id: apiAppliance.id.toString(),
+    name: apiAppliance.name,
+    location: apiAppliance.location?.formattedAddress || apiAppliance.hostname || 'Unknown Location',
+    type: apiAppliance.os.includes('Container') ? 'Cloud' : 
+          apiAppliance.os.includes('virtualAppliance') ? 'Virtual' : 'Physical',
+    status: apiAppliance.connectionStatus === 'Connection Established' ? 'Online' : 
+            apiAppliance.connectionStatus === 'Connection Lost' ? 'Offline' : 'Maintenance',
+    lastSeen: apiAppliance.connectionLostTimestamp ? 
+              new Date(apiAppliance.connectionLostTimestamp) : 
+              new Date(apiAppliance.connectionTimestamp),
+    ipAddress: apiAppliance.resolvedIp,
+    version: apiAppliance.version
+  };
+}
+
 export function mapAppNetaPathToNetworkPath(apiPath: AppNetaNetworkPath): import('../services/appneta.service').NetworkPath {
   // Determine status based on disabled flag and other indicators
   let status: 'OK' | 'Failed' | 'Connectivity Loss' | 'Disabled' = 'OK';

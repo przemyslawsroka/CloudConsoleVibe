@@ -199,93 +199,6 @@ import { CreateMonitoringPolicyDialogComponent } from './create-monitoring-polic
       <mat-card class="main-content">
         <mat-tab-group [(selectedIndex)]="selectedTabIndex" (selectedTabChange)="onTabChange($event)">
           
-          <!-- Monitoring Points Tab -->
-          <mat-tab label="Monitoring Points">
-            <div class="tab-content">
-              <div class="tab-header">
-                <h3>Monitoring Points</h3>
-                <p>AppNeta monitoring appliances and software agents collecting network performance data</p>
-              </div>
-              
-              <div class="table-container">
-                <table mat-table [dataSource]="monitoringPoints" class="monitoring-points-table">
-                  <ng-container matColumnDef="status">
-                    <th mat-header-cell *matHeaderCellDef>Status</th>
-                    <td mat-cell *matCellDef="let point">
-                      <mat-chip-set>
-                        <mat-chip [ngClass]="getStatusClass(point.status)" selected>
-                          <mat-icon matChipAvatar>{{ getStatusIcon(point.status) }}</mat-icon>
-                          {{ point.status }}
-                        </mat-chip>
-                      </mat-chip-set>
-                    </td>
-                  </ng-container>
-
-                  <ng-container matColumnDef="name">
-                    <th mat-header-cell *matHeaderCellDef>Name</th>
-                    <td mat-cell *matCellDef="let point">
-                      <div class="point-info">
-                        <span class="point-name">{{ point.name }}</span>
-                        <span class="point-location">{{ point.location }}</span>
-                      </div>
-                    </td>
-                  </ng-container>
-
-                  <ng-container matColumnDef="type">
-                    <th mat-header-cell *matHeaderCellDef>Type</th>
-                    <td mat-cell *matCellDef="let point">
-                      <mat-chip [ngClass]="getTypeClass(point.type)">
-                        <mat-icon matChipAvatar>{{ getTypeIcon(point.type) }}</mat-icon>
-                        {{ point.type }}
-                      </mat-chip>
-                    </td>
-                  </ng-container>
-
-                  <ng-container matColumnDef="ipAddress">
-                    <th mat-header-cell *matHeaderCellDef>IP Address</th>
-                    <td mat-cell *matCellDef="let point">{{ point.ipAddress }}</td>
-                  </ng-container>
-
-                  <ng-container matColumnDef="version">
-                    <th mat-header-cell *matHeaderCellDef>Version</th>
-                    <td mat-cell *matCellDef="let point">{{ point.version }}</td>
-                  </ng-container>
-
-                  <ng-container matColumnDef="lastSeen">
-                    <th mat-header-cell *matHeaderCellDef>Last Seen</th>
-                    <td mat-cell *matCellDef="let point">{{ point.lastSeen | date:'short' }}</td>
-                  </ng-container>
-
-                  <ng-container matColumnDef="actions">
-                    <th mat-header-cell *matHeaderCellDef></th>
-                    <td mat-cell *matCellDef="let point">
-                      <button mat-icon-button [matMenuTriggerFor]="pointMenu">
-                        <mat-icon>more_vert</mat-icon>
-                      </button>
-                      <mat-menu #pointMenu="matMenu">
-                        <button mat-menu-item (click)="viewPointDetails(point)">
-                          <mat-icon>visibility</mat-icon>
-                          View Details
-                        </button>
-                        <button mat-menu-item (click)="editPoint(point)">
-                          <mat-icon>edit</mat-icon>
-                          Edit
-                        </button>
-                        <button mat-menu-item (click)="deletePoint(point)">
-                          <mat-icon>delete</mat-icon>
-                          Delete
-                        </button>
-                      </mat-menu>
-                    </td>
-                  </ng-container>
-
-                  <tr mat-header-row *matHeaderRowDef="monitoringPointColumns"></tr>
-                  <tr mat-row *matRowDef="let row; columns: monitoringPointColumns;"></tr>
-                </table>
-              </div>
-            </div>
-          </mat-tab>
-
           <!-- Network Paths Tab -->
           <mat-tab label="Network Paths">
             <div class="tab-content">
@@ -490,83 +403,92 @@ import { CreateMonitoringPolicyDialogComponent } from './create-monitoring-polic
             </div>
           </mat-tab>
 
-          <!-- Settings Tab -->
-          <mat-tab label="Settings">
+          <!-- Monitoring Points Tab -->
+          <mat-tab label="Monitoring Points">
             <div class="tab-content">
               <div class="tab-header">
-                <h3>Settings</h3>
-                <p>Configure AppNeta integration and monitoring policies</p>
+                <h3>Monitoring Points</h3>
+                <p>AppNeta monitoring appliances and software agents collecting network performance data</p>
               </div>
+              
+              <div class="table-container">
+                <table mat-table [dataSource]="monitoringPoints" class="monitoring-points-table">
+                  <ng-container matColumnDef="status">
+                    <th mat-header-cell *matHeaderCellDef>Status</th>
+                    <td mat-cell *matCellDef="let point">
+                      <mat-chip-set>
+                        <mat-chip [ngClass]="getStatusClass(point.status)" selected>
+                          <mat-icon matChipAvatar>{{ getStatusIcon(point.status) }}</mat-icon>
+                          {{ point.status }}
+                        </mat-chip>
+                      </mat-chip-set>
+                    </td>
+                  </ng-container>
 
-              <div class="settings-grid">
-                <mat-card class="settings-card">
-                  <mat-card-header>
-                    <mat-card-title>AppNeta Integration</mat-card-title>
-                    <mat-card-subtitle>Manage connection to AppNeta platform</mat-card-subtitle>
-                  </mat-card-header>
-                  <mat-card-content>
-                    <div class="setting-item">
-                      <mat-slide-toggle [checked]="appNetaEnabled" (change)="toggleAppNeta($event)">
-                        Enable AppNeta Integration
-                      </mat-slide-toggle>
-                    </div>
-                    <div class="setting-item">
-                      <mat-form-field appearance="outline">
-                        <mat-label>API Endpoint</mat-label>
-                        <input matInput value="https://api.appneta.com/v2" readonly>
-                      </mat-form-field>
-                    </div>
-                    <div class="setting-item">
-                      <mat-form-field appearance="outline">
-                        <mat-label>Refresh Interval (minutes)</mat-label>
-                        <mat-select [(value)]="refreshInterval">
-                          <mat-option value="1">1 minute</mat-option>
-                          <mat-option value="5">5 minutes</mat-option>
-                          <mat-option value="15">15 minutes</mat-option>
-                          <mat-option value="30">30 minutes</mat-option>
-                        </mat-select>
-                      </mat-form-field>
-                    </div>
-                  </mat-card-content>
-                  <mat-card-actions>
-                    <button mat-button (click)="testConnection()">Test Connection</button>
-                    <button mat-raised-button color="primary" (click)="saveSettings()">Save</button>
-                  </mat-card-actions>
-                </mat-card>
-
-                <mat-card class="settings-card">
-                  <mat-card-header>
-                    <mat-card-title>Monitoring Policies</mat-card-title>
-                    <mat-card-subtitle>Configure alerting and thresholds</mat-card-subtitle>
-                  </mat-card-header>
-                  <mat-card-content>
-                    <div class="policies-list">
-                      <div class="policy-item" *ngFor="let policy of monitoringPolicies">
-                        <div class="policy-info">
-                          <span class="policy-name">{{ policy.name }}</span>
-                          <span class="policy-type">{{ policy.type }}</span>
-                        </div>
-                        <div class="policy-actions">
-                          <mat-slide-toggle [checked]="policy.enabled" (change)="togglePolicy(policy, $event)">
-                            {{ policy.enabled ? 'Enabled' : 'Disabled' }}
-                          </mat-slide-toggle>
-                          <button mat-icon-button (click)="editPolicy(policy)">
-                            <mat-icon>edit</mat-icon>
-                          </button>
-                        </div>
+                  <ng-container matColumnDef="name">
+                    <th mat-header-cell *matHeaderCellDef>Name</th>
+                    <td mat-cell *matCellDef="let point">
+                      <div class="point-info">
+                        <span class="point-name">{{ point.name }}</span>
+                        <span class="point-location">{{ point.location }}</span>
                       </div>
-                    </div>
-                  </mat-card-content>
-                  <mat-card-actions>
-                    <button mat-raised-button color="primary" (click)="createMonitoringPolicy()">
-                      <mat-icon>add</mat-icon>
-                      Create Policy
-                    </button>
-                  </mat-card-actions>
-                </mat-card>
-                             </div>
-             </div>
-           </mat-tab>
+                    </td>
+                  </ng-container>
+
+                  <ng-container matColumnDef="type">
+                    <th mat-header-cell *matHeaderCellDef>Type</th>
+                    <td mat-cell *matCellDef="let point">
+                      <mat-chip [ngClass]="getTypeClass(point.type)">
+                        <mat-icon matChipAvatar>{{ getTypeIcon(point.type) }}</mat-icon>
+                        {{ point.type }}
+                      </mat-chip>
+                    </td>
+                  </ng-container>
+
+                  <ng-container matColumnDef="ipAddress">
+                    <th mat-header-cell *matHeaderCellDef>IP Address</th>
+                    <td mat-cell *matCellDef="let point">{{ point.ipAddress }}</td>
+                  </ng-container>
+
+                  <ng-container matColumnDef="version">
+                    <th mat-header-cell *matHeaderCellDef>Version</th>
+                    <td mat-cell *matCellDef="let point">{{ point.version }}</td>
+                  </ng-container>
+
+                  <ng-container matColumnDef="lastSeen">
+                    <th mat-header-cell *matHeaderCellDef>Last Seen</th>
+                    <td mat-cell *matCellDef="let point">{{ point.lastSeen | date:'short' }}</td>
+                  </ng-container>
+
+                  <ng-container matColumnDef="actions">
+                    <th mat-header-cell *matHeaderCellDef></th>
+                    <td mat-cell *matCellDef="let point">
+                      <button mat-icon-button [matMenuTriggerFor]="pointMenu">
+                        <mat-icon>more_vert</mat-icon>
+                      </button>
+                      <mat-menu #pointMenu="matMenu">
+                        <button mat-menu-item (click)="viewPointDetails(point)">
+                          <mat-icon>visibility</mat-icon>
+                          View Details
+                        </button>
+                        <button mat-menu-item (click)="editPoint(point)">
+                          <mat-icon>edit</mat-icon>
+                          Edit
+                        </button>
+                        <button mat-menu-item (click)="deletePoint(point)">
+                          <mat-icon>delete</mat-icon>
+                          Delete
+                        </button>
+                      </mat-menu>
+                    </td>
+                  </ng-container>
+
+                  <tr mat-header-row *matHeaderRowDef="monitoringPointColumns"></tr>
+                  <tr mat-row *matRowDef="let row; columns: monitoringPointColumns;"></tr>
+                </table>
+              </div>
+            </div>
+          </mat-tab>
 
            <!-- Monitoring Policies Tab -->
            <mat-tab label="Monitoring Policies">
