@@ -51,4 +51,8 @@ Thumbs.db
 
 # Temporary files
 tmp/
-temp/ 
+temp/
+
+# Exception: Allow production environment file for Cloud Build
+# (This file is gitignored but needed for production builds)
+!src/environments/environment.prod.ts 
