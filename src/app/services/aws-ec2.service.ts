@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, from } from 'rxjs';
 import { AWSAuthService } from './aws-auth.service';
+import { AuthService } from './auth.service';
 import { AWSInstance } from '../interfaces/multi-cloud.interface';
 
 // Declare AWS SDK for TypeScript
@@ -20,7 +21,7 @@ export class AWSEC2Service {
 
   private sdkLoadPromise: Promise<void> | null = null;
 
-  constructor(private awsAuth: AWSAuthService) {
+  constructor(private awsAuth: AWSAuthService, private authService: AuthService) {
     console.log('AWSEC2Service constructor called');
     // Initialize with empty instances
     this.instancesSubject.next([]);
@@ -77,6 +78,16 @@ export class AWSEC2Service {
   async loadInstances(): Promise<AWSInstance[]> {
     console.log('🔄 AWSEC2Service.loadInstances() called');
     
+    // First check if we're in demo mode
+    if (this.awsAuth.isAuthenticated() === false && this.authService.isDemoMode()) {
+      console.log('🎭 Demo mode: Using mock AWS instances');
+      const mockInstances = this.getMockInstances();
+      this.instancesSubject.next(mockInstances);
+      this.loadingSubject.next(false);
+      this.errorSubject.next(null);
+      return mockInstances;
+    }
+    
     try {
       // Ensure AWS SDK is loaded
       await this.loadAWSSDK();
@@ -91,24 +102,9 @@ export class AWSEC2Service {
         throw new Error(errorMessage);
       }
 
-      console.log('🔑 AWS credentials found');
-      console.log('⚠️  Note: Direct AWS API calls from browsers are restricted due to CORS policies.');
-      console.log('⚠️  For production use, consider implementing AWS API calls through your backend service.');
-      console.log('🔄 Falling back to demo mode for demonstration purposes.');
+      console.log('🔑 AWS credentials found, attempting real API call...');
+      console.log('⚠️  Note: Direct AWS API calls from browsers may be restricted due to CORS policies.');
       
-      // For now, show demo data instead of making real API calls
-      // Real AWS API calls should be made through a backend service
-      const demoInstances = this.getMockInstances();
-      this.instancesSubject.next(demoInstances);
-      this.loadingSubject.next(false);
-      this.errorSubject.next('Demo mode: Real AWS API calls require backend integration due to CORS restrictions.');
-      
-      return demoInstances;
-
-      // The following code would work if AWS API calls were made through a backend proxy:
-      /*
-      console.log('🔑 AWS credentials found, proceeding with REAL API call');
-      console.log('🌐 Making actual AWS EC2 API request to:', `https://ec2.${credentials.region}.amazonaws.com`);
       this.loadingSubject.next(true);
       this.errorSubject.next(null);
 
@@ -141,16 +137,64 @@ export class AWSEC2Service {
           }
         });
       });
-      */
+
+      console.log('✅ AWS API call successful, processing results');
+      
+      // Flatten instances from all reservations
+      const instances: AWSInstance[] = result.Reservations.flatMap((reservation: any) => 
+        reservation.Instances.map((instance: any) => ({
+          InstanceId: instance.InstanceId,
+          ImageId: instance.ImageId,
+          State: instance.State,
+          PrivateDnsName: instance.PrivateDnsName,
+          PublicDnsName: instance.PublicDnsName,
+          StateTransitionReason: instance.StateTransitionReason,
+          InstanceType: instance.InstanceType,
+          Placement: instance.Placement,
+          Hypervisor: instance.Hypervisor,
+          Architecture: instance.Architecture,
+          RootDeviceType: instance.RootDeviceType,
+          RootDeviceName: instance.RootDeviceName,
+          BlockDeviceMappings: instance.BlockDeviceMappings,
+          VirtualizationType: instance.VirtualizationType,
+          Tags: instance.Tags,
+          SecurityGroups: instance.SecurityGroups,
+          SourceDestCheck: instance.SourceDestCheck,
+          NetworkInterfaces: instance.NetworkInterfaces,
+          EbsOptimized: instance.EbsOptimized,
+          SriovNetSupport: instance.SriovNetSupport,
+          EnaSupport: instance.EnaSupport,
+          LaunchTime: instance.LaunchTime,
+          PrivateIpAddress: instance.PrivateIpAddress,
+          PublicIpAddress: instance.PublicIpAddress,
+          SubnetId: instance.SubnetId,
+          VpcId: instance.VpcId
+        }))
+      );
+      
+      console.log(`✅ Successfully processed ${instances.length} AWS instances`);
+      this.instancesSubject.next(instances);
+      this.loadingSubject.next(false);
+      return instances;
+
     } catch (error: any) {
       const errorMessage = error.message || 'Failed to load AWS instances';
-      console.error('❌ AWS EC2 Error:', error);
+      console.error('❌ Error loading AWS instances:', error);
+      
+      // If there's a CORS error or network issue, fall back to demo mode with explanation
+      if (error.message?.includes('CORS') || error.name === 'NetworkError' || error.status === 0) {
+        console.log('🔄 CORS/Network error detected - providing demo data with explanation');
+        const demoInstances = this.getMockInstances();
+        this.instancesSubject.next(demoInstances);
+        this.loadingSubject.next(false);
+        this.errorSubject.next('Demo mode: Real AWS API calls from browsers are restricted due to CORS policies. For production use, implement AWS API calls through your backend service.');
+        return demoInstances;
+      }
+      
       this.errorSubject.next(errorMessage);
       this.loadingSubject.next(false);
-      
-      // Return empty array on error instead of throwing
       this.instancesSubject.next([]);
-      return [];
+      throw error;
     }
   }
 
