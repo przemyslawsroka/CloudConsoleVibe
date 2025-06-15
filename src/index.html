@@ -2,11 +2,11 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Google Cloud Console Clone</title>
+  <title>Cloud Console Vibe</title>
   <base href="/">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" type="image/x-icon" href="favicon.ico">
-  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="preconnect" href="https://fonts.gstatic.com">
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   
@@ -16,13 +16,32 @@
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
-    gtag('config', 'G-TCLR1BZ0N7');
+
+    gtag('config', 'G-TCLR1BZ0N7', {
+      cookie_domain: 'auto',
+      allow_linker: true
+    });
   </script>
   
   <!-- Runtime environment configuration -->
   <script src="env-config.js"></script>
 </head>
 <body class="mat-typography">
-  <app-root></app-root>
+  <app-root>
+    <div style="display: flex; justify-content: center; align-items: center; height: 100vh; font-family: Roboto, sans-serif;">
+      <div style="text-align: center;">
+        <div style="display: inline-block; width: 40px; height: 40px; border: 4px solid #4285f4; border-top: 4px solid transparent; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 16px;"></div>
+        <div style="color: #5f6368; font-size: 16px;">Loading Cloud Console...</div>
+      </div>
+    </div>
+    <style>
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+    </style>
+  </app-root>
+
+  <noscript>Please enable JavaScript to continue using this application.</noscript>
 </body>
 </html> 
