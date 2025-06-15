@@ -1,5 +1,36 @@
 // AppNeta API v3 Response Interfaces
 
+export interface AppNetaWebPath {
+  id: number;
+  name: string;
+  orgId: number;
+  target: string;
+  monitoringPointName: string;
+  monitoringPointId: number;
+  monitoringPointInterface: string;
+  disabled: boolean;
+  status: string;
+  errorMsg: string;
+  interval: number;
+  timeout: number;
+  workflowType: 'BROWSER' | 'HTTP' | 'API';
+  tags: {
+    [key: string]: Array<{
+      category: string;
+      value: string;
+      resourceType: string;
+      orgId: number;
+    }>;
+  };
+  relatedNetworkPathId: number;
+  monitoringPolicyId: number;
+  monitoringPolicyGlobalId: number;
+  monitoringPolicyName: string;
+  monitoringPolicyGroupId: number;
+  monitoringPolicyGroupGlobalId: number;
+  monitoringPolicyGroupName: string;
+}
+
 export interface AppNetaAppliance {
   id: number;
   guid: string;
@@ -241,6 +272,22 @@ export interface AppNetaApiResponse<T> {
 }
 
 // Mapping functions to convert AppNeta API responses to our internal interfaces
+export function mapAppNetaWebPathToWebPath(apiWebPath: AppNetaWebPath): import('../services/appneta.service').WebPath {
+  return {
+    id: apiWebPath.id.toString(),
+    name: apiWebPath.name,
+    status: apiWebPath.disabled ? 'Disabled' : 
+            apiWebPath.status === 'NONE' ? 'OK' : 
+            apiWebPath.errorMsg ? 'Failed' : 'OK',
+    url: apiWebPath.target,
+    monitoringPoint: apiWebPath.monitoringPointName,
+    responseTime: undefined, // This would come from performance metrics
+    availability: undefined, // This would come from performance metrics
+    lastUpdate: new Date(),
+    httpStatus: undefined // This would come from performance metrics
+  };
+}
+
 export function mapAppNetaApplianceToMonitoringPoint(apiAppliance: AppNetaAppliance): import('../services/appneta.service').MonitoringPoint {
   return {
     id: apiAppliance.id.toString(),

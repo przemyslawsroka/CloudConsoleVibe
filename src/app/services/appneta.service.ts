@@ -4,7 +4,7 @@ import { Observable, BehaviorSubject, throwError } from 'rxjs';
 import { map, catchError, retry } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { AppNetaNetworkPath, mapAppNetaPathToNetworkPath, AppNetaMonitoringPolicy, mapAppNetaMonitoringPolicyToMonitoringPolicy, AppNetaAppliance, mapAppNetaApplianceToMonitoringPoint } from '../interfaces/appneta-api.interface';
+import { AppNetaNetworkPath, mapAppNetaPathToNetworkPath, AppNetaMonitoringPolicy, mapAppNetaMonitoringPolicyToMonitoringPolicy, AppNetaAppliance, mapAppNetaApplianceToMonitoringPoint, AppNetaWebPath, mapAppNetaWebPathToWebPath } from '../interfaces/appneta-api.interface';
 import { AuthService } from './auth.service';
 
 export interface NetworkPath {
@@ -140,9 +140,9 @@ export class AppNetaService {
 
   private loadRealData(): void {
     this.loadNetworkPathsFromAPI();
-    this.loadMonitoringPoliciesFromAPI();
+    this.loadWebPathsFromAPI();
     this.loadMonitoringPointsFromAPI();
-    // TODO: Add web paths API when available
+    this.loadMonitoringPoliciesFromAPI();
   }
 
   private loadNetworkPathsFromAPI(): void {
@@ -161,6 +161,26 @@ export class AppNetaService {
         },
         error: (error) => {
           console.error('Failed to load network paths:', error);
+        }
+      });
+  }
+
+  private loadWebPathsFromAPI(): void {
+    const url = `${this.API_BASE_URL}/api/v3/webPaths?orgId=19091`;
+    
+    this.http.get<AppNetaWebPath[]>(url, { headers: this.getHeaders() })
+      .pipe(
+        retry(2),
+        map(webPaths => webPaths.map(webPath => mapAppNetaWebPathToWebPath(webPath))),
+        catchError(this.handleError.bind(this))
+      )
+      .subscribe({
+        next: (webPaths) => {
+          console.log('🌐 Loaded web paths from AppNeta API:', webPaths);
+          this.webPathsSubject.next(webPaths);
+        },
+        error: (error) => {
+          console.error('❌ Failed to load web paths:', error);
         }
       });
   }
