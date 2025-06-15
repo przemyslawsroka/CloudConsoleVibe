@@ -6,7 +6,7 @@ This is a comprehensive clone of the Google Cloud Console built with Angular, fo
 
 **API keys and sensitive configuration have been removed from this repository for security reasons.** 
 
-Before running the application, please see [SECURITY_SETUP.md](SECURITY_SETUP.md) for instructions on configuring your environment with the required API keys.
+Before running the application, please see [Security Setup](docs/security/SECURITY_SETUP.md) for instructions on configuring your environment with the required API keys.
 
 ## Features
 
@@ -390,3 +390,23 @@ To use the application features, your GCP project and authenticated user need:
 - **Health checks** and monitoring integration
 - **Environment-specific configuration** with production optimizations
 - **CI/CD ready** with Cloud Build integration
+
+## 📚 Documentation
+
+Comprehensive documentation is available in the [`docs/`](docs/) directory:
+
+- **[📖 Documentation Index](docs/README.md)** - Complete documentation overview
+- **[🚀 Deployment Guide](docs/deployment/DEPLOYMENT_GUIDE.md)** - Production deployment instructions
+- **[🔒 Security Setup](docs/security/SECURITY_SETUP.md)** - API keys and security configuration
+- **[🛠️ Implementation Guides](docs/implementation/)** - Feature implementation details
+- **[🔌 API Reference](docs/api/API_REFERENCE.md)** - Complete API documentation
+- **[📊 Monitoring Setup](docs/monitoring/MONITORING_SYSTEM_README.md)** - Observability configuration
+
+## 🔧 Scripts
+
+Utility and deployment scripts are organized in the [`scripts/`](scripts/) directory:
+
+- **[📋 Scripts Overview](scripts/README.md)** - Complete scripts documentation
+- **Deployment**: `deploy.sh`, `deploy-full-stack.sh`, `deploy-cloudbuild.sh`
+- **Setup**: `setup-dev-environment.sh`, `setup-iam.sh`
+- **Verification**: `verify-setup.sh`, `verify-production-deployment.sh`
