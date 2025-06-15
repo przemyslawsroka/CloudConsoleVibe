@@ -421,22 +421,7 @@ body.dark-theme {
               box-shadow 0.3s ease;
 }
 
-/* Global dialog styles for network path details */
-.network-path-details-dialog {
-  .mat-mdc-dialog-container {
-    padding: 0 !important;
-    max-width: none !important;
-    max-height: none !important;
-    border-radius: 12px;
-    overflow: hidden;
-  }
-  
-  .mat-mdc-dialog-content {
-    padding: 0 !important;
-    margin: 0 !important;
-    max-height: none !important;
-  }
-}
+
 
 /* CSS Variables for theming */
 :root {

@@ -106,6 +106,43 @@ export interface NetworkEvent {
   details?: string;
 }
 
+// AppNeta API Response Interfaces
+export interface PathMeasurement {
+  start: number; // Unix timestamp in milliseconds
+  value: number;
+  period: number;
+  max: number;
+  min: number;
+}
+
+export interface PathData {
+  pathId: number;
+  instrumentation: 'TWO_WAY' | 'ONE_WAY';
+  data?: { [metricName: string]: PathMeasurement[] }; // For ONE_WAY paths
+  dataInbound?: { [metricName: string]: PathMeasurement[] }; // For TWO_WAY paths
+  dataOutbound?: { [metricName: string]: PathMeasurement[] }; // For TWO_WAY paths
+}
+
+export interface PathTraceRoute {
+  traceRouteRecordTimes: number[]; // Array of Unix timestamps in milliseconds
+  numHops: number;
+  recentRtt: number;
+  avgRtt: number;
+  lastSeen: string; // ISO 8601 date string
+  duration: number; // in minutes
+  occurrences: number;
+}
+
+export interface PathEvent {
+  eventTime: string; // ISO 8601 date string
+  eventType: string;
+  eventTypeName: string;
+  pathName: string;
+  pathState: string;
+  pathId: number;
+  eventDetail: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -590,48 +627,18 @@ export class AppNetaService {
 
   // Network Path Details Methods
   getNetworkPathMetrics(pathId: string, timeRange: string = '1d'): Observable<NetworkPathMetrics[]> {
-    if (this.authService.isDemoMode()) {
-      return this.generateMockMetrics(timeRange);
-    }
-
-    // TODO: Implement real API call for network path metrics
-    const url = `${this.API_BASE_URL}/api/v3/path/${pathId}/metrics?orgId=19091&timeRange=${timeRange}`;
-    
-    return this.http.get<any[]>(url, { headers: this.getHeaders() })
-      .pipe(
-        map(data => this.mapApiMetricsToNetworkPathMetrics(data)),
-        catchError(() => this.generateMockMetrics(timeRange))
-      );
+    // Temporarily force demo mode for path details until API endpoints are properly configured
+    return this.generateMockMetrics(timeRange);
   }
 
   getNetworkPathEvents(pathId: string, timeRange: string = '1d'): Observable<NetworkEvent[]> {
-    if (this.authService.isDemoMode()) {
-      return this.generateMockEvents();
-    }
-
-    // TODO: Implement real API call for network path events
-    const url = `${this.API_BASE_URL}/api/v3/path/${pathId}/events?orgId=19091&timeRange=${timeRange}`;
-    
-    return this.http.get<any[]>(url, { headers: this.getHeaders() })
-      .pipe(
-        map(data => this.mapApiEventsToNetworkEvents(data)),
-        catchError(() => this.generateMockEvents())
-      );
+    // Events endpoint is not documented in Swagger - always use demo mode
+    return this.generateMockEvents();
   }
 
-  getNetworkPathRoute(pathId: string): Observable<RouteHop[]> {
-    if (this.authService.isDemoMode()) {
-      return this.generateMockRoute();
-    }
-
-    // TODO: Implement real API call for network path route
-    const url = `${this.API_BASE_URL}/api/v3/path/${pathId}/route?orgId=19091`;
-    
-    return this.http.get<any[]>(url, { headers: this.getHeaders() })
-      .pipe(
-        map(data => this.mapApiRouteToRouteHops(data)),
-        catchError(() => this.generateMockRoute())
-      );
+  getNetworkPathRoute(pathId: string, timeRange: string = '1d'): Observable<RouteHop[]> {
+    // Temporarily force demo mode for trace route until API endpoints are properly configured
+    return this.generateMockRoute();
   }
 
   // Private helper methods for mock data generation
@@ -730,6 +737,37 @@ export class AppNetaService {
     return 60;
   }
 
+  // Time range conversion utility
+  private convertTimeRangeToTimestamps(timeRange: string): { from: number; to: number } {
+    const now = Math.floor(Date.now() / 1000); // Unix timestamp in seconds
+    let secondsAgo: number;
+
+    switch (timeRange) {
+      case '1h':
+        secondsAgo = 3600;
+        break;
+      case '4h':
+        secondsAgo = 14400;
+        break;
+      case '1d':
+        secondsAgo = 86400;
+        break;
+      case '7d':
+        secondsAgo = 604800;
+        break;
+      case '30d':
+        secondsAgo = 2592000;
+        break;
+      default:
+        secondsAgo = 86400; // Default to 1 day
+    }
+
+    return {
+      from: now - secondsAgo,
+      to: now
+    };
+  }
+
   // API mapping methods (to be implemented when real API is available)
   private mapApiMetricsToNetworkPathMetrics(data: any[]): NetworkPathMetrics[] {
     // TODO: Implement mapping from AppNeta API response to NetworkPathMetrics
@@ -746,15 +784,63 @@ export class AppNetaService {
     }));
   }
 
-  private mapApiEventsToNetworkEvents(data: any[]): NetworkEvent[] {
-    // TODO: Implement mapping from AppNeta API response to NetworkEvent
-    return data.map(item => ({
-      timestamp: item.timestamp,
-      type: item.type || 'Alert Condition',
-      severity: item.severity || 'info',
-      description: item.description || '',
-      details: item.details
+  private mapApiPathDataToNetworkPathMetrics(pathData: PathData): NetworkPathMetrics[] {
+    // Map AppNeta PathData response to NetworkPathMetrics
+    const metrics: NetworkPathMetrics[] = [];
+    
+    if (!pathData) return metrics;
+    
+    // Use dataOutbound for single direction, or combine both directions
+    const data = pathData.dataOutbound || pathData.data || {};
+    
+    // Get all metric arrays (totalCapacity, latency, dataLoss, etc.)
+    const metricKeys = Object.keys(data);
+    
+    if (metricKeys.length === 0) return metrics;
+    
+    // Assume all metric arrays have the same length and timestamps
+    const firstMetricArray = data[metricKeys[0]] || [];
+    
+    return firstMetricArray.map((item: any, index: number) => ({
+      timestamp: new Date(item.start).toISOString(),
+      capacity: this.getMetricValue(data, 'totalCapacity', index),
+      dataLoss: this.getMetricValue(data, 'dataLoss', index),
+      dataJitter: this.getMetricValue(data, 'dataJitter', index),
+      latency: this.getMetricValue(data, 'latency', index),
+      roundTripTime: this.getMetricValue(data, 'rtt', index),
+      voiceLoss: this.getMetricValue(data, 'voiceLoss', index),
+      voiceJitter: this.getMetricValue(data, 'voiceJitter', index),
+      mos: this.getMetricValue(data, 'mos', index)
     }));
+  }
+
+  private getMetricValue(data: any, metricName: string, index: number): number {
+    const metricArray = data[metricName];
+    if (metricArray && metricArray[index]) {
+      return metricArray[index].value || 0;
+    }
+    return 0;
+  }
+
+  private mapApiEventsToNetworkEvents(data: PathEvent[]): NetworkEvent[] {
+    // Map AppNeta Events API response to NetworkEvent
+    return data.map(item => ({
+      timestamp: item.eventTime,
+      type: item.eventTypeName as NetworkEvent['type'] || 'Alert Condition',
+      severity: this.mapEventSeverity(item.eventType),
+      description: item.eventDetail || '',
+      details: item.pathName ? `Path: ${item.pathName}` : undefined
+    }));
+  }
+
+  private mapEventSeverity(eventType: string): 'critical' | 'warning' | 'info' {
+    if (eventType?.toLowerCase().includes('violation') || eventType?.toLowerCase().includes('failed')) {
+      return 'critical';
+    }
+    if (eventType?.toLowerCase().includes('warning') || eventType?.toLowerCase().includes('change')) {
+      return 'warning';
+    }
+    return 'info';
   }
 
   private mapApiRouteToRouteHops(data: any[]): RouteHop[] {
@@ -769,5 +855,36 @@ export class AppNetaService {
       packetLoss: item.packetLoss || 0,
       responseTime: item.responseTime || 0
     }));
+  }
+
+  private mapApiTraceRouteToRouteHops(traceRouteData: PathTraceRoute[]): RouteHop[] {
+    // Map AppNeta TraceRoute response to RouteHop array
+    if (!traceRouteData || traceRouteData.length === 0) {
+      return [];
+    }
+
+    // Use the most recent trace route (first item or the one with most recent lastSeen)
+    const mostRecentRoute = traceRouteData.reduce((latest, current) => {
+      const latestTime = new Date(latest.lastSeen || 0).getTime();
+      const currentTime = new Date(current.lastSeen || 0).getTime();
+      return currentTime > latestTime ? current : latest;
+    });
+
+    // Generate route hops based on numHops
+    const hops: RouteHop[] = [];
+    for (let i = 1; i <= (mostRecentRoute.numHops || 0); i++) {
+      hops.push({
+        hopNumber: i,
+        ipAddress: `192.168.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}`, // Mock IP
+        hostname: i === mostRecentRoute.numHops ? 'target.example.com' : `hop${i}.isp.com`,
+        asn: `AS${64496 + i}`,
+        location: i === 1 ? 'Local' : i === mostRecentRoute.numHops ? 'Destination' : `Transit ${i}`,
+        latency: Math.round((mostRecentRoute.recentRtt || 50) * (i / mostRecentRoute.numHops)),
+        packetLoss: Math.random() > 0.95 ? Math.round(Math.random() * 2) : 0,
+        responseTime: Math.round((mostRecentRoute.avgRtt || 50) * (i / mostRecentRoute.numHops))
+      });
+    }
+
+    return hops;
   }
 } 

@@ -1,5 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
+import { Router } from '@angular/router';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { 
@@ -203,7 +204,7 @@ import { NetworkPathDetailsComponent } from './network-path-details.component';
                   <ng-container matColumnDef="name">
                     <th mat-header-cell *matHeaderCellDef>Name</th>
                     <td mat-cell *matCellDef="let path">
-                      <a href="#" class="path-link" (click)="viewNetworkPathDetails(path)">{{ path.name }}</a>
+                      <a [routerLink]="['/cloud-network-insights/path', path.id]" class="path-link">{{ path.name }}</a>
                     </td>
                   </ng-container>
 
@@ -304,7 +305,7 @@ import { NetworkPathDetailsComponent } from './network-path-details.component';
                   <ng-container matColumnDef="name">
                     <th mat-header-cell *matHeaderCellDef>Name</th>
                     <td mat-cell *matCellDef="let path">
-                      <a href="#" class="path-link" (click)="viewWebPathDetails(path)">{{ path.name }}</a>
+                      <a class="path-link" (click)="viewWebPathDetails(path)">{{ path.name }}</a>
                     </td>
                   </ng-container>
 
@@ -661,7 +662,8 @@ export class CloudNetworkInsightsComponent implements OnInit, OnDestroy {
 
   constructor(
     private appNetaService: AppNetaService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -856,21 +858,7 @@ export class CloudNetworkInsightsComponent implements OnInit, OnDestroy {
 
   // Detail view methods
   viewNetworkPathDetails(path: NetworkPath): void {
-    const dialogRef = this.dialog.open(NetworkPathDetailsComponent, {
-      width: '95vw',
-      maxWidth: '1600px',
-      height: '90vh',
-      maxHeight: '1200px',
-      data: { networkPath: path },
-      panelClass: 'network-path-details-dialog'
-    });
-
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        // Handle any actions from the dialog if needed
-        console.log('Network path details dialog closed with result:', result);
-      }
-    });
+    this.router.navigate(['/cloud-network-insights/path', path.id]);
   }
 
   viewWebPathDetails(path: WebPath): void {

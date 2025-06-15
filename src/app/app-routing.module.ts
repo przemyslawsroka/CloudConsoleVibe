@@ -32,6 +32,7 @@ import { PacketMirroringManagementComponent } from './components/packet-mirrorin
 import { NetworkHealthMonitorComponent } from './components/network-health-monitor/network-health-monitor.component';
 import { NetworkHealthMonitorDetailsComponent } from './components/network-health-monitor-details/network-health-monitor-details.component';
 import { CloudNetworkInsightsComponent } from './components/cloud-network-insights/cloud-network-insights.component';
+import { NetworkPathDetailsComponent } from './components/cloud-network-insights/network-path-details.component';
 import { CNRComponent } from './components/cnr/cnr.component';
 import { CloudCdnComponent } from './components/cloud-cdn/cloud-cdn.component';
 import { CloudCdnDetailsComponent } from './components/cloud-cdn-details/cloud-cdn-details.component';
@@ -113,6 +114,7 @@ const routes: Routes = [
   { path: 'cloud-nat/create', component: CreateCloudNatComponent, canActivate: [AuthGuard] },
   { path: 'cloud-nat/:name', component: CloudNatDetailsComponent, canActivate: [AuthGuard] },
   { path: 'cloud-network-insights', component: CloudNetworkInsightsComponent, canActivate: [AuthGuard] },
+  { path: 'cloud-network-insights/path/:pathId', component: NetworkPathDetailsComponent, canActivate: [AuthGuard] },
   { path: 'cnr', component: CNRComponent, canActivate: [AuthGuard] },
   {
     path: 'network-health-monitor',
