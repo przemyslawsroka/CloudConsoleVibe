@@ -18,7 +18,7 @@ import { forkJoin } from 'rxjs';
             VPC Network Topology (3D)
           </h1>
           <p class="header-description">
-            Explore active VPC subnetworks and traffic flows in interactive 3D space (showing only subnets with traffic in the last 24 hours)
+            Explore active VPC subnetworks and traffic flows in interactive 3D space (showing only subnets with traffic in the last 6 hours)
           </p>
         </div>
       </div>
@@ -46,7 +46,7 @@ import { forkJoin } from 'rxjs';
               <div class="control-group" *ngIf="trafficInsights">
                 <h4>
                   <mat-icon>analytics</mat-icon>
-                  Traffic Analysis (24h)
+                  Traffic Analysis (6h)
                 </h4>
                 <p><strong>Total Traffic:</strong> {{ formatBytes(trafficInsights.totalTraffic) }}</p>
                 <p><strong>Networks:</strong> {{ trafficInsights.networkCount }}</p>
@@ -69,12 +69,6 @@ import { forkJoin } from 'rxjs';
                       <mat-option value="168">Last 7 days</mat-option>
                     </mat-select>
                   </mat-form-field>
-                  <mat-checkbox [formControl]="showTrafficLabelsControl" (change)="updateGraph()">
-                    Show traffic labels
-                  </mat-checkbox>
-                  <mat-checkbox [formControl]="showOnlyTrafficEdgesControl" (change)="updateGraph()">
-                    Show only traffic connections
-                  </mat-checkbox>
                 </div>
               </div>
 
@@ -976,7 +970,7 @@ export class TopologyComponent implements OnInit, AfterViewInit {
   isLoading = false;
   
   // Reactive form controls
-  selectedTimeRange = 24;
+  selectedTimeRange = 6;
   showTrafficLabelsControl = new FormControl(true);
   showOnlyTrafficEdgesControl = new FormControl(false);
   
@@ -1116,7 +1110,7 @@ export class TopologyComponent implements OnInit, AfterViewInit {
         this.fg
           .width(element.offsetWidth)
           .height(element.offsetHeight)
-          .backgroundColor('rgba(10, 25, 47, 0.8)')
+          .backgroundColor('#f5f5f5')
           .showNavInfo(false)
           .nodeLabel('label')
           .nodeColor((node: any) => this.getNodeColor(node))
@@ -1200,9 +1194,7 @@ export class TopologyComponent implements OnInit, AfterViewInit {
     const nodes = subnetworksWithTraffic.map(subnet => ({
       id: subnet.name,
       name: subnet.name,
-      label: this.showTrafficLabelsControl.value ? 
-        `${subnet.name}\n${subnet.ipCidrRange || 'N/A'}\nRegion: ${subnet.region}` :
-        `${subnet.name}\n${subnet.ipCidrRange || 'N/A'}`,
+      label: `${subnet.name}\n${subnet.ipCidrRange || 'N/A'}\nRegion: ${subnet.region}`,
       val: this.getNodeValue(subnet),
       group: this.getNodeGroup(subnet),
       region: subnet.region,
@@ -1215,72 +1207,49 @@ export class TopologyComponent implements OnInit, AfterViewInit {
     // Build links from traffic data
     const links: any[] = [];
     
-    if (this.showOnlyTrafficEdgesControl.value) {
-      // Only show traffic-based connections
-      this.trafficEdges.forEach(edge => {
-        const sourceExists = nodes.find(n => n.id === edge.sourceSubnetwork);
-        const targetExists = nodes.find(n => n.id === edge.targetSubnetwork);
-        
-        if (sourceExists && targetExists) {
-          links.push({
-            source: edge.sourceSubnetwork,
-            target: edge.targetSubnetwork,
-            label: this.showTrafficLabelsControl.value ? 
-              `${this.formatBytes(edge.totalBytes)}\n${edge.protocols.join(', ')}` : 
-              this.formatBytes(edge.totalBytes),
-            traffic: edge.totalBytes,
-            protocols: edge.protocols,
-            type: 'traffic'
-          });
-        }
-      });
-    } else {
-      // Show both traffic connections and regional connections (only for nodes with traffic)
-      this.trafficEdges.forEach(edge => {
-        const sourceExists = nodes.find(n => n.id === edge.sourceSubnetwork);
-        const targetExists = nodes.find(n => n.id === edge.targetSubnetwork);
-        
-        if (sourceExists && targetExists) {
-          links.push({
-            source: edge.sourceSubnetwork,
-            target: edge.targetSubnetwork,
-            label: this.showTrafficLabelsControl.value ? 
-              `${this.formatBytes(edge.totalBytes)}\n${edge.protocols.join(', ')}` : 
-              this.formatBytes(edge.totalBytes),
-            traffic: edge.totalBytes,
-            protocols: edge.protocols,
-            type: 'traffic'
-          });
-        }
-      });
+    // Show both traffic connections and regional connections (only for nodes with traffic)
+    this.trafficEdges.forEach(edge => {
+      const sourceExists = nodes.find(n => n.id === edge.sourceSubnetwork);
+      const targetExists = nodes.find(n => n.id === edge.targetSubnetwork);
       
-      // Add regional connections for subnets without traffic data (only among filtered nodes)
-      const regions = [...new Set(subnetworksWithTraffic.map(s => s.region))];
-      regions.forEach(region => {
-        const regionSubnets = subnetworksWithTraffic.filter(s => s.region === region);
-        if (regionSubnets.length > 1) {
-          for (let i = 0; i < regionSubnets.length - 1; i++) {
-            const source = regionSubnets[i].name;
-            const target = regionSubnets[i + 1].name;
-            
-            // Only add if no traffic connection already exists
-            const hasTrafficConnection = links.some(link => 
-              (link.source === source && link.target === target) ||
-              (link.source === target && link.target === source)
-            );
-            
-            if (!hasTrafficConnection) {
-              links.push({
-                source: source,
-                target: target,
-                label: `Same region: ${region}`,
-                type: 'regional'
-              });
-            }
+      if (sourceExists && targetExists) {
+        links.push({
+          source: edge.sourceSubnetwork,
+          target: edge.targetSubnetwork,
+          label: `${this.formatBytes(edge.totalBytes)}\n${edge.protocols.join(', ')}`,
+          traffic: edge.totalBytes,
+          protocols: edge.protocols,
+          type: 'traffic'
+        });
+      }
+    });
+    
+    // Add regional connections for subnets without traffic data (only among filtered nodes)
+    const regions = [...new Set(subnetworksWithTraffic.map(s => s.region))];
+    regions.forEach(region => {
+      const regionSubnets = subnetworksWithTraffic.filter(s => s.region === region);
+      if (regionSubnets.length > 1) {
+        for (let i = 0; i < regionSubnets.length - 1; i++) {
+          const source = regionSubnets[i].name;
+          const target = regionSubnets[i + 1].name;
+          
+          // Only add if no traffic connection already exists
+          const hasTrafficConnection = links.some(link => 
+            (link.source === source && link.target === target) ||
+            (link.source === target && link.target === source)
+          );
+          
+          if (!hasTrafficConnection) {
+            links.push({
+              source: source,
+              target: target,
+              label: `Same region: ${region}`,
+              type: 'regional'
+            });
           }
         }
-      });
-    }
+      }
+    });
     
     console.log('   🔗 Generated links:', links.length);
     console.log('   🔗 Sample links:', links.slice(0, 3));
