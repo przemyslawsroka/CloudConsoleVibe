@@ -48,6 +48,7 @@ import { NetworkConnectivityComponent } from './components/network-connectivity/
 import { GlobalFrontendWizardComponent } from './components/global-frontend-wizard/global-frontend-wizard.component';
 import { GoogleWANWizardComponent } from './components/google-wan-wizard/google-wan-wizard.component';
 import { SecureWebProxyComponent } from './components/secure-web-proxy/secure-web-proxy.component';
+import { UrlListsComponent } from './components/url-lists/url-lists.component';
 import { VmInstancesComponent } from './components/vm-instances/vm-instances.component';
 import { CreateVmInstanceComponent } from './components/vm-instances/create-vm-instance.component';
 import { AwsConfigComponent } from './components/aws-config/aws-config.component';
@@ -99,6 +100,7 @@ const routes: Routes = [
   { path: 'cloud-armor-policies', component: CloudArmorPoliciesComponent, canActivate: [AuthGuard] },
   { path: 'tls-inspection-policies', component: TlsInspectionPoliciesComponent, canActivate: [AuthGuard] },
   { path: 'address-groups', component: AddressGroupsComponent, canActivate: [AuthGuard] },
+  { path: 'url-lists', component: UrlListsComponent, canActivate: [AuthGuard] },
   { path: 'tppi', component: TPPIManagementComponent, canActivate: [AuthGuard] },
   { path: 'tppi/setup', component: TPPISetupWizardComponent, canActivate: [AuthGuard] },
   { path: 'packet-mirroring', component: PacketMirroringManagementComponent, canActivate: [AuthGuard] },

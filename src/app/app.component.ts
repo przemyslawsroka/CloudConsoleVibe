@@ -434,6 +434,7 @@ export class AppComponent implements OnInit {
         { name: 'Cloud Armor', route: '/cloud-armor-policies', icon: 'shield' },
         { name: 'TLS inspection policies', route: '/tls-inspection-policies', icon: 'security_scan' },
         { name: 'Address groups', route: '/address-groups', icon: 'group_work' },
+        { name: 'URL lists', route: '/url-lists', icon: 'link' },
         { name: 'Secure Web Proxy', route: '/secure-web-proxy', icon: 'security' }
       ]
     },

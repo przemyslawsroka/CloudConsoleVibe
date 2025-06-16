@@ -116,6 +116,8 @@ import { GlobalFrontendService } from './services/global-frontend.service';
 // import { GoogleWANService } from './services/google-wan.service';
 import { SecureWebProxyComponent } from './components/secure-web-proxy/secure-web-proxy.component';
 import { SecureWebProxyService } from './services/secure-web-proxy.service';
+import { UrlListsComponent } from './components/url-lists/url-lists.component';
+import { UrlListsService } from './services/url-lists.service';
 import { VmInstancesComponent } from './components/vm-instances/vm-instances.component';
 import { CreateVmInstanceComponent } from './components/vm-instances/create-vm-instance.component';
 import { AwsConfigComponent } from './components/aws-config/aws-config.component';
@@ -194,6 +196,7 @@ import { InstanceGroupsService } from './services/instance-groups.service';
     GlobalFrontendWizardComponent,
     GoogleWANWizardComponent,
     SecureWebProxyComponent,
+    UrlListsComponent,
     VmInstancesComponent,
     CreateVmInstanceComponent,
     AwsConfigComponent,
@@ -226,7 +229,7 @@ import { InstanceGroupsService } from './services/instance-groups.service';
     TextFieldModule,
     MatStepperModule
   ],
-  providers: [AuthService, GoogleAnalyticsService, VpcService, TPPIService, PacketMirroringService, NetworkHealthMonitorService, AppNetaService, CloudNatService, GkeClusterService, GeminiAiService, GlobalFrontendService, SecureWebProxyService, ComputeEngineService, InstanceTemplatesService, InstanceGroupsService],
+  providers: [AuthService, GoogleAnalyticsService, VpcService, TPPIService, PacketMirroringService, NetworkHealthMonitorService, AppNetaService, CloudNatService, GkeClusterService, GeminiAiService, GlobalFrontendService, SecureWebProxyService, UrlListsService, ComputeEngineService, InstanceTemplatesService, InstanceGroupsService],
   bootstrap: [AppComponent]
 })
 export class AppModule { } 
