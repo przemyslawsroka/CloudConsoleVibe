@@ -108,6 +108,7 @@ import { GkeClustersComponent } from './components/gke-clusters/gke-clusters.com
 import { AiAssistantComponent } from './components/ai-assistant/ai-assistant.component';
 import { NetworkConnectivityComponent } from './components/network-connectivity/network-connectivity.component';
 import { GlobalFrontendWizardComponent } from './components/global-frontend-wizard/global-frontend-wizard.component';
+import { GlobalFrontendWizardV2Component, TerraformModalComponent } from './components/global-frontend-wizard-v2/global-frontend-wizard-v2.component';
 import { GoogleWANWizardComponent } from './components/google-wan-wizard/google-wan-wizard.component';
 import { CloudNatService } from './services/cloud-nat.service';
 import { GkeClusterService } from './services/gke-cluster.service';
@@ -194,6 +195,8 @@ import { InstanceGroupsService } from './services/instance-groups.service';
     AiAssistantComponent,
     NetworkConnectivityComponent,
     GlobalFrontendWizardComponent,
+    GlobalFrontendWizardV2Component,
+    TerraformModalComponent,
     GoogleWANWizardComponent,
     SecureWebProxyComponent,
     UrlListsComponent,

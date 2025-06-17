@@ -398,6 +398,7 @@ import { Component } from '@angular/core';
               <div class="action-buttons">
                 <button mat-stroked-button class="preview-btn">Preview solution</button>
                 <button mat-raised-button color="primary" class="get-started-btn" routerLink="/global-frontend-wizard">Get started</button>
+                <button mat-raised-button color="accent" class="get-started-btn-v2" routerLink="/global-frontend-wizard-v2">Get started - version 2</button>
               </div>
             </div>
           </div>
@@ -918,6 +919,24 @@ import { Component } from '@angular/core';
       background: linear-gradient(135deg, #1a73e8, #1557b0);
       transform: translateY(-2px);
       box-shadow: 0 8px 20px rgba(66, 133, 244, 0.3);
+    }
+
+    .get-started-btn-v2 {
+      background: linear-gradient(135deg, #ff5722, #f44336);
+      color: white;
+      border: none;
+      flex: 1;
+      min-height: 44px;
+      font-size: 14px;
+      font-weight: 500;
+      border-radius: 24px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .get-started-btn-v2:hover {
+      background: linear-gradient(135deg, #f44336, #d32f2f);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(255, 87, 34, 0.3);
     }
 
     .bottom-section {

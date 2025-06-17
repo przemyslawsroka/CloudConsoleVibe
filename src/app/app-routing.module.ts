@@ -46,6 +46,7 @@ import { CreateRouteComponent } from './components/create-route/create-route.com
 import { GkeClustersComponent } from './components/gke-clusters/gke-clusters.component';
 import { NetworkConnectivityComponent } from './components/network-connectivity/network-connectivity.component';
 import { GlobalFrontendWizardComponent } from './components/global-frontend-wizard/global-frontend-wizard.component';
+import { GlobalFrontendWizardV2Component } from './components/global-frontend-wizard-v2/global-frontend-wizard-v2.component';
 import { GoogleWANWizardComponent } from './components/google-wan-wizard/google-wan-wizard.component';
 import { SecureWebProxyComponent } from './components/secure-web-proxy/secure-web-proxy.component';
 import { UrlListsComponent } from './components/url-lists/url-lists.component';
@@ -133,6 +134,7 @@ const routes: Routes = [
   { path: 'network-connectivity/spokes/create', component: NetworkConnectivityComponent, canActivate: [AuthGuard] },
   { path: 'network-connectivity/spokes/:spokeId', component: NetworkConnectivityComponent, canActivate: [AuthGuard] },
   { path: 'global-frontend-wizard', component: GlobalFrontendWizardComponent, canActivate: [AuthGuard] },
+  { path: 'global-frontend-wizard-v2', component: GlobalFrontendWizardV2Component, canActivate: [AuthGuard] },
   { path: 'google-wan-wizard', component: GoogleWANWizardComponent, canActivate: [AuthGuard] },
   { path: 'secure-web-proxy', component: SecureWebProxyComponent, canActivate: [AuthGuard] },
   { path: 'vm-instances', component: VmInstancesComponent, canActivate: [AuthGuard] },
