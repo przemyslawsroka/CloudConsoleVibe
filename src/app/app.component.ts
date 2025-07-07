@@ -477,6 +477,14 @@ export class AppComponent implements OnInit {
       items: [
         { name: 'Clusters', route: '/kubernetes/clusters', icon: 'view_in_ar' }
       ]
+    },
+    {
+      name: 'Storage',
+      icon: 'storage',
+      expanded: false,
+      items: [
+        { name: 'Buckets', route: '/cloud-storage/buckets', icon: 'folder' }
+      ]
     }
   ];
 

@@ -55,6 +55,8 @@ import { CreateVmInstanceComponent } from './components/vm-instances/create-vm-i
 import { AwsConfigComponent } from './components/aws-config/aws-config.component';
 import { InstanceTemplatesComponent } from './components/instance-templates/instance-templates.component';
 import { InstanceGroupsComponent } from './components/instance-groups/instance-groups.component';
+import { CloudStorageBucketsComponent } from './components/cloud-storage-buckets/cloud-storage-buckets.component';
+import { CloudStorageBucketDetailsComponent } from './components/cloud-storage-bucket-details/cloud-storage-bucket-details.component';
 
 const routes: Routes = [
   { path: '', redirectTo: '/vpc', pathMatch: 'full' },
@@ -141,6 +143,8 @@ const routes: Routes = [
   { path: 'vm-instances/create', component: CreateVmInstanceComponent },
   { path: 'instance-templates', component: InstanceTemplatesComponent, canActivate: [AuthGuard] },
   { path: 'instance-groups', component: InstanceGroupsComponent, canActivate: [AuthGuard] },
+  { path: 'cloud-storage/buckets', component: CloudStorageBucketsComponent, canActivate: [AuthGuard] },
+  { path: 'cloud-storage/buckets/:bucketName', component: CloudStorageBucketDetailsComponent, canActivate: [AuthGuard] },
   {
     path: 'monitoring',
     loadChildren: () => import('./components/monitoring/monitoring.module').then(m => m.MonitoringModule),

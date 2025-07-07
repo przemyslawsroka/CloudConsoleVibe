@@ -345,35 +345,133 @@ Chart.register(...registerables);
 
           <!-- Display Options Panel -->
           <mat-card class="display-options-panel">
-            <mat-card-header>
+            <mat-card-header class="display-options-header" (click)="toggleDisplayOptions()">
               <mat-card-title>Display options</mat-card-title>
+              <mat-icon class="expand-icon" [class.expanded]="displayOptionsExpanded">
+                {{ displayOptionsExpanded ? 'keyboard_arrow_down' : 'keyboard_arrow_right' }}
+              </mat-icon>
             </mat-card-header>
-            <mat-card-content>
-              <div class="metric-controls">
+            <mat-card-content *ngIf="displayOptionsExpanded">
+              <!-- Data Resolution and Sampling Points -->
+              <div class="basic-options">
                 <mat-form-field appearance="outline">
-                  <mat-label>Metric type (chart and table)</mat-label>
-                  <mat-select [(value)]="selectedMetricType" (selectionChange)="onMetricTypeChange()">
-                    <mat-option value="bytes">Bytes sent</mat-option>
-                    <mat-option value="packets">Packets sent</mat-option>
-                    <mat-option value="connections">Connections</mat-option>
-                    <mat-option value="latency">Latency (RTT)</mat-option>
+                  <mat-label>Data resolution (on the chart)</mat-label>
+                  <mat-select [(value)]="dataResolution" (selectionChange)="onDataResolutionChange()">
+                    <mat-option value="1m">1 min</mat-option>
+                    <mat-option value="5m">5 min (default)</mat-option>
+                    <mat-option value="15m">15 min</mat-option>
+                    <mat-option value="1h">1 hour</mat-option>
                   </mat-select>
+                  <button mat-icon-button matSuffix matTooltip="Data resolution help">
+                    <mat-icon>help_outline</mat-icon>
+                  </button>
                 </mat-form-field>
-                <mat-form-field appearance="outline" *ngIf="visualizationMode === 'chart'">
-                  <mat-label>Aggregation period (chart)</mat-label>
-                  <mat-select [(value)]="selectedAggregationPeriod" (selectionChange)="onAggregationPeriodChange()">
-                    <mat-option value="1m">Automatic (1 min)</mat-option>
-                    <mat-option value="5m">Automatic (5 min)</mat-option>
-                    <mat-option value="15m">Automatic (15 min)</mat-option>
-                    <mat-option value="1h">Automatic (1 hour)</mat-option>
-                  </mat-select>
-                </mat-form-field>
+                
                 <mat-form-field appearance="outline">
                   <mat-label>Sampling points (chart and table)</mat-label>
-                  <mat-select>
-                    <mat-option value="source">Source endpoint</mat-option>
+                  <mat-select [(value)]="samplingPoints" (selectionChange)="onSamplingPointsChange()">
+                    <mat-option value="1m">1 min</mat-option>
+                    <mat-option value="5m">5 min (default)</mat-option>
+                    <mat-option value="15m">15 min</mat-option>
+                    <mat-option value="1h">1 hour</mat-option>
                   </mat-select>
+                  <button mat-icon-button matSuffix matTooltip="Sampling points help">
+                    <mat-icon>help_outline</mat-icon>
+                  </button>
                 </mat-form-field>
+              </div>
+
+              <!-- Data Volume Section -->
+              <div class="metric-section">
+                <div class="metric-section-header">
+                  <mat-slide-toggle 
+                    [(ngModel)]="dataVolumeEnabled" 
+                    (change)="onDataVolumeToggle()"
+                    class="metric-toggle">
+                  </mat-slide-toggle>
+                  <mat-icon class="metric-icon">storage</mat-icon>
+                  <span class="metric-title">Data Volume</span>
+                </div>
+                
+                <div class="metric-controls" *ngIf="dataVolumeEnabled">
+                  <mat-form-field appearance="outline">
+                    <mat-label>Metric type (chart and table)</mat-label>
+                    <mat-select [(value)]="dataVolumeMetricType" (selectionChange)="onDataVolumeMetricTypeChange()">
+                      <mat-option value="bytes_sent">Bytes sent</mat-option>
+                      <mat-option value="packets_sent">Packets sent</mat-option>
+                      <mat-option value="bytes_and_packets">Bytes sent and Package sent</mat-option>
+                    </mat-select>
+                    <button mat-icon-button matSuffix matTooltip="Metric type help">
+                      <mat-icon>help_outline</mat-icon>
+                    </button>
+                  </mat-form-field>
+                  
+                  <mat-form-field appearance="outline">
+                    <mat-label>Metric aggregation (columns in the table)</mat-label>
+                    <mat-select [(value)]="dataVolumeAggregation" (selectionChange)="onDataVolumeAggregationChange()">
+                      <mat-option value="total_traffic">Total traffic</mat-option>
+                      <mat-option value="avg_traffic_rate">Avg traffic rate</mat-option>
+                      <mat-option value="total_and_avg">Total traffic and Avg traffic rate</mat-option>
+                    </mat-select>
+                    <button mat-icon-button matSuffix matTooltip="Metric aggregation help">
+                      <mat-icon>help_outline</mat-icon>
+                    </button>
+                  </mat-form-field>
+                </div>
+              </div>
+
+              <!-- Latency Section -->
+              <div class="metric-section">
+                <div class="metric-section-header">
+                  <mat-slide-toggle 
+                    [(ngModel)]="latencyEnabled" 
+                    (change)="onLatencyToggle()"
+                    class="metric-toggle">
+                  </mat-slide-toggle>
+                  <mat-icon class="metric-icon">network_check</mat-icon>
+                  <span class="metric-title">Latency</span>
+                  <span class="new-badge">New</span>
+                </div>
+                
+                <div class="metric-controls" *ngIf="latencyEnabled">
+                  <mat-form-field appearance="outline">
+                    <mat-label>Metric type (chart and table)</mat-label>
+                    <mat-select [(value)]="latencyMetricType" (selectionChange)="onLatencyMetricTypeChange()">
+                      <mat-option value="round_trip_median">Round trip time (median, doubl...</mat-option>
+                      <mat-option value="round_trip_mean">Round trip time (mean)</mat-option>
+                      <mat-option value="round_trip_p95">Round trip time (95th percentile)</mat-option>
+                    </mat-select>
+                    <button mat-icon-button matSuffix matTooltip="Metric type help">
+                      <mat-icon>help_outline</mat-icon>
+                    </button>
+                  </mat-form-field>
+                  
+                  <mat-form-field appearance="outline">
+                    <mat-label>Metric aggregation (columns in the table)</mat-label>
+                    <mat-select [(value)]="latencyAggregation" (selectionChange)="onLatencyAggregationChange()">
+                      <mat-option value="average_of_medians">Average of Medians</mat-option>
+                      <mat-option value="median_of_medians">Median of Medians</mat-option>
+                      <mat-option value="p95_of_medians">95th percentile of Medians</mat-option>
+                    </mat-select>
+                    <button mat-icon-button matSuffix matTooltip="Metric aggregation help">
+                      <mat-icon>help_outline</mat-icon>
+                    </button>
+                  </mat-form-field>
+                  
+                  <mat-form-field appearance="outline">
+                    <mat-label>Top 5 flows (chart and table)</mat-label>
+                    <mat-select [(value)]="latencyTopFlows" (selectionChange)="onLatencyTopFlowsChange()">
+                      <mat-option value="p50">P50</mat-option>
+                      <mat-option value="p75">P75</mat-option>
+                      <mat-option value="p90">P90</mat-option>
+                      <mat-option value="p95">P95</mat-option>
+                      <mat-option value="p99">P99</mat-option>
+                    </mat-select>
+                    <button mat-icon-button matSuffix matTooltip="Top flows help">
+                      <mat-icon>help_outline</mat-icon>
+                    </button>
+                  </mat-form-field>
+                </div>
               </div>
             </mat-card-content>
           </mat-card>
@@ -1029,10 +1127,83 @@ Chart.register(...registerables);
       border: 1px solid var(--border-color);
     }
 
+    .display-options-header {
+      cursor: pointer;
+      padding: 16px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      user-select: none;
+      margin: 0;
+    }
+
+    .display-options-header:hover {
+      background-color: var(--hover-color);
+    }
+
     .display-options-panel mat-card-title {
       font-size: 16px;
       font-weight: 500;
       color: var(--text-color);
+      margin: 0;
+    }
+
+    .expand-icon {
+      transition: transform 0.3s ease;
+      font-size: 20px;
+    }
+
+    .expand-icon.expanded {
+      transform: rotate(0deg);
+    }
+
+    .basic-options {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .metric-section {
+      margin-bottom: 24px;
+      padding: 16px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      background-color: rgba(var(--surface-color-rgb), 0.5);
+    }
+
+    .metric-section-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .metric-toggle {
+      margin: 0;
+    }
+
+    .metric-icon {
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+      color: var(--text-secondary);
+    }
+
+    .metric-title {
+      font-weight: 500;
+      font-size: 16px;
+      color: var(--text-color);
+    }
+
+    .new-badge {
+      background-color: #1976d2;
+      color: white;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 500;
+      text-transform: uppercase;
     }
 
     .metric-controls {
@@ -1542,6 +1713,22 @@ export class FlowAnalyzerComponent implements OnInit {
   selectedMetricType: MetricType = 'bytes';
   selectedAggregationPeriod: AggregationPeriod = '5m';
   visualizationMode: 'chart' | 'sankey' = 'chart';
+  
+  // Display Options Configuration
+  displayOptionsExpanded = true;
+  dataResolution = '5m';
+  samplingPoints = '5m';
+  
+  // Data Volume Configuration
+  dataVolumeEnabled = true;
+  dataVolumeMetricType = 'bytes_and_packets';
+  dataVolumeAggregation = 'total_and_avg';
+  
+  // Latency Configuration
+  latencyEnabled = true;
+  latencyMetricType = 'round_trip_median';
+  latencyAggregation = 'average_of_medians';
+  latencyTopFlows = 'p95';
 
   // Data Source Configuration
   selectedLogBucket = '_Default';
@@ -2031,6 +2218,55 @@ export class FlowAnalyzerComponent implements OnInit {
     this.filtersVisible = !this.filtersVisible;
   }
 
+  toggleDisplayOptions() {
+    this.displayOptionsExpanded = !this.displayOptionsExpanded;
+  }
+
+  onDataVolumeToggle() {
+    // Handle data volume toggle
+    this.reprocessData();
+  }
+
+  onLatencyToggle() {
+    // Handle latency toggle
+    this.reprocessData();
+  }
+
+  onDataResolutionChange() {
+    // Handle data resolution change
+    this.reprocessData();
+  }
+
+  onSamplingPointsChange() {
+    // Handle sampling points change
+    this.reprocessData();
+  }
+
+  onDataVolumeMetricTypeChange() {
+    // Handle data volume metric type change
+    this.reprocessData();
+  }
+
+  onDataVolumeAggregationChange() {
+    // Handle data volume aggregation change
+    this.reprocessData();
+  }
+
+  onLatencyMetricTypeChange() {
+    // Handle latency metric type change
+    this.reprocessData();
+  }
+
+  onLatencyAggregationChange() {
+    // Handle latency aggregation change
+    this.reprocessData();
+  }
+
+  onLatencyTopFlowsChange() {
+    // Handle latency top flows change
+    this.reprocessData();
+  }
+
   private processFlowData(result: FlowAnalysisResult): ProcessedFlowData {
     const organizeSettings: OrganizeSettings = {
       source: this.selectedSourceOrganize,
@@ -2184,50 +2420,105 @@ export class FlowAnalyzerComponent implements OnInit {
     const textColor = isDarkMode ? '#e8eaed' : '#3c4043';
     const gridColor = isDarkMode ? '#3c4043' : '#e8eaed';
 
+    // Determine if we need dual axes
+    const hasBothMetrics = this.dataVolumeEnabled && this.latencyEnabled;
+    
+    // Configure scales based on enabled metrics
+    const scales: any = {
+      x: {
+        type: 'time',
+        time: {
+          displayFormats: {
+            minute: 'HH:mm',
+            hour: 'HH:mm'
+          }
+        },
+        title: {
+          display: true,
+          text: 'Time',
+          color: textColor
+        },
+        ticks: {
+          color: textColor
+        },
+        grid: {
+          color: gridColor
+        }
+      }
+    };
+
+    // Configure Y axes based on enabled metrics
+    if (hasBothMetrics) {
+      // Dual axis configuration
+      scales.y = {
+        type: 'linear',
+        position: 'left',
+        beginAtZero: true,
+        title: {
+          display: true,
+          text: this.getDataVolumeYAxisLabel(),
+          color: textColor
+        },
+        ticks: {
+          color: textColor,
+          callback: (value: any) => {
+            return this.formatBytes(value);
+          }
+        },
+        grid: {
+          color: gridColor
+        }
+      };
+      
+      scales.y1 = {
+        type: 'linear',
+        position: 'right',
+        beginAtZero: true,
+        title: {
+          display: true,
+          text: 'Latency (ms)',
+          color: textColor
+        },
+        ticks: {
+          color: textColor
+        },
+        grid: {
+          drawOnChartArea: false
+        }
+      };
+    } else {
+      // Single axis configuration
+      scales.y = {
+        beginAtZero: true,
+        title: {
+          display: true,
+          text: this.getYAxisLabel(),
+          color: textColor
+        },
+        ticks: {
+          color: textColor,
+          callback: (value: any) => {
+            if (this.dataVolumeEnabled) {
+              return this.formatBytes(value);
+            }
+            return value;
+          }
+        },
+        grid: {
+          color: gridColor
+        }
+      };
+    }
+
     this.chart = new Chart(ctx, {
-      type: this.selectedMetricType === 'latency' ? 'line' : 'line',
+      type: 'line',
       data: {
         datasets: datasets
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        scales: {
-          x: {
-            type: 'time',
-            time: {
-              displayFormats: {
-                minute: 'HH:mm',
-                hour: 'HH:mm'
-              }
-            },
-            title: {
-              display: true,
-              text: 'Time',
-              color: textColor
-            },
-            ticks: {
-              color: textColor
-            },
-            grid: {
-              color: gridColor
-            }
-          },
-          y: {
-            beginAtZero: true,
-            title: {
-              display: true,
-              text: this.getYAxisLabel(),
-              color: textColor
-            },
-            ticks: {
-              color: textColor
-            },
-            grid: {
-              color: gridColor
-            }
-          }
-        },
+        scales: scales,
         plugins: {
           legend: {
             display: true,
@@ -2245,7 +2536,19 @@ export class FlowAnalyzerComponent implements OnInit {
             titleColor: textColor,
             bodyColor: textColor,
             borderColor: isDarkMode ? '#5f6368' : '#dadce0',
-            borderWidth: 1
+            borderWidth: 1,
+            callbacks: {
+              label: (context: any) => {
+                const datasetLabel = context.dataset.label;
+                const value = context.parsed.y;
+                
+                if (context.dataset.metricType === 'latency') {
+                  return `${datasetLabel}: ${value.toFixed(2)} ms`;
+                } else {
+                  return `${datasetLabel}: ${this.formatBytes(value)}`;
+                }
+              }
+            }
           }
         },
         interaction: {
@@ -2268,30 +2571,52 @@ export class FlowAnalyzerComponent implements OnInit {
 
     const datasets: any[] = [];
 
-    // Use the top 10 flows from processed data
+    // Use the top flows from processed data
     this.processedFlowData.topFlows.forEach((flow, index) => {
       const color = colors[index % colors.length];
       const label = `${flow.sourceLabel} → ${flow.destinationLabel}`;
       
-      // Create time series data for this specific flow
-      const data = this.generateTimeSeriesForFlow(flow);
-
-      if (data.length > 0) {
-        datasets.push({
-          label: label,
-          data: data,
-          borderColor: color,
-          backgroundColor: color + '20',
-          fill: this.selectedMetricType !== 'latency',
-          tension: 0.1
-        });
+      // Add data volume dataset if enabled
+      if (this.dataVolumeEnabled) {
+        const dataVolumeData = this.generateTimeSeriesForFlow(flow, 'dataVolume');
+        if (dataVolumeData.length > 0) {
+          datasets.push({
+            label: label,
+            data: dataVolumeData,
+            borderColor: color,
+            backgroundColor: color + '20',
+            fill: true,
+            tension: 0.1,
+            yAxisID: this.latencyEnabled ? 'y' : 'y',
+            metricType: 'dataVolume'
+          });
+        }
+      }
+      
+      // Add latency dataset if enabled
+      if (this.latencyEnabled) {
+        const latencyData = this.generateTimeSeriesForFlow(flow, 'latency');
+        if (latencyData.length > 0) {
+          datasets.push({
+            label: label + ' (Latency)',
+            data: latencyData,
+            borderColor: color,
+            backgroundColor: 'transparent',
+            fill: false,
+            tension: 0.1,
+            borderDash: [5, 5], // Dashed line for latency
+            borderWidth: 2,
+            yAxisID: this.dataVolumeEnabled ? 'y1' : 'y',
+            metricType: 'latency'
+          });
+        }
       }
     });
 
     return datasets;
   }
 
-  private generateTimeSeriesForFlow(flow: AggregatedFlow): { x: Date; y: number }[] {
+  private generateTimeSeriesForFlow(flow: AggregatedFlow, metricType?: 'dataVolume' | 'latency'): { x: Date; y: number }[] {
     if (!this.analysisResult) return [];
 
     // Group flow logs by time buckets and aggregate values
@@ -2303,11 +2628,24 @@ export class FlowAnalyzerComponent implements OnInit {
       const currentValue = timeBuckets.get(bucketTime) || 0;
       
       let valueToAdd = 0;
-      switch (this.selectedMetricType) {
-        case 'bytes': valueToAdd = flowLog.bytes; break;
-        case 'packets': valueToAdd = flowLog.packets; break;
-        case 'connections': valueToAdd = 1; break;
-        case 'latency': valueToAdd = flowLog.rttMsec || 0; break;
+      
+      if (metricType === 'latency') {
+        valueToAdd = flowLog.rttMsec || 0;
+      } else if (metricType === 'dataVolume') {
+        // Use data volume metric type
+        switch (this.dataVolumeMetricType) {
+          case 'bytes_sent': valueToAdd = flowLog.bytes; break;
+          case 'packets_sent': valueToAdd = flowLog.packets; break;
+          case 'bytes_and_packets': valueToAdd = flowLog.bytes; break; // Primary metric for dual display
+        }
+      } else {
+        // Fallback to old logic for backward compatibility
+        switch (this.selectedMetricType) {
+          case 'bytes': valueToAdd = flowLog.bytes; break;
+          case 'packets': valueToAdd = flowLog.packets; break;
+          case 'connections': valueToAdd = 1; break;
+          case 'latency': valueToAdd = flowLog.rttMsec || 0; break;
+        }
       }
       
       timeBuckets.set(bucketTime, currentValue + valueToAdd);
@@ -2333,6 +2671,15 @@ export class FlowAnalyzerComponent implements OnInit {
   }
 
   private getYAxisLabel(): string {
+    if (this.dataVolumeEnabled && this.latencyEnabled) {
+      return this.getDataVolumeYAxisLabel();
+    } else if (this.latencyEnabled) {
+      return 'Latency (ms)';
+    } else if (this.dataVolumeEnabled) {
+      return this.getDataVolumeYAxisLabel();
+    }
+    
+    // Fallback to old logic
     switch (this.selectedMetricType) {
       case 'bytes':
         return 'Bytes';
@@ -2347,8 +2694,40 @@ export class FlowAnalyzerComponent implements OnInit {
     }
   }
 
+  private getDataVolumeYAxisLabel(): string {
+    switch (this.dataVolumeMetricType) {
+      case 'bytes_sent':
+        return 'Bytes';
+      case 'packets_sent':
+        return 'Packets';
+      case 'bytes_and_packets':
+        return 'Bytes';
+      default:
+        return 'Value';
+    }
+  }
+
   getChartTitle(): string {
     const timeRange = this.getTimeRangeDisplay();
+    
+    if (this.dataVolumeEnabled && this.latencyEnabled) {
+      return `Highest data flows (${timeRange})`;
+    } else if (this.latencyEnabled) {
+      return `Network latency analysis (${timeRange})`;
+    } else if (this.dataVolumeEnabled) {
+      switch (this.dataVolumeMetricType) {
+        case 'bytes_sent':
+          return `Highest data flows (${timeRange})`;
+        case 'packets_sent':
+          return `Highest packet flows (${timeRange})`;
+        case 'bytes_and_packets':
+          return `Highest data flows (${timeRange})`;
+        default:
+          return `Flow Analysis (${timeRange})`;
+      }
+    }
+    
+    // Fallback to old logic
     switch (this.selectedMetricType) {
       case 'bytes':
         return `Highest data flows (${timeRange})`;

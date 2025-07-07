@@ -124,9 +124,12 @@ import { CreateVmInstanceComponent } from './components/vm-instances/create-vm-i
 import { AwsConfigComponent } from './components/aws-config/aws-config.component';
 import { InstanceTemplatesComponent } from './components/instance-templates/instance-templates.component';
 import { InstanceGroupsComponent } from './components/instance-groups/instance-groups.component';
+import { CloudStorageBucketsComponent } from './components/cloud-storage-buckets/cloud-storage-buckets.component';
+import { CloudStorageBucketDetailsComponent } from './components/cloud-storage-bucket-details/cloud-storage-bucket-details.component';
 import { ComputeEngineService } from './services/compute-engine.service';
 import { InstanceTemplatesService } from './services/instance-templates.service';
 import { InstanceGroupsService } from './services/instance-groups.service';
+import { CloudStorageService } from './services/cloud-storage.service';
 
 @NgModule({
   declarations: [
@@ -204,7 +207,9 @@ import { InstanceGroupsService } from './services/instance-groups.service';
     CreateVmInstanceComponent,
     AwsConfigComponent,
     InstanceTemplatesComponent,
-    InstanceGroupsComponent
+    InstanceGroupsComponent,
+    CloudStorageBucketsComponent,
+    CloudStorageBucketDetailsComponent
   ],
   imports: [
     BrowserModule,
@@ -232,7 +237,7 @@ import { InstanceGroupsService } from './services/instance-groups.service';
     TextFieldModule,
     MatStepperModule
   ],
-  providers: [AuthService, GoogleAnalyticsService, VpcService, TPPIService, PacketMirroringService, NetworkHealthMonitorService, AppNetaService, CloudNatService, GkeClusterService, GeminiAiService, GlobalFrontendService, SecureWebProxyService, UrlListsService, ComputeEngineService, InstanceTemplatesService, InstanceGroupsService],
+  providers: [AuthService, GoogleAnalyticsService, VpcService, TPPIService, PacketMirroringService, NetworkHealthMonitorService, AppNetaService, CloudNatService, GkeClusterService, GeminiAiService, GlobalFrontendService, SecureWebProxyService, UrlListsService, ComputeEngineService, InstanceTemplatesService, InstanceGroupsService, CloudStorageService],
   bootstrap: [AppComponent]
 })
 export class AppModule { } 
