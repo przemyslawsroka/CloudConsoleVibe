@@ -45,9 +45,23 @@ import { FormControl } from '@angular/forms';
         <button mat-icon-button matTooltip="Show filter options">
           <mat-icon>help_outline</mat-icon>
         </button>
-        <button mat-icon-button matTooltip="Column display options">
+        <button mat-icon-button 
+                matTooltip="Column display options"
+                [matMenuTriggerFor]="columnMenu">
           <mat-icon>view_column</mat-icon>
         </button>
+        <mat-menu #columnMenu="matMenu" class="column-menu">
+          <div mat-menu-item *ngFor="let column of availableColumns" 
+               (click)="$event.stopPropagation()" 
+               class="column-menu-item">
+            <mat-checkbox 
+              [checked]="isColumnVisible(column.key)"
+              (change)="toggleColumn(column.key, $event.checked)"
+              [disabled]="column.required">
+              {{ column.label }}
+            </mat-checkbox>
+          </div>
+        </mat-menu>
       </div>
 
       <!-- Loading spinner -->
@@ -445,14 +459,77 @@ import { FormControl } from '@angular/forms';
         overflow-x: scroll;
       }
     }
+
+    /* Column menu styles */
+    ::ng-deep .column-menu {
+      min-width: 200px;
+    }
+
+    .column-menu-item {
+      padding: 0 !important;
+      height: auto !important;
+      line-height: normal !important;
+    }
+
+    .column-menu-item mat-checkbox {
+      padding: 8px 16px;
+      width: 100%;
+      margin: 0;
+    }
+
+    ::ng-deep .column-menu-item .mat-mdc-checkbox {
+      width: 100%;
+      justify-content: flex-start;
+    }
+
+    ::ng-deep .column-menu-item .mat-mdc-checkbox .mdc-checkbox {
+      margin-right: 8px;
+    }
+
+    ::ng-deep .column-menu-item .mat-mdc-checkbox .mdc-form-field {
+      width: 100%;
+    }
+
+    ::ng-deep .column-menu-item .mat-mdc-checkbox .mat-mdc-checkbox-label {
+      font-size: 14px;
+      color: var(--text-color);
+      font-weight: 400;
+    }
+
+    ::ng-deep .column-menu-item .mat-mdc-checkbox[disabled] .mat-mdc-checkbox-label {
+      opacity: 0.6;
+      color: var(--text-secondary-color);
+    }
+
+    ::ng-deep .column-menu .mat-mdc-menu-content {
+      padding: 4px 0;
+    }
   `]
 })
 export class CloudNatComponent implements OnInit {
   natGateways: CloudNatGateway[] = [];
   filteredData: CloudNatGateway[] = [];
-  displayedColumns: string[] = [
+  
+  // All available columns with their configuration
+  availableColumns = [
+    { key: 'select', label: 'Select', required: true },
+    { key: 'name', label: 'Gateway name', required: false },
+    { key: 'network', label: 'Network', required: false },
+    { key: 'region', label: 'Region', required: false },
+    { key: 'natType', label: 'NAT type', required: false },
+    { key: 'cloudRouter', label: 'Cloud router', required: false },
+    { key: 'status', label: 'Status', required: false },
+    { key: 'actions', label: 'Actions', required: true }
+  ];
+
+  // Default columns to display
+  private defaultColumns: string[] = [
     'select', 'name', 'network', 'region', 'natType', 'cloudRouter', 'status', 'actions'
   ];
+  
+  displayedColumns: string[] = [];
+  private storageKey = 'cloudNatVisibleColumns';
+  
   selection = new SelectionModel<CloudNatGateway>(true, []);
   filterControl = new FormControl('');
   projectId: string | null = null;
@@ -468,6 +545,9 @@ export class CloudNatComponent implements OnInit {
   ) {}
 
   ngOnInit() {
+    // Load column visibility settings from storage
+    this.loadColumnSettings();
+    
     // Subscribe to project changes
     this.projectService.currentProject$.subscribe((project: Project | null) => {
       this.projectId = project?.id || null;
@@ -650,5 +730,50 @@ export class CloudNatComponent implements OnInit {
     this.isAllSelected() ?
       this.selection.clear() :
       this.filteredData.forEach(row => this.selection.select(row));
+  }
+
+  // Column visibility management methods
+  loadColumnSettings() {
+    const savedColumns = localStorage.getItem(this.storageKey);
+    if (savedColumns) {
+      try {
+        const parsedColumns = JSON.parse(savedColumns);
+        this.displayedColumns = parsedColumns;
+      } catch (error) {
+        console.error('Error parsing saved column settings:', error);
+        this.displayedColumns = [...this.defaultColumns];
+      }
+    } else {
+      this.displayedColumns = [...this.defaultColumns];
+    }
+  }
+
+  saveColumnSettings() {
+    localStorage.setItem(this.storageKey, JSON.stringify(this.displayedColumns));
+  }
+
+  isColumnVisible(columnKey: string): boolean {
+    return this.displayedColumns.includes(columnKey);
+  }
+
+  toggleColumn(columnKey: string, isVisible: boolean) {
+    if (isVisible && !this.displayedColumns.includes(columnKey)) {
+      // Add column in the correct order based on availableColumns
+      const orderedColumns: string[] = [];
+      for (const column of this.availableColumns) {
+        if (this.displayedColumns.includes(column.key) || column.key === columnKey) {
+          orderedColumns.push(column.key);
+        }
+      }
+      this.displayedColumns = orderedColumns;
+    } else if (!isVisible && this.displayedColumns.includes(columnKey)) {
+      // Remove column unless it's required
+      const column = this.availableColumns.find(col => col.key === columnKey);
+      if (!column?.required) {
+        this.displayedColumns = this.displayedColumns.filter(col => col !== columnKey);
+      }
+    }
+    
+    this.saveColumnSettings();
   }
 } 
