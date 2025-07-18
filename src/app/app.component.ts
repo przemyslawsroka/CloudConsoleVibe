@@ -391,6 +391,7 @@ export class AppComponent implements OnInit {
       items: [
         { name: 'VPC networks', route: '/vpc', icon: 'cloud' },
         { name: 'IP addresses', route: '/ip-addresses', icon: 'language' },
+        { name: 'Internal ranges', route: '/internal-ranges', icon: 'my_location' },
         { name: 'Cloud Number Registry', route: '/cnr', icon: 'public' },
         { name: 'Routes', route: '/routes', icon: 'route' }
       ]

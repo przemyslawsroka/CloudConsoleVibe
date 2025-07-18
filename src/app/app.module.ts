@@ -56,6 +56,9 @@ import { TopologyComponent } from './components/topology/topology.component';
 import { IpAddressesComponent } from './components/ip-addresses/ip-addresses.component';
 import { ReserveIpDialogComponent } from './components/ip-addresses/reserve-ip-dialog.component';
 import { ReserveIpComponent } from './components/ip-addresses/reserve-ip.component';
+import { InternalRangesComponent } from './components/internal-ranges/internal-ranges.component';
+import { ReserveInternalRangeDialogComponent } from './components/internal-ranges/reserve-internal-range-dialog.component';
+import { InternalRangesService } from './services/internal-ranges.service';
 import { FirewallManagementComponent } from './components/firewall-management/firewall-management.component';
 import { CreateFirewallRuleDialogComponent } from './components/firewall-management/create-firewall-rule-dialog.component';
 import { FlowAnalyzerComponent } from './components/flow-analyzer/flow-analyzer.component';
@@ -149,6 +152,8 @@ import { CloudStorageService } from './services/cloud-storage.service';
     IpAddressesComponent,
     ReserveIpDialogComponent,
     ReserveIpComponent,
+    InternalRangesComponent,
+    ReserveInternalRangeDialogComponent,
     FirewallManagementComponent,
     CreateFirewallRuleDialogComponent,
     FlowAnalyzerComponent,
@@ -239,7 +244,7 @@ import { CloudStorageService } from './services/cloud-storage.service';
     TextFieldModule,
     MatStepperModule
   ],
-  providers: [AuthService, GoogleAnalyticsService, VpcService, TPPIService, PacketMirroringService, NetworkHealthMonitorService, AppNetaService, CloudNatService, GkeClusterService, GeminiAiService, GlobalFrontendService, SecureWebProxyService, UrlListsService, ComputeEngineService, InstanceTemplatesService, InstanceGroupsService, CloudStorageService],
+  providers: [AuthService, GoogleAnalyticsService, VpcService, TPPIService, PacketMirroringService, NetworkHealthMonitorService, AppNetaService, CloudNatService, GkeClusterService, GeminiAiService, GlobalFrontendService, SecureWebProxyService, UrlListsService, ComputeEngineService, InstanceTemplatesService, InstanceGroupsService, CloudStorageService, InternalRangesService],
   bootstrap: [AppComponent]
 })
 export class AppModule { } 
