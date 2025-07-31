@@ -292,7 +292,7 @@ interface EndpointHierarchy {
               </div>
 
               <!-- Cloud Services (Run, Functions, App Engine, etc.) -->
-              <div *ngIf="isSourceEndpointTypeOneOf(['cloudRun', 'cloudFunction', 'appEngine', 'cloudBuild'])">
+              <div *ngIf="isSourceEndpointTypeOneOf(['cloudRun', 'cloudRunJobs', 'cloudFunctionV1', 'cloudRunFunction', 'appEngine', 'cloudBuild'])">
                 <mat-form-field appearance="outline" class="full-width">
                   <mat-label>Service/Function *</mat-label>
                   <mat-select formControlName="sourceService">
@@ -438,6 +438,20 @@ interface EndpointHierarchy {
                   </mat-select>
                   <mat-error *ngIf="testForm.get('destinationCluster')?.hasError('required')">
                     Cluster is required
+                  </mat-error>
+                </mat-form-field>
+              </div>
+
+              <!-- Serverless Services (Cloud Run, Functions, App Engine, etc.) -->
+              <div *ngIf="isDestinationEndpointTypeOneOf(['cloudRun', 'cloudRunJobs', 'cloudFunctionV1', 'cloudRunFunction', 'appEngine'])">
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Service/Function *</mat-label>
+                  <mat-select formControlName="destinationService">
+                    <mat-option value="service-1">service-1</mat-option>
+                    <mat-option value="service-2">service-2</mat-option>
+                  </mat-select>
+                  <mat-error *ngIf="testForm.get('destinationService')?.hasError('required')">
+                    Service/Function is required
                   </mat-error>
                 </mat-form-field>
               </div>
@@ -900,8 +914,10 @@ export class CreateConnectivityTestComponent implements OnInit {
         { value: 'gkeCluster', label: 'GKE cluster control plane', requiresDetails: true, detailsType: 'cluster' }
       ],
       'serverless': [
-        { value: 'cloudRun', label: 'Cloud Run service', requiresDetails: true, detailsType: 'service' },
-        { value: 'cloudFunction', label: 'Cloud Function', requiresDetails: true, detailsType: 'service' },
+        { value: 'cloudRun', label: 'Cloud Run Service', requiresDetails: true, detailsType: 'service' },
+        { value: 'cloudRunJobs', label: 'Cloud Run Jobs', requiresDetails: true, detailsType: 'service' },
+        { value: 'cloudFunctionV1', label: 'Cloud Function v1', requiresDetails: true, detailsType: 'service' },
+        { value: 'cloudRunFunction', label: 'Cloud Run Function', requiresDetails: true, detailsType: 'service' },
         { value: 'appEngine', label: 'App Engine', requiresDetails: true, detailsType: 'service' }
       ],
       'data-services': [
@@ -924,6 +940,7 @@ export class CreateConnectivityTestComponent implements OnInit {
       { value: 'googleApis', label: 'Google APIs (via Private Access)', requiresDetails: true, detailsType: 'service' },
       { value: 'separator', label: '---', isCategory: false },
       { value: 'compute-gke', label: 'Compute & GKE...', isCategory: true },
+      { value: 'serverless', label: 'Serverless...', isCategory: true },
       { value: 'network-app', label: 'Network & Application Endpoints...', isCategory: true },
       { value: 'data-services', label: 'Managed Data Services...', isCategory: true }
     ],
@@ -931,6 +948,13 @@ export class CreateConnectivityTestComponent implements OnInit {
       'compute-gke': [
         { value: 'gceInstance', label: 'VM instance', requiresDetails: true, detailsType: 'instance' },
         { value: 'gkeCluster', label: 'GKE cluster control plane', requiresDetails: true, detailsType: 'cluster' }
+      ],
+      'serverless': [
+        { value: 'cloudRun', label: 'Cloud Run Service', requiresDetails: true, detailsType: 'service' },
+        { value: 'cloudRunJobs', label: 'Cloud Run Jobs', requiresDetails: true, detailsType: 'service' },
+        { value: 'cloudFunctionV1', label: 'Cloud Function v1', requiresDetails: true, detailsType: 'service' },
+        { value: 'cloudRunFunction', label: 'Cloud Run Function', requiresDetails: true, detailsType: 'service' },
+        { value: 'appEngine', label: 'App Engine', requiresDetails: true, detailsType: 'service' }
       ],
       'network-app': [
         { value: 'loadBalancer', label: 'Load Balancer', requiresDetails: true, detailsType: 'instance' },
