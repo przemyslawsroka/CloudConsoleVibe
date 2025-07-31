@@ -560,24 +560,16 @@ interface EndpointHierarchy {
             <mat-form-field appearance="outline" class="full-width">
               <mat-label>Test name *</mat-label>
               <input matInput formControlName="displayName" 
-                     placeholder="Auto-generated based on endpoints"
-                     (focus)="onTestNameManualEdit()"
+                     placeholder="Auto-generated based on source and destination"
                      (input)="onTestNameManualEdit()">
-              <mat-hint *ngIf="!userHasEditedName">Auto-generated when both endpoints are selected</mat-hint>
-              <mat-hint *ngIf="userHasEditedName">Lowercase letters, numbers, hyphens allowed</mat-hint>
+              <mat-hint *ngIf="!userHasEditedName">Automatically generated from source and destination selection</mat-hint>
+              <mat-hint *ngIf="userHasEditedName">Custom name - lowercase letters, numbers, hyphens allowed</mat-hint>
               <mat-error *ngIf="testForm.get('displayName')?.hasError('required')">
                 Test name is required
               </mat-error>
               <mat-error *ngIf="testForm.get('displayName')?.hasError('pattern')">
                 Only lowercase letters, numbers, and hyphens are allowed
               </mat-error>
-              <button *ngIf="userHasEditedName && generateConnectivityTestName()" 
-                      matSuffix mat-icon-button type="button"
-                      (click)="resetToGeneratedName()"
-                      matTooltip="Reset to auto-generated name"
-                      class="reset-name-btn">
-                <mat-icon>refresh</mat-icon>
-              </button>
             </mat-form-field>
           </div>
 
@@ -656,17 +648,7 @@ interface EndpointHierarchy {
       position: relative;
     }
 
-    .reset-name-btn {
-      position: absolute;
-      right: 8px;
-      top: 50%;
-      transform: translateY(-50%);
-      color: #1a73e8;
-    }
 
-    .reset-name-btn:hover {
-      background-color: rgba(26, 115, 232, 0.1);
-    }
 
     .form-section {
       margin-bottom: 24px;
@@ -1224,24 +1206,8 @@ export class CreateConnectivityTestComponent implements OnInit {
       });
     });
 
-    // Watch for manual edits to the displayName field
-    this.testForm.get('displayName')?.valueChanges.subscribe((value) => {
-      // If the field is not empty and user hasn't been flagged as editing manually,
-      // this might be the first manual edit
-      if (value && !this.userHasEditedName) {
-        // Check if this change came from our auto-generation (ignore it)
-        // or from user input (flag it)
-        setTimeout(() => {
-          if (this.testForm.get('displayName')?.value === value) {
-            // The value persisted, likely user input
-            const generatedValue = this.generateConnectivityTestName();
-            if (value !== generatedValue && value.trim() !== '') {
-              this.userHasEditedName = true;
-            }
-          }
-        }, 100);
-      }
-    });
+    // Initial name generation
+    this.updateTestName();
   }
 
   private clearSourceValidators() {
@@ -1837,12 +1803,23 @@ export class CreateConnectivityTestComponent implements OnInit {
   }
 
   onTestNameManualEdit(): void {
-    this.userHasEditedName = true;
-  }
-
-  resetToGeneratedName(): void {
-    this.userHasEditedName = false;
-    this.updateTestName();
+    // Check if the current value differs from what would be auto-generated
+    setTimeout(() => {
+      const currentValue = this.testForm.get('displayName')?.value || '';
+      const generatedValue = this.generateConnectivityTestName();
+      
+      // If user typed something different from auto-generated name, mark as manually edited
+      if (currentValue.trim() !== '' && currentValue !== generatedValue) {
+        this.userHasEditedName = true;
+      } else if (currentValue.trim() === '' || currentValue === generatedValue) {
+        // If user cleared the field or made it match generated name, allow auto-generation again
+        this.userHasEditedName = false;
+        if (currentValue.trim() === '' && generatedValue) {
+          // Auto-fill if field is empty and we have a generated name
+          this.updateTestName();
+        }
+      }
+    }, 10);
   }
 
   onCancel() {
