@@ -171,8 +171,8 @@ interface EndpointHierarchy {
                   </mat-radio-group>
                 </div>
 
-                <!-- Project and VPC selectors - only for GCP VPC and private non-GCP -->
-                <div *ngIf="testForm.get('sourceIpType')?.value === 'gcp-vpc' || testForm.get('sourceIpType')?.value === 'private-non-gcp'">
+                <!-- Project and VPC selectors - only for GCP VPC -->
+                <div *ngIf="testForm.get('sourceIpType')?.value === 'gcp-vpc'">
                   <mat-form-field appearance="outline" class="full-width" style="margin-top: 16px;">
                     <mat-label>Source IP address or service project</mat-label>
                     <mat-select formControlName="sourceProject">
@@ -186,7 +186,7 @@ interface EndpointHierarchy {
                   </mat-form-field>
 
                   <!-- VPC Network selector - only for GCP VPC -->
-                  <mat-form-field *ngIf="testForm.get('sourceIpType')?.value === 'gcp-vpc'" appearance="outline" class="full-width">
+                  <mat-form-field appearance="outline" class="full-width">
                     <mat-label>VPC Network *</mat-label>
                     <mat-select formControlName="sourceVpcNetwork">
                       <mat-option *ngFor="let network of availableVpcNetworks" [value]="network.value">
@@ -231,6 +231,19 @@ interface EndpointHierarchy {
                         {{resource.displayName}}
                       </mat-option>
                     </mat-select>
+                  </mat-form-field>
+
+                  <!-- Project selector for private non-GCP IPs -->
+                  <mat-form-field *ngIf="testForm.get('sourceConnectionType')?.value" appearance="outline" class="full-width" style="margin-top: 16px;">
+                    <mat-label>{{getSourceProjectLabel()}}</mat-label>
+                    <mat-select formControlName="sourceProject">
+                      <mat-option *ngFor="let project of availableProjects" [value]="project.value">
+                        {{project.displayName}}
+                      </mat-option>
+                    </mat-select>
+                    <button mat-button type="button" matSuffix color="primary" (click)="selectSourceProject()">
+                      Select
+                    </button>
                   </mat-form-field>
                 </div>
               </div>
@@ -1049,7 +1062,7 @@ export class CreateConnectivityTestComponent implements OnInit {
       
       if (ipType === 'private-non-gcp') {
         this.testForm.get('sourceConnectionType')?.setValidators([Validators.required]);
-        this.testForm.get('sourceProject')?.setValidators([Validators.required]);
+        // sourceProject validation will be set when connection type is selected
         // Set defaults when switching to private-non-gcp
         this.testForm.patchValue({
           sourceConnectionType: 'vpn-tunnel',
@@ -1088,14 +1101,20 @@ export class CreateConnectivityTestComponent implements OnInit {
     this.testForm.get('sourceConnectionType')?.valueChanges.subscribe(connectionType => {
       if (connectionType && this.testForm.get('sourceIpType')?.value === 'private-non-gcp') {
         this.testForm.get('sourceConnectionResource')?.setValidators([Validators.required]);
+        this.testForm.get('sourceProject')?.setValidators([Validators.required]);
       } else {
         this.testForm.get('sourceConnectionResource')?.clearValidators();
         // Clear resource value when connection type changes
         if (!connectionType) {
           this.testForm.patchValue({ sourceConnectionResource: '' }, { emitEvent: false });
         }
+        // Only clear sourceProject validators if not gcp-vpc type
+        if (this.testForm.get('sourceIpType')?.value !== 'gcp-vpc') {
+          this.testForm.get('sourceProject')?.clearValidators();
+        }
       }
       this.testForm.get('sourceConnectionResource')?.updateValueAndValidity({ emitEvent: false });
+      this.testForm.get('sourceProject')?.updateValueAndValidity({ emitEvent: false });
       
       // Update cached values to prevent template method calls
       this.updateConnectionResourceData();
@@ -1430,6 +1449,20 @@ export class CreateConnectivityTestComponent implements OnInit {
 
   getProtocol(): string {
     return this.testForm.get('protocol')?.value || '';
+  }
+
+  getSourceProjectLabel(): string {
+    const connectionType = this.testForm.get('sourceConnectionType')?.value;
+    switch (connectionType) {
+      case 'vpn-tunnel':
+        return 'VPN Tunnel Project';
+      case 'interconnect':
+        return 'Interconnect Attachment Project';
+      case 'ncc-router':
+        return 'NCC Router Appliance Project';
+      default:
+        return 'Source IP address or service project';
+    }
   }
 
   // Update cached connection resource data to prevent template method calls
