@@ -1,11 +1,12 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, AfterViewInit, ChangeDetectorRef } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTableDataSource } from '@angular/material/table';
+import { Router, NavigationEnd } from '@angular/router';
+import { filter } from 'rxjs/operators';
 import { ConnectivityTestsService, ConnectivityTest } from '../../services/connectivity-tests.service';
 import { ProjectService, Project } from '../../services/project.service';
 import { SelectionModel } from '@angular/cdk/collections';
-import { CreateConnectivityTestDialogComponent, CreateConnectivityTestDialogData } from './create-connectivity-test-dialog.component';
 
 @Component({
   selector: 'app-connectivity-tests',
@@ -1250,7 +1251,7 @@ import { CreateConnectivityTestDialogComponent, CreateConnectivityTestDialogData
     }
   `]
 })
-export class ConnectivityTestsComponent implements OnInit {
+export class ConnectivityTestsComponent implements OnInit, AfterViewInit {
   connectivityTests: ConnectivityTest[] = [];
   dataSource = new MatTableDataSource<ConnectivityTest>([]);
   displayedColumns: string[] = [
@@ -1269,7 +1270,8 @@ export class ConnectivityTestsComponent implements OnInit {
     private dialog: MatDialog,
     private cdr: ChangeDetectorRef,
     private projectService: ProjectService,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private router: Router
   ) {}
 
   ngOnInit() {
@@ -1279,6 +1281,20 @@ export class ConnectivityTestsComponent implements OnInit {
         this.loadConnectivityTests();
       }
     });
+
+    // Listen for navigation events to refresh data when returning from create page
+    this.router.events.pipe(
+      filter(event => event instanceof NavigationEnd)
+    ).subscribe((event) => {
+      const navEnd = event as NavigationEnd;
+      if (navEnd.url === '/connectivity-tests' && this.projectId) {
+        this.loadConnectivityTests();
+      }
+    });
+  }
+
+  ngAfterViewInit() {
+    // This will help refresh the list when returning from the create page
   }
 
   loadConnectivityTests() {
@@ -1316,50 +1332,7 @@ export class ConnectivityTestsComponent implements OnInit {
   }
 
   createConnectivityTest() {
-    const dialogRef = this.dialog.open(CreateConnectivityTestDialogComponent, {
-      width: '800px',
-      data: { projectId: this.projectId } as CreateConnectivityTestDialogData
-    });
-
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        console.log('Creating connectivity test:', result);
-        
-        if (this.projectId) {
-          this.connectivityTestsService.createConnectivityTest(this.projectId, result).subscribe({
-            next: (newTest) => {
-              this.connectivityTests.push(newTest);
-              this.dataSource.data = [...this.connectivityTests];
-              this.snackBar.open('Connectivity test created successfully', 'Close', { duration: 3000 });
-            },
-            error: (error) => {
-              console.error('Error creating connectivity test:', error);
-              
-              let errorMessage = 'Error creating connectivity test';
-              
-              // Provide more specific error messages based on the error
-              if (error.status === 400) {
-                if (error.error?.error?.message) {
-                  errorMessage = `Invalid request: ${error.error.error.message}`;
-                } else {
-                  errorMessage = 'Invalid request format. Please check your input parameters.';
-                }
-              } else if (error.status === 403) {
-                errorMessage = 'Permission denied. Please check your Network Management API permissions.';
-              } else if (error.status === 409) {
-                errorMessage = 'A connectivity test with this name already exists.';
-              } else if (error.status >= 500) {
-                errorMessage = 'Server error. Please try again later.';
-              } else if (error.status === 0) {
-                errorMessage = 'Network error. Please check your connection.';
-              }
-              
-              this.snackBar.open(errorMessage, 'Close', { duration: 5000 });
-            }
-          });
-        }
-      }
-    });
+    this.router.navigate(['/connectivity-tests/create']);
   }
 
   rerun() {

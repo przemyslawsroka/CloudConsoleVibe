@@ -69,6 +69,7 @@ import { DistributedApplicationWizardComponent } from './components/distributed-
 import { DnsManagementComponent } from './components/dns-management/dns-management.component';
 import { CreateZoneDialogComponent } from './components/dns-management/create-zone-dialog.component';
 import { ConnectivityTestsComponent } from './components/connectivity-tests/connectivity-tests.component';
+import { CreateConnectivityTestComponent } from './components/connectivity-tests/create-connectivity-test.component';
 import { CreateConnectivityTestDialogComponent } from './components/connectivity-tests/create-connectivity-test-dialog.component';
 import { CloudArmorPoliciesComponent } from './components/cloud-armor-policies/cloud-armor-policies.component';
 import { CreateCloudArmorPolicyDialogComponent } from './components/cloud-armor-policies/create-cloud-armor-policy-dialog.component';
@@ -164,6 +165,7 @@ import { CloudStorageService } from './services/cloud-storage.service';
     DnsManagementComponent,
     CreateZoneDialogComponent,
     ConnectivityTestsComponent,
+    CreateConnectivityTestComponent,
     CreateConnectivityTestDialogComponent,
     CloudArmorPoliciesComponent,
     CreateCloudArmorPolicyDialogComponent,
