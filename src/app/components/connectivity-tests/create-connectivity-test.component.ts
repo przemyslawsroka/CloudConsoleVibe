@@ -631,13 +631,13 @@ interface EndpointHierarchy {
       display: flex;
       justify-content: flex-end;
       gap: 16px;
-      margin-top: 32px;
-      padding-top: 24px;
+      margin-top: 24px;
+      padding-top: 16px;
       border-top: 1px solid #e0e0e0;
     }
 
     .page-content {
-      padding: 32px 24px;
+      padding: 24px;
       max-width: 800px;
       margin: 0 auto;
     }
@@ -648,7 +648,7 @@ interface EndpointHierarchy {
 
     .full-width {
       width: 100%;
-      margin-bottom: 24px;
+      margin-bottom: 16px;
     }
 
     .test-name-container {
@@ -668,23 +668,23 @@ interface EndpointHierarchy {
     }
 
     .form-section {
-      margin-bottom: 40px;
-      padding: 24px;
+      margin-bottom: 24px;
+      padding: 20px;
       border: 1px solid #e0e0e0;
       border-radius: 8px;
       background-color: #fafafa;
     }
 
     .form-section h3 {
-      margin: 0 0 24px 0;
+      margin: 0 0 16px 0;
       color: #202124;
       font-size: 18px;
       font-weight: 500;
     }
 
     .ip-type-section {
-      margin-bottom: 24px;
-      padding: 16px 0;
+      margin-bottom: 16px;
+      padding: 12px 0;
     }
 
     .ip-type-label {
@@ -730,8 +730,8 @@ interface EndpointHierarchy {
     }
 
     .connection-type-section {
-      margin-top: 16px;
-      padding: 16px 0;
+      margin-top: 12px;
+      padding: 12px 0;
       border-top: 1px solid #e8eaed;
     }
 
@@ -740,14 +740,14 @@ interface EndpointHierarchy {
       color: #202124;
       font-size: 14px;
       font-weight: 500;
-      margin-bottom: 12px;
+      margin-bottom: 8px;
     }
 
     .connection-type-radio-group {
       display: flex;
       flex-direction: column;
-      gap: 8px;
-      margin-bottom: 16px;
+      gap: 6px;
+      margin-bottom: 12px;
     }
 
     .connection-type-option {
@@ -780,11 +780,11 @@ interface EndpointHierarchy {
     }
 
     .endpoint-selector {
-      margin-bottom: 16px;
+      margin-bottom: 12px;
     }
 
     .category-submenu {
-      margin-top: 12px;
+      margin-top: 8px;
       margin-left: 12px;
     }
 
@@ -801,8 +801,8 @@ interface EndpointHierarchy {
     }
 
     .endpoint-details {
-      margin-top: 16px;
-      padding: 16px;
+      margin-top: 12px;
+      padding: 12px;
       background-color: #f8f9fa;
       border-radius: 8px;
       border: 1px solid #e8eaed;
@@ -812,11 +812,11 @@ interface EndpointHierarchy {
       display: flex;
       align-items: center;
       gap: 12px;
-      padding: 16px;
+      padding: 12px;
       background-color: #e8f0fe;
       border-radius: 8px;
       color: #1558d6;
-      margin-bottom: 16px;
+      margin-bottom: 12px;
     }
 
     .info-message mat-icon {
