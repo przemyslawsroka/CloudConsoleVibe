@@ -13,7 +13,7 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # Configuration
-PROJECT_ID=${PROJECT_ID:-$(gcloud config get-value project)}
+PROJECT_ID=${PROJECT_ID:-"przemeksroka-joonix-service"}
 REGION=${REGION:-"us-central1"}
 FRONTEND_SERVICE="cloudconsolevibe-frontend"
 BACKEND_SERVICE="cloudconsolevibe-backend"

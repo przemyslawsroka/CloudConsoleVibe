@@ -3,7 +3,7 @@
 set -e
 
 # Configuration
-PROJECT_ID=${PROJECT_ID:-"przemeksroka-joonix-log-test"}
+PROJECT_ID=${PROJECT_ID:-"przemeksroka-joonix-service"}
 REGION=${REGION:-"us-central1"}
 SERVICE_NAME="cloud-console-vibe"
 IMAGE_TAG=${IMAGE_TAG:-"latest"}
