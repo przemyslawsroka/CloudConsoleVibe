@@ -48,46 +48,6 @@ interface EndpointHierarchy {
 
       <div class="page-content">
         <form [formGroup]="testForm" class="test-form">
-          
-          <!-- Test name -->
-          <div class="test-name-container">
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Test name *</mat-label>
-              <input matInput formControlName="displayName" 
-                     placeholder="Auto-generated based on endpoints"
-                     (focus)="onTestNameManualEdit()"
-                     (input)="onTestNameManualEdit()">
-              <mat-hint *ngIf="!userHasEditedName">Auto-generated when both endpoints are selected</mat-hint>
-              <mat-hint *ngIf="userHasEditedName">Lowercase letters, numbers, hyphens allowed</mat-hint>
-              <mat-error *ngIf="testForm.get('displayName')?.hasError('required')">
-                Test name is required
-              </mat-error>
-              <mat-error *ngIf="testForm.get('displayName')?.hasError('pattern')">
-                Only lowercase letters, numbers, and hyphens are allowed
-              </mat-error>
-              <button *ngIf="userHasEditedName && generateConnectivityTestName()" 
-                      matSuffix mat-icon-button type="button"
-                      (click)="resetToGeneratedName()"
-                      matTooltip="Reset to auto-generated name"
-                      class="reset-name-btn">
-                <mat-icon>refresh</mat-icon>
-              </button>
-            </mat-form-field>
-          </div>
-
-          <!-- Protocol -->
-          <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Protocol</mat-label>
-            <mat-select formControlName="protocol">
-              <mat-option value="tcp">tcp</mat-option>
-              <mat-option value="udp">udp</mat-option>
-              <mat-option value="esp">esp</mat-option>
-              <mat-option value="icmp">icmp</mat-option>
-            </mat-select>
-            <mat-error *ngIf="testForm.get('protocol')?.hasError('required')">
-              Protocol is required
-            </mat-error>
-          </mat-form-field>
 
           <!-- Source section -->
           <div class="form-section">
@@ -578,6 +538,46 @@ interface EndpointHierarchy {
               <mat-error *ngIf="testForm.get('destinationPort')?.hasError('min') || testForm.get('destinationPort')?.hasError('max')">
                 Port must be between 1 and 65535
               </mat-error>
+            </mat-form-field>
+          </div>
+
+          <!-- Protocol -->
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Protocol</mat-label>
+            <mat-select formControlName="protocol">
+              <mat-option value="tcp">tcp</mat-option>
+              <mat-option value="udp">udp</mat-option>
+              <mat-option value="esp">esp</mat-option>
+              <mat-option value="icmp">icmp</mat-option>
+            </mat-select>
+            <mat-error *ngIf="testForm.get('protocol')?.hasError('required')">
+              Protocol is required
+            </mat-error>
+          </mat-form-field>
+
+          <!-- Test name -->
+          <div class="test-name-container">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Test name *</mat-label>
+              <input matInput formControlName="displayName" 
+                     placeholder="Auto-generated based on endpoints"
+                     (focus)="onTestNameManualEdit()"
+                     (input)="onTestNameManualEdit()">
+              <mat-hint *ngIf="!userHasEditedName">Auto-generated when both endpoints are selected</mat-hint>
+              <mat-hint *ngIf="userHasEditedName">Lowercase letters, numbers, hyphens allowed</mat-hint>
+              <mat-error *ngIf="testForm.get('displayName')?.hasError('required')">
+                Test name is required
+              </mat-error>
+              <mat-error *ngIf="testForm.get('displayName')?.hasError('pattern')">
+                Only lowercase letters, numbers, and hyphens are allowed
+              </mat-error>
+              <button *ngIf="userHasEditedName && generateConnectivityTestName()" 
+                      matSuffix mat-icon-button type="button"
+                      (click)="resetToGeneratedName()"
+                      matTooltip="Reset to auto-generated name"
+                      class="reset-name-btn">
+                <mat-icon>refresh</mat-icon>
+              </button>
             </mat-form-field>
           </div>
 
