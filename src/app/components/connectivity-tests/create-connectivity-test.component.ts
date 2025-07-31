@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { HttpClient } from '@angular/common/http';
 import { ConnectivityTestsService, ConnectivityTestRequest } from '../../services/connectivity-tests.service';
 import { ProjectService, Project } from '../../services/project.service';
 
@@ -251,7 +252,22 @@ interface EndpointHierarchy {
               <!-- My IP Address -->
               <div *ngIf="isSourceEndpointType('myIpAddress')" class="info-message">
                 <mat-icon>info</mat-icon>
-                <span>The test will use your current public IP address as the source.</span>
+                <div class="ip-address-content">
+                  <div *ngIf="isLoadingUserIp" class="loading-ip">
+                    <mat-spinner diameter="16" style="display: inline-block; margin-right: 8px;"></mat-spinner>
+                    Loading your IP address...
+                  </div>
+                  <div *ngIf="!isLoadingUserIp && userIpAddress" class="ip-address-display">
+                    The test will use <strong>{{userIpAddress}}</strong> (your current public IP) as the source.
+                  </div>
+                  <div *ngIf="!isLoadingUserIp && !userIpAddress" class="ip-address-error">
+                    The test will use your current public IP address as the source.
+                    <button mat-button color="primary" (click)="loadUserIpAddress()" style="margin-left: 8px;">
+                      <mat-icon>refresh</mat-icon>
+                      Retry
+                    </button>
+                  </div>
+                </div>
               </div>
 
               <!-- Cloud Shell -->
@@ -807,6 +823,27 @@ interface EndpointHierarchy {
       color: #1a73e8;
     }
 
+    .ip-address-content {
+      flex: 1;
+    }
+
+    .loading-ip {
+      display: flex;
+      align-items: center;
+      color: #5f6368;
+    }
+
+    .ip-address-display strong {
+      color: #1a73e8;
+      font-weight: 600;
+    }
+
+    .ip-address-error {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
     ::ng-deep .mat-option.mat-option-disabled {
       color: #5f6368 !important;
       background-color: transparent !important;
@@ -941,10 +978,15 @@ export class CreateConnectivityTestComponent implements OnInit {
   connectionResourceLabel: string = 'Resource *';
   connectionResourceOptions: { value: string; displayName: string }[] = [];
 
+  // User's IP address
+  userIpAddress: string | null = null;
+  isLoadingUserIp: boolean = false;
+
   constructor(
     private fb: FormBuilder,
     private router: Router,
     private snackBar: MatSnackBar,
+    private http: HttpClient,
     private connectivityTestsService: ConnectivityTestsService,
     private projectService: ProjectService
   ) {
@@ -986,6 +1028,9 @@ export class CreateConnectivityTestComponent implements OnInit {
     
     // Initialize cached connection resource data
     this.updateConnectionResourceData();
+    
+    // Load user's IP address when component initializes
+    this.loadUserIpAddress();
   }
 
   private loadAvailableProjects() {
@@ -1018,6 +1063,24 @@ export class CreateConnectivityTestComponent implements OnInit {
       { value: 'vpc-network-2', displayName: 'vpc-network-2' },
       { value: 'shared-vpc-1', displayName: 'shared-vpc-1' }
     ];
+  }
+
+  loadUserIpAddress() {
+    this.isLoadingUserIp = true;
+    this.userIpAddress = null;
+    
+    // Use ipify.org service to get user's public IP address
+    this.http.get('https://api.ipify.org?format=json').subscribe({
+      next: (response: any) => {
+        this.userIpAddress = response.ip;
+        this.isLoadingUserIp = false;
+      },
+      error: (error) => {
+        console.error('Error loading user IP address:', error);
+        this.userIpAddress = null;
+        this.isLoadingUserIp = false;
+      }
+    });
   }
 
   private setupFormValidation() {
