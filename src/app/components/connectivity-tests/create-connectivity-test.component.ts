@@ -1450,9 +1450,17 @@ export class CreateConnectivityTestComponent implements OnInit {
         this.selectedDestinationCategory = 'compute-gke';
         this.testForm.patchValue({
           destinationCategory: 'compute-gke',
-          destinationEndpointType: 'gceInstance'
+          destinationEndpointType: 'gceInstance',
+          destinationPort: 22
         });
         this.resetDestinationDetails();
+        // Set up validation for the auto-selected destination
+        this.clearDestinationValidators();
+        this.setDestinationValidators('gceInstance');
+        // Trigger name generation after setting up destination
+        setTimeout(() => {
+          this.updateTestName();
+        }, 100);
       }
     }
   }
@@ -1759,6 +1767,9 @@ export class CreateConnectivityTestComponent implements OnInit {
       
       case 'cloudShell':
         return 'cloud-shell';
+      
+      case 'cloudConsoleSsh':
+        return 'console-ssh';
       
       case 'gceInstance':
         const instanceName = this.extractResourceName(formValue.sourceInstance);
