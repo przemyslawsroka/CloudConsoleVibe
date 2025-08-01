@@ -493,7 +493,7 @@ interface EndpointHierarchy {
               </div>
 
               <!-- Serverless Services (Cloud Run, Functions, App Engine, etc.) -->
-              <div *ngIf="isDestinationEndpointTypeOneOf(['cloudRun', 'cloudRunJobs', 'cloudFunctionV1', 'cloudRunFunction', 'appEngine'])">
+              <div *ngIf="isDestinationEndpointTypeOneOf(['cloudRun', 'cloudRunJobs', 'cloudFunctionV1', 'cloudRunFunction', 'appEngine', 'cloudBuild'])">
                 <mat-form-field appearance="outline" class="full-width">
                   <mat-label>Service/Function *</mat-label>
                   <mat-select formControlName="destinationService">
@@ -993,10 +993,12 @@ export class CreateConnectivityTestComponent implements OnInit {
       { value: 'domainName', label: 'Domain Name', requiresDetails: true, detailsType: 'domain' },
       { value: 'googleApis', label: 'Google APIs (via Private Access)', requiresDetails: true, detailsType: 'service' },
       { value: 'separator', label: '---', isCategory: false },
+      { value: 'application', label: 'Application Endpoints...', isCategory: true },
+      { value: 'cicd', label: 'CI/CD...', isCategory: true },
       { value: 'compute-gke', label: 'Compute & GKE...', isCategory: true },
-      { value: 'serverless', label: 'Serverless...', isCategory: true },
-      { value: 'network-app', label: 'Network & Application Endpoints...', isCategory: true },
-      { value: 'data-services', label: 'Managed Data Services...', isCategory: true }
+      { value: 'data-services', label: 'Managed Data Services...', isCategory: true },
+      { value: 'network', label: 'Network...', isCategory: true },
+      { value: 'serverless', label: 'Serverless...', isCategory: true }
     ],
     categories: {
       'compute-gke': [
@@ -1013,12 +1015,17 @@ export class CreateConnectivityTestComponent implements OnInit {
         { value: 'cloudRunFunction', label: 'Cloud Run Function', requiresDetails: true, detailsType: 'service' },
         { value: 'appEngine', label: 'App Engine', requiresDetails: true, detailsType: 'service' }
       ],
-      'network-app': [
-        { value: 'loadBalancer', label: 'Load Balancer', requiresDetails: true, detailsType: 'instance' },
-        { value: 'subnetwork', label: 'Subnetwork', requiresDetails: true, detailsType: 'custom' },
-        { value: 'pscEndpoint', label: 'PSC endpoint', requiresDetails: true, detailsType: 'instance' },
+      'application': [
         { value: 'appHubService', label: 'AppHub Service', requiresDetails: true, detailsType: 'service' },
         { value: 'iapResource', label: 'IAP-protected resource', requiresDetails: true, detailsType: 'instance' }
+      ],
+      'cicd': [
+        { value: 'cloudBuild', label: 'Cloud Build private worker', requiresDetails: true, detailsType: 'service' }
+      ],
+      'network': [
+        { value: 'loadBalancer', label: 'Load Balancer', requiresDetails: true, detailsType: 'instance' },
+        { value: 'subnetwork', label: 'Subnetwork', requiresDetails: true, detailsType: 'custom' },
+        { value: 'pscEndpoint', label: 'PSC endpoint', requiresDetails: true, detailsType: 'instance' }
       ],
       'data-services': [
         { value: 'cloudSqlInstance', label: 'Cloud SQL instance', requiresDetails: true, detailsType: 'instance' },
@@ -1392,6 +1399,7 @@ export class CreateConnectivityTestComponent implements OnInit {
       case 'cloudFunctionV1':
       case 'cloudRunFunction':
       case 'appEngine':
+      case 'cloudBuild':
         this.testForm.get('destinationService')?.setValidators([Validators.required]);
         break;
     }
@@ -2004,6 +2012,25 @@ export class CreateConnectivityTestComponent implements OnInit {
           break;
         case 'iapResource':
           destination.iapResource = formValue.destinationInstance;
+          break;
+        case 'gkeWorkload':
+        case 'gkePod':
+          destination.gkeCluster = formValue.destinationCluster;
+          destination.gkeWorkload = formValue.destinationWorkload;
+          destination.workloadType = formValue.destinationEndpointType;
+          break;
+        case 'gkeService':
+          destination.gkeCluster = formValue.destinationCluster;
+          destination.gkeService = formValue.destinationService;
+          break;
+        case 'cloudRun':
+        case 'cloudRunJobs':
+        case 'cloudFunctionV1':
+        case 'cloudRunFunction':
+        case 'appEngine':
+        case 'cloudBuild':
+          destination.service = formValue.destinationService;
+          destination.serviceType = formValue.destinationEndpointType;
           break;
         case 'cloudSqlInstance':
         case 'cloudSpanner':
