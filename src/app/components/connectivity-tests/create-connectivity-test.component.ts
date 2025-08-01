@@ -1301,6 +1301,17 @@ export class CreateConnectivityTestComponent implements OnInit {
       });
     });
 
+    // Special handling for destination instance changes to ensure SSH-in-browser scenarios work
+    this.testForm.get('destinationInstance')?.valueChanges.subscribe((value) => {
+      if (this.testForm.get('sourceEndpointType')?.value === 'cloudConsoleSsh') {
+        // Always regenerate name for SSH-in-browser when destination changes
+        setTimeout(() => {
+          this.userHasEditedName = false; // Ensure we can auto-generate
+          this.updateTestName();
+        }, 50);
+      }
+    });
+
     // Initial name generation
     this.updateTestName();
   }
@@ -1460,6 +1471,10 @@ export class CreateConnectivityTestComponent implements OnInit {
         this.setDestinationValidators('gceInstance');
         // Update validity to trigger any necessary subscriptions
         this.testForm.get('destinationEndpointType')?.updateValueAndValidity();
+        // Reset userHasEditedName flag to ensure auto-generation works
+        this.userHasEditedName = false;
+        // Clear the test name initially for SSH scenarios
+        this.testForm.patchValue({ displayName: '' }, { emitEvent: false });
       }
     }
   }
