@@ -1448,19 +1448,18 @@ export class CreateConnectivityTestComponent implements OnInit {
       // Auto-set destination for Cloud Console SSH-in-browser
       if (value === 'cloudConsoleSsh') {
         this.selectedDestinationCategory = 'compute-gke';
+        // Reset destination details first, then set new values
+        this.resetDestinationDetails();
         this.testForm.patchValue({
           destinationCategory: 'compute-gke',
           destinationEndpointType: 'gceInstance',
           destinationPort: 22
-        });
-        this.resetDestinationDetails();
+        }, { emitEvent: false }); // Don't emit events during auto-setup
         // Set up validation for the auto-selected destination
         this.clearDestinationValidators();
         this.setDestinationValidators('gceInstance');
-        // Trigger name generation after setting up destination
-        setTimeout(() => {
-          this.updateTestName();
-        }, 100);
+        // Update validity to trigger any necessary subscriptions
+        this.testForm.get('destinationEndpointType')?.updateValueAndValidity();
       }
     }
   }
