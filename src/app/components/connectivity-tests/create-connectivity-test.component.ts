@@ -234,7 +234,13 @@ interface EndpointHierarchy {
               <!-- Cloud Shell -->
               <div *ngIf="isSourceEndpointType('cloudShell')" class="info-message">
                 <mat-icon>info</mat-icon>
-                <span>The test will originate from your Cloud Shell environment.</span>
+                <span>The test will use <b>34.135.171.161</b> (your current public IP of Cloud Shell) as the source.</span>
+              </div>
+
+              <!-- Cloud Console SSH-in-browser -->
+              <div *ngIf="isSourceEndpointType('cloudConsoleSsh')" class="info-message">
+                <mat-icon>info</mat-icon>
+                <span>We will analyze connectivity from your IP address via <b>Identity Aware Proxy</b> to particular VM of choice.</span>
               </div>
 
               <!-- VM Instance -->
@@ -953,6 +959,7 @@ export class CreateConnectivityTestComponent implements OnInit {
       { value: 'ipAddress', label: 'IP address', requiresDetails: true, detailsType: 'ip' },
       { value: 'myIpAddress', label: 'My IP address', requiresDetails: false },
       { value: 'cloudShell', label: 'Cloud Shell', requiresDetails: false },
+      { value: 'cloudConsoleSsh', label: 'Cloud Console SSH-in-browser', requiresDetails: false },
       { value: 'separator', label: '---', isCategory: false },
       { value: 'compute-gke', label: 'Compute & GKE...', isCategory: true },
       { value: 'serverless', label: 'Serverless...', isCategory: true },
@@ -1437,6 +1444,16 @@ export class CreateConnectivityTestComponent implements OnInit {
         sourceEndpointType: value
       });
       this.resetSourceDetails();
+      
+      // Auto-set destination for Cloud Console SSH-in-browser
+      if (value === 'cloudConsoleSsh') {
+        this.selectedDestinationCategory = 'compute-gke';
+        this.testForm.patchValue({
+          destinationCategory: 'compute-gke',
+          destinationEndpointType: 'gceInstance'
+        });
+        this.resetDestinationDetails();
+      }
     }
   }
 
@@ -1952,6 +1969,9 @@ export class CreateConnectivityTestComponent implements OnInit {
           break;
         case 'cloudShell':
           source.type = 'cloud-shell';
+          break;
+        case 'cloudConsoleSsh':
+          source.type = 'cloud-console-ssh';
           break;
         case 'gceInstance':
           source.instance = formValue.sourceInstance;
