@@ -248,7 +248,7 @@ interface EndpointHierarchy {
               <div *ngIf="isSourceEndpointType('gceInstance')">
                 <mat-form-field appearance="outline" class="full-width">
                   <mat-label>Source instance *</mat-label>
-                  <mat-select formControlName="sourceInstance">
+                  <mat-select formControlName="sourceInstance" (selectionChange)="updateTestName()">
                     <mat-option *ngIf="isLoadingSourceResources" disabled>
                       <mat-spinner diameter="16" style="display: inline-block; margin-right: 8px;"></mat-spinner>
                       Loading instances...
@@ -470,7 +470,7 @@ interface EndpointHierarchy {
               <div *ngIf="isDestinationEndpointType('gceInstance')">
                 <mat-form-field appearance="outline" class="full-width">
                   <mat-label>Destination instance *</mat-label>
-                  <mat-select formControlName="destinationInstance">
+                  <mat-select formControlName="destinationInstance" (selectionChange)="updateTestName()">
                     <mat-option *ngIf="isLoadingDestinationResources" disabled>
                       <mat-spinner diameter="16" style="display: inline-block; margin-right: 8px;"></mat-spinner>
                       Loading instances...
@@ -1091,13 +1091,13 @@ export class CreateConnectivityTestComponent implements OnInit {
       { value: 'ipAddress', label: 'IP address', requiresDetails: true, detailsType: 'ip' },
       { value: 'domainName', label: 'Domain Name', requiresDetails: true, detailsType: 'domain' },
       { value: 'googleApis', label: 'Google APIs (via Private Access)', requiresDetails: true, detailsType: 'service' },
-      { value: 'application', label: 'Application Endpoints...', isCategory: true },
-      { value: 'cicd', label: 'CI/CD...', isCategory: true },
       { value: 'gceInstance', label: 'VM instance', requiresDetails: true, detailsType: 'instance' },
       { value: 'gke', label: 'GKE...', isCategory: true },
+      { value: 'serverless', label: 'Serverless...', isCategory: true },
       { value: 'data-services', label: 'Managed Data Services...', isCategory: true },
-      { value: 'network', label: 'Network...', isCategory: true },
-      { value: 'serverless', label: 'Serverless...', isCategory: true }
+      { value: 'application', label: 'Application Endpoints...', isCategory: true },
+      { value: 'cicd', label: 'CI/CD...', isCategory: true },
+      { value: 'network', label: 'Network...', isCategory: true }
     ],
     categories: {
       'gke': [
@@ -2084,9 +2084,12 @@ export class CreateConnectivityTestComponent implements OnInit {
   extractResourceName(resourcePath: string): string {
     if (!resourcePath) return '';
     
-    // Extract name from GCP resource paths like "projects/X/zones/Y/instances/name"
-    const parts = resourcePath.split('/');
-    return parts[parts.length - 1] || resourcePath;
+    // Handles full GCP resource paths and simple names
+    if (resourcePath.includes('/')) {
+      const parts = resourcePath.split('/');
+      return parts[parts.length - 1];
+    }
+    return resourcePath;
   }
 
   sanitizeName(name: string): string {
@@ -2125,15 +2128,20 @@ export class CreateConnectivityTestComponent implements OnInit {
     return this.sanitizeName(rawName);
   }
 
-  updateTestName(): void {
+  public updateTestName(): void {
     if (this.userHasEditedName) {
       return; // Don't auto-generate if user has manually edited the name
     }
     
     const generatedName = this.generateConnectivityTestName();
-    if (generatedName) {
-      this.testForm.patchValue({ displayName: generatedName }, { emitEvent: false });
+    if (!generatedName) {
+      // Clear the display name if a name can't be generated yet
+      // This prevents showing a stale or incomplete name
+      this.testForm.patchValue({ displayName: '' }, { emitEvent: false });
+      return;
     }
+    
+    this.testForm.patchValue({ displayName: generatedName }, { emitEvent: false });
   }
 
   onTestNameManualEdit(): void {
