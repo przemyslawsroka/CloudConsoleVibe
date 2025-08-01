@@ -611,8 +611,12 @@ interface EndpointHierarchy {
             <mat-select formControlName="protocol">
               <mat-option value="tcp">tcp</mat-option>
               <mat-option value="udp">udp</mat-option>
-              <mat-option value="esp">esp</mat-option>
               <mat-option value="icmp">icmp</mat-option>
+              <mat-option value="icmpv6">icmpv6</mat-option>
+              <mat-option value="esp">esp</mat-option>
+              <mat-option value="ah">ah</mat-option>
+              <mat-option value="sctp">sctp</mat-option>
+              <mat-option value="ipip">ipip</mat-option>
             </mat-select>
             <mat-error *ngIf="testForm.get('protocol')?.hasError('required')">
               Protocol is required
