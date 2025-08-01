@@ -2,7 +2,7 @@ import { Component, Inject, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { ConnectivityTestRequest } from '../../services/connectivity-tests.service';
-import { ProjectService } from '../../services/project.service';
+import { ProjectService, Project } from '../../services/project.service';
 
 export interface CreateConnectivityTestDialogData {
   // Optional initial data
@@ -82,7 +82,7 @@ interface ProjectOption {
             </mat-checkbox>
 
             <mat-form-field appearance="outline" class="full-width" style="margin-top: 16px;">
-              <mat-label>Source IP address or service project</mat-label>
+                                  <mat-label>VPC Network Project</mat-label>
               <mat-select formControlName="sourceProject">
                 <mat-option *ngFor="let project of availableProjects" [value]="project.value">
                   {{project.displayName}}
@@ -144,7 +144,7 @@ interface ProjectOption {
             </mat-checkbox>
 
             <mat-form-field appearance="outline" class="full-width" style="margin-top: 16px;">
-              <mat-label>Destination IP address or service project</mat-label>
+                                  <mat-label>VPC Network Project</mat-label>
               <mat-select formControlName="destinationProject">
                 <mat-option *ngFor="let project of availableProjects" [value]="project.value">
                   {{project.displayName}}
@@ -337,20 +337,25 @@ export class CreateConnectivityTestDialogComponent implements OnInit {
   }
 
   private loadAvailableProjects() {
-    // Get current project and add some mock projects
-    this.projectService.currentProject$.subscribe(currentProject => {
-      this.availableProjects = [
-        { value: currentProject?.id || 'net-top-viz-demo', displayName: currentProject?.id || 'net-top-viz-demo' },
-        { value: 'project-alpha', displayName: 'project-alpha' },
-        { value: 'project-beta', displayName: 'project-beta' },
-        { value: 'production-env', displayName: 'production-env' }
-      ];
-
-      // Set default project
-      this.testForm.patchValue({
-        sourceProject: this.availableProjects[0].value,
-        destinationProject: this.availableProjects[0].value
-      });
+    this.projectService.projects$.subscribe({
+      next: (projects: Project[]) => {
+        this.availableProjects = projects.map((project: Project) => ({
+          value: project.id,
+          displayName: `${project.name} (${project.id})`
+        }));
+        
+        // Prefill with current project
+        const currentProject = this.projectService.getCurrentProject();
+        if (currentProject) {
+          this.testForm.patchValue({
+            sourceProject: currentProject.id,
+            destinationProject: currentProject.id
+          }, { emitEvent: false });
+        }
+      },
+      error: (error: any) => {
+        console.error('Error loading projects:', error);
+      }
     });
   }
 

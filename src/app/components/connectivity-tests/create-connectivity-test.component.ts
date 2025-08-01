@@ -136,7 +136,7 @@ interface EndpointHierarchy {
                 <!-- Project and VPC selectors - only for GCP VPC -->
                 <div *ngIf="testForm.get('sourceIpType')?.value === 'gcp-vpc'">
                   <mat-form-field appearance="outline" class="full-width" style="margin-top: 16px;">
-                    <mat-label>Source IP address or service project</mat-label>
+                    <mat-label>VPC Network Project</mat-label>
                     <mat-select formControlName="sourceProject">
                       <mat-option *ngFor="let project of availableProjects" [value]="project.value">
                         {{project.displayName}}
@@ -1778,7 +1778,7 @@ export class CreateConnectivityTestComponent implements OnInit {
       case 'ncc-router':
         return 'NCC Router Appliance Project';
       default:
-        return 'Source IP address or service project';
+        return 'VPC Network Project';
     }
   }
 
