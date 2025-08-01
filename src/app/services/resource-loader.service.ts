@@ -141,13 +141,18 @@ export class ResourceLoaderService {
   private loadVmInstances(): Observable<ResourceOption[]> {
     return this.computeService.loadInstances().pipe(
       map((instances: VmInstance[]) => 
-        instances.map(instance => ({
-          value: this.buildInstanceResourcePath(instance),
-          displayName: instance.name,
-          description: `${instance.machineType} • ${instance.zone}`,
-          location: instance.zone,
-          status: instance.status
-        }))
+        instances.map(instance => {
+          const machineTypeName = this.extractMachineTypeName(instance.machineType);
+          const zoneName = this.extractZoneName(instance.zone);
+          
+          return {
+            value: this.buildInstanceResourcePath(instance),
+            displayName: instance.name,
+            description: `${machineTypeName} • ${zoneName}`,
+            location: zoneName,
+            status: instance.status
+          };
+        })
       ),
       catchError(error => {
         console.error('Error loading VM instances:', error);
@@ -365,9 +370,30 @@ export class ResourceLoaderService {
     return of(this.getMockIapResources());
   }
 
+  // Helper methods to extract readable names from GCP API URLs
+  private extractZoneName(zoneUrl: string): string {
+    // Extract zone name from URL like: https://www.googleapis.com/compute/v1/projects/PROJECT/zones/us-central1-a
+    const parts = zoneUrl.split('/');
+    return parts[parts.length - 1];
+  }
+
+  private extractMachineTypeName(machineTypeUrl: string): string {
+    // Extract machine type from URL like: https://www.googleapis.com/compute/v1/projects/PROJECT/zones/ZONE/machineTypes/e2-micro
+    const parts = machineTypeUrl.split('/');
+    return parts[parts.length - 1];
+  }
+
+  private extractProjectFromUrl(url: string): string {
+    // Extract project ID from any GCP API URL
+    const match = url.match(/\/projects\/([^\/]+)\//);
+    return match ? match[1] : '*';
+  }
+
   // Helper methods to build proper resource paths
   private buildInstanceResourcePath(instance: VmInstance): string {
-    return `projects/${instance.zone.split('/')[1]}/zones/${instance.zone.split('/')[3]}/instances/${instance.name}`;
+    const zoneName = this.extractZoneName(instance.zone);
+    const projectId = this.extractProjectFromUrl(instance.zone);
+    return `projects/${projectId}/zones/${zoneName}/instances/${instance.name}`;
   }
 
   private buildClusterResourcePath(cluster: GkeCluster): string {

@@ -257,8 +257,10 @@ interface EndpointHierarchy {
                       {{sourceResourceError}}
                     </mat-option>
                     <mat-option *ngFor="let instance of sourceResourceOptions" [value]="instance.value">
-                      <span>{{instance.displayName}}</span>
-                      <span *ngIf="instance.description" class="resource-description">{{instance.description}}</span>
+                      <div class="resource-item">
+                        <div class="resource-name">{{instance.displayName}}</div>
+                        <div *ngIf="instance.description" class="resource-description">{{instance.description}}</div>
+                      </div>
                     </mat-option>
                   </mat-select>
                   <mat-error *ngIf="testForm.get('sourceInstance')?.hasError('required')">
@@ -477,8 +479,10 @@ interface EndpointHierarchy {
                       {{destinationResourceError}}
                     </mat-option>
                     <mat-option *ngFor="let instance of destinationResourceOptions" [value]="instance.value">
-                      <span>{{instance.displayName}}</span>
-                      <span *ngIf="instance.description" class="resource-description">{{instance.description}}</span>
+                      <div class="resource-item">
+                        <div class="resource-name">{{instance.displayName}}</div>
+                        <div *ngIf="instance.description" class="resource-description">{{instance.description}}</div>
+                      </div>
                     </mat-option>
                   </mat-select>
                   <mat-error *ngIf="testForm.get('destinationInstance')?.hasError('required')">
@@ -956,8 +960,37 @@ interface EndpointHierarchy {
 
     .resource-description {
       color: #5f6368;
-      font-size: 12px;
+      font-size: 11px;
+      font-weight: 400;
       margin-left: 8px;
+      display: block;
+      margin-top: 2px;
+    }
+
+    .mat-option {
+      line-height: 1.4 !important;
+      min-height: 48px !important;
+      padding: 8px 16px !important;
+    }
+
+    .mat-option .resource-description {
+      display: block;
+      margin-left: 0;
+      margin-top: 4px;
+      font-style: italic;
+    }
+
+    .resource-item {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+    }
+
+    .resource-name {
+      font-weight: 500;
+      font-size: 14px;
+      color: #202124;
+      line-height: 1.3;
     }
 
     ::ng-deep .mat-option.mat-option-disabled {
@@ -1019,7 +1052,6 @@ export class CreateConnectivityTestComponent implements OnInit {
       { value: 'myIpAddress', label: 'My IP address', requiresDetails: false },
       { value: 'cloudShell', label: 'Cloud Shell', requiresDetails: false },
       { value: 'cloudConsoleSsh', label: 'Cloud Console SSH-in-browser', requiresDetails: false },
-      { value: 'separator', label: '---', isCategory: false },
       { value: 'compute-gke', label: 'Compute & GKE...', isCategory: true },
       { value: 'serverless', label: 'Serverless...', isCategory: true },
       { value: 'data-services', label: 'Managed Data Services...', isCategory: true },
@@ -1059,7 +1091,6 @@ export class CreateConnectivityTestComponent implements OnInit {
       { value: 'ipAddress', label: 'IP address', requiresDetails: true, detailsType: 'ip' },
       { value: 'domainName', label: 'Domain Name', requiresDetails: true, detailsType: 'domain' },
       { value: 'googleApis', label: 'Google APIs (via Private Access)', requiresDetails: true, detailsType: 'service' },
-      { value: 'separator', label: '---', isCategory: false },
       { value: 'application', label: 'Application Endpoints...', isCategory: true },
       { value: 'cicd', label: 'CI/CD...', isCategory: true },
       { value: 'compute-gke', label: 'Compute & GKE...', isCategory: true },
