@@ -5,6 +5,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { HttpClient } from '@angular/common/http';
 import { ConnectivityTestsService, ConnectivityTestRequest } from '../../services/connectivity-tests.service';
 import { ProjectService, Project } from '../../services/project.service';
+import { ResourceLoaderService, ResourceOption, EndpointType } from '../../services/resource-loader.service';
 
 interface ProjectOption {
   value: string;
@@ -248,9 +249,17 @@ interface EndpointHierarchy {
                 <mat-form-field appearance="outline" class="full-width">
                   <mat-label>Source instance *</mat-label>
                   <mat-select formControlName="sourceInstance">
-                    <mat-option value="batch-jobs-eu">batch-jobs-eu</mat-option>
-                    <mat-option value="batch-jobs-us">batch-jobs-us</mat-option>
-                    <mat-option value="browse-group-eu-yzql">browse-group-eu-yzql</mat-option>
+                    <mat-option *ngIf="isLoadingSourceResources" disabled>
+                      <mat-spinner diameter="16" style="display: inline-block; margin-right: 8px;"></mat-spinner>
+                      Loading instances...
+                    </mat-option>
+                    <mat-option *ngIf="sourceResourceError && !isLoadingSourceResources" disabled>
+                      {{sourceResourceError}}
+                    </mat-option>
+                    <mat-option *ngFor="let instance of sourceResourceOptions" [value]="instance.value">
+                      <span>{{instance.displayName}}</span>
+                      <span *ngIf="instance.description" class="resource-description">{{instance.description}}</span>
+                    </mat-option>
                   </mat-select>
                   <mat-error *ngIf="testForm.get('sourceInstance')?.hasError('required')">
                     Source instance is required
@@ -263,8 +272,17 @@ interface EndpointHierarchy {
                 <mat-form-field appearance="outline" class="full-width">
                   <mat-label>Cluster *</mat-label>
                   <mat-select formControlName="sourceCluster">
-                    <mat-option value="gke-cluster-1">gke-cluster-1</mat-option>
-                    <mat-option value="gke-cluster-2">gke-cluster-2</mat-option>
+                    <mat-option *ngIf="isLoadingSourceResources" disabled>
+                      <mat-spinner diameter="16" style="display: inline-block; margin-right: 8px;"></mat-spinner>
+                      Loading clusters...
+                    </mat-option>
+                    <mat-option *ngIf="sourceResourceError && !isLoadingSourceResources" disabled>
+                      {{sourceResourceError}}
+                    </mat-option>
+                    <mat-option *ngFor="let cluster of sourceResourceOptions" [value]="cluster.value">
+                      <span>{{cluster.displayName}}</span>
+                      <span *ngIf="cluster.description" class="resource-description">{{cluster.description}}</span>
+                    </mat-option>
                   </mat-select>
                   <mat-error *ngIf="testForm.get('sourceCluster')?.hasError('required')">
                     Cluster is required
@@ -288,8 +306,17 @@ interface EndpointHierarchy {
                 <mat-form-field appearance="outline" class="full-width">
                   <mat-label>Cluster *</mat-label>
                   <mat-select formControlName="sourceCluster">
-                    <mat-option value="gke-cluster-1">gke-cluster-1</mat-option>
-                    <mat-option value="gke-cluster-2">gke-cluster-2</mat-option>
+                    <mat-option *ngIf="isLoadingSourceResources" disabled>
+                      <mat-spinner diameter="16" style="display: inline-block; margin-right: 8px;"></mat-spinner>
+                      Loading clusters...
+                    </mat-option>
+                    <mat-option *ngIf="sourceResourceError && !isLoadingSourceResources" disabled>
+                      {{sourceResourceError}}
+                    </mat-option>
+                    <mat-option *ngFor="let cluster of sourceResourceOptions" [value]="cluster.value">
+                      <span>{{cluster.displayName}}</span>
+                      <span *ngIf="cluster.description" class="resource-description">{{cluster.description}}</span>
+                    </mat-option>
                   </mat-select>
                   <mat-error *ngIf="testForm.get('sourceCluster')?.hasError('required')">
                     Cluster is required
@@ -302,8 +329,17 @@ interface EndpointHierarchy {
                 <mat-form-field appearance="outline" class="full-width">
                   <mat-label>Service/Function *</mat-label>
                   <mat-select formControlName="sourceService">
-                    <mat-option value="service-1">service-1</mat-option>
-                    <mat-option value="service-2">service-2</mat-option>
+                    <mat-option *ngIf="isLoadingSourceResources" disabled>
+                      <mat-spinner diameter="16" style="display: inline-block; margin-right: 8px;"></mat-spinner>
+                      Loading services...
+                    </mat-option>
+                    <mat-option *ngIf="sourceResourceError && !isLoadingSourceResources" disabled>
+                      {{sourceResourceError}}
+                    </mat-option>
+                    <mat-option *ngFor="let service of sourceResourceOptions" [value]="service.value">
+                      <span>{{service.displayName}}</span>
+                      <span *ngIf="service.description" class="resource-description">{{service.description}}</span>
+                    </mat-option>
                   </mat-select>
                   <mat-error *ngIf="testForm.get('sourceService')?.hasError('required')">
                     Service/Function is required
@@ -316,8 +352,17 @@ interface EndpointHierarchy {
                 <mat-form-field appearance="outline" class="full-width">
                   <mat-label>{{getSourceDataServiceLabel()}} *</mat-label>
                   <mat-select formControlName="sourceInstance">
-                    <mat-option value="instance-1">instance-1</mat-option>
-                    <mat-option value="instance-2">instance-2</mat-option>
+                    <mat-option *ngIf="isLoadingSourceResources" disabled>
+                      <mat-spinner diameter="16" style="display: inline-block; margin-right: 8px;"></mat-spinner>
+                      Loading instances...
+                    </mat-option>
+                    <mat-option *ngIf="sourceResourceError && !isLoadingSourceResources" disabled>
+                      {{sourceResourceError}}
+                    </mat-option>
+                    <mat-option *ngFor="let instance of sourceResourceOptions" [value]="instance.value">
+                      <span>{{instance.displayName}}</span>
+                      <span *ngIf="instance.description" class="resource-description">{{instance.description}}</span>
+                    </mat-option>
                   </mat-select>
                   <mat-error *ngIf="testForm.get('sourceInstance')?.hasError('required')">
                     {{getSourceDataServiceLabel()}} is required
@@ -424,9 +469,17 @@ interface EndpointHierarchy {
                 <mat-form-field appearance="outline" class="full-width">
                   <mat-label>Destination instance *</mat-label>
                   <mat-select formControlName="destinationInstance">
-                    <mat-option value="batch-jobs-eu">batch-jobs-eu</mat-option>
-                    <mat-option value="batch-jobs-us">batch-jobs-us</mat-option>
-                    <mat-option value="browse-group-eu-yzql">browse-group-eu-yzql</mat-option>
+                    <mat-option *ngIf="isLoadingDestinationResources" disabled>
+                      <mat-spinner diameter="16" style="display: inline-block; margin-right: 8px;"></mat-spinner>
+                      Loading instances...
+                    </mat-option>
+                    <mat-option *ngIf="destinationResourceError && !isLoadingDestinationResources" disabled>
+                      {{destinationResourceError}}
+                    </mat-option>
+                    <mat-option *ngFor="let instance of destinationResourceOptions" [value]="instance.value">
+                      <span>{{instance.displayName}}</span>
+                      <span *ngIf="instance.description" class="resource-description">{{instance.description}}</span>
+                    </mat-option>
                   </mat-select>
                   <mat-error *ngIf="testForm.get('destinationInstance')?.hasError('required')">
                     Destination instance is required
@@ -901,6 +954,12 @@ interface EndpointHierarchy {
       flex-wrap: wrap;
     }
 
+    .resource-description {
+      color: #5f6368;
+      font-size: 12px;
+      margin-left: 8px;
+    }
+
     ::ng-deep .mat-option.mat-option-disabled {
       color: #5f6368 !important;
       background-color: transparent !important;
@@ -1062,13 +1121,22 @@ export class CreateConnectivityTestComponent implements OnInit {
   userIpAddress: string | null = null;
   isLoadingUserIp: boolean = false;
 
+  // Resource loading
+  sourceResourceOptions: ResourceOption[] = [];
+  destinationResourceOptions: ResourceOption[] = [];
+  isLoadingSourceResources: boolean = false;
+  isLoadingDestinationResources: boolean = false;
+  sourceResourceError: string | null = null;
+  destinationResourceError: string | null = null;
+
   constructor(
     private fb: FormBuilder,
     private router: Router,
     private snackBar: MatSnackBar,
     private http: HttpClient,
     private connectivityTestsService: ConnectivityTestsService,
-    private projectService: ProjectService
+    private projectService: ProjectService,
+    private resourceLoaderService: ResourceLoaderService
   ) {
     this.testForm = this.fb.group({
       displayName: ['', [
@@ -1076,7 +1144,7 @@ export class CreateConnectivityTestComponent implements OnInit {
         Validators.pattern(/^[a-z0-9\-]+$/)
       ]],
       protocol: ['tcp', Validators.required],
-      sourceEndpointType: ['ipAddress', Validators.required],
+      sourceEndpointType: ['', Validators.required],
       sourceCategory: [''],
       sourceIp: [''],
       sourceInstance: [''],
@@ -1089,7 +1157,7 @@ export class CreateConnectivityTestComponent implements OnInit {
       sourceConnectionResource: [''],
       sourceProject: [''],
       sourceVpcNetwork: [''],
-      destinationEndpointType: ['ipAddress', Validators.required],
+      destinationEndpointType: ['', Validators.required],
       destinationCategory: [''],
       destinationIp: [''],
       destinationInstance: [''],
@@ -1460,6 +1528,9 @@ export class CreateConnectivityTestComponent implements OnInit {
       });
       this.resetSourceDetails();
       
+      // Load resources for the selected endpoint type
+      this.loadSourceResources(value as EndpointType);
+      
       // Auto-set destination for Cloud Console SSH-in-browser
       if (value === 'cloudConsoleSsh') {
         this.selectedDestinationCategory = 'compute-gke';
@@ -1490,6 +1561,9 @@ export class CreateConnectivityTestComponent implements OnInit {
     });
     // Keep selectedSourceCategory so sub-dropdown stays visible
     this.resetSourceDetails();
+    
+    // Load resources for the selected endpoint type
+    this.loadSourceResources(endpointType as EndpointType);
   }
 
   // Destination endpoint selection methods
@@ -1509,6 +1583,9 @@ export class CreateConnectivityTestComponent implements OnInit {
         destinationEndpointType: value
       });
       this.resetDestinationDetails();
+      
+      // Load resources for the selected endpoint type
+      this.loadDestinationResources(value as EndpointType);
     }
   }
 
@@ -1519,6 +1596,9 @@ export class CreateConnectivityTestComponent implements OnInit {
     });
     // Keep selectedDestinationCategory so sub-dropdown stays visible
     this.resetDestinationDetails();
+    
+    // Load resources for the selected endpoint type
+    this.loadDestinationResources(endpointType as EndpointType);
   }
 
   // Helper methods to reset form details
@@ -1991,6 +2071,88 @@ export class CreateConnectivityTestComponent implements OnInit {
         }
       }
     }, 10);
+  }
+
+  // Resource loading methods
+  private loadSourceResources(endpointType: EndpointType): void {
+    // Only load resources for endpoint types that require selection
+    if (!this.requiresResourceSelection(endpointType)) {
+      this.sourceResourceOptions = [];
+      return;
+    }
+
+    this.isLoadingSourceResources = true;
+    this.sourceResourceError = null;
+    this.sourceResourceOptions = [];
+
+    this.resourceLoaderService.loadResources(endpointType).subscribe({
+      next: (resources: ResourceOption[]) => {
+        this.sourceResourceOptions = resources;
+        this.isLoadingSourceResources = false;
+        console.log(`Loaded ${resources.length} source resources for ${endpointType}`, resources);
+      },
+      error: (error) => {
+        console.error(`Error loading source resources for ${endpointType}:`, error);
+        this.sourceResourceError = `Failed to load ${endpointType} resources`;
+        this.isLoadingSourceResources = false;
+      }
+    });
+  }
+
+  private loadDestinationResources(endpointType: EndpointType): void {
+    // Only load resources for endpoint types that require selection
+    if (!this.requiresResourceSelection(endpointType)) {
+      this.destinationResourceOptions = [];
+      return;
+    }
+
+    this.isLoadingDestinationResources = true;
+    this.destinationResourceError = null;
+    this.destinationResourceOptions = [];
+
+    this.resourceLoaderService.loadResources(endpointType).subscribe({
+      next: (resources: ResourceOption[]) => {
+        this.destinationResourceOptions = resources;
+        this.isLoadingDestinationResources = false;
+        console.log(`Loaded ${resources.length} destination resources for ${endpointType}`, resources);
+      },
+      error: (error) => {
+        console.error(`Error loading destination resources for ${endpointType}:`, error);
+        this.destinationResourceError = `Failed to load ${endpointType} resources`;
+        this.isLoadingDestinationResources = false;
+      }
+    });
+  }
+
+  private requiresResourceSelection(endpointType: EndpointType): boolean {
+    // Endpoint types that require resource selection from APIs
+    const resourceTypes: EndpointType[] = [
+      'gceInstance',
+      'gkeCluster',
+      'gkeWorkload',
+      'gkePod',
+      'gkeService',
+      'cloudRun',
+      'cloudRunJobs',
+      'cloudFunctionV1',
+      'cloudRunFunction',
+      'cloudSqlInstance',
+      'alloyDb',
+      'appEngine',
+      'cloudBuild',
+      'cloudSpanner',
+      'cloudBigtable',
+      'filestore',
+      'redisInstance',
+      'redisCluster',
+      'loadBalancer',
+      'subnetwork',
+      'pscEndpoint',
+      'appHubService',
+      'iapResource'
+    ];
+    
+    return resourceTypes.includes(endpointType);
   }
 
   onCancel() {
