@@ -423,9 +423,10 @@ export class ResourceLoaderService {
   // Mock data methods (fallback when APIs are not available)
   private getMockVmInstances(): ResourceOption[] {
     return [
-      { value: 'batch-jobs-eu', displayName: 'batch-jobs-eu', description: 'e2-medium • europe-west1-b', status: 'RUNNING' },
-      { value: 'batch-jobs-us', displayName: 'batch-jobs-us', description: 'e2-medium • us-central1-a', status: 'RUNNING' },
-      { value: 'browse-group-eu-yzql', displayName: 'browse-group-eu-yzql', description: 'n1-standard-1 • europe-west1-c', status: 'RUNNING' }
+      { value: 'projects/net-top-viz/zones/us-central1-a/instances/batch-jobs-us-2e2-micro', displayName: 'batch-jobs-us-2e2-micro', description: 'e2-micro • us-central1-a', status: 'RUNNING' },
+      { value: 'projects/net-top-viz/zones/europe-west1-b/instances/batch-jobs-eu', displayName: 'batch-jobs-eu', description: 'e2-medium • europe-west1-b', status: 'RUNNING' },
+      { value: 'projects/net-top-viz/zones/us-central1-a/instances/batch-jobs-us', displayName: 'batch-jobs-us', description: 'e2-medium • us-central1-a', status: 'RUNNING' },
+      { value: 'projects/net-top-viz/zones/europe-west1-c/instances/browse-group-eu-yzql', displayName: 'browse-group-eu-yzql', description: 'n1-standard-1 • europe-west1-c', status: 'RUNNING' }
     ];
   }
 

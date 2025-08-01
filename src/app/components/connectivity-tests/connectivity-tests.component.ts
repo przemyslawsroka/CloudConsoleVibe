@@ -1307,7 +1307,6 @@ export class ConnectivityTestsComponent implements OnInit, AfterViewInit {
     this.isLoading = true;
     this.connectivityTestsService.getConnectivityTests(this.projectId).subscribe({
       next: (tests) => {
-        console.log('Loaded connectivity tests:', tests);
         this.connectivityTests = tests;
         this.dataSource.data = tests;
         this.isLoading = false;
@@ -1423,8 +1422,6 @@ export class ConnectivityTestsComponent implements OnInit, AfterViewInit {
   }
 
   viewTestDetails(test: ConnectivityTest) {
-    console.log('Fetching details for test:', test.name);
-    
     if (!this.projectId) {
       this.snackBar.open('No project selected', 'Close', { duration: 3000 });
       return;
@@ -1440,8 +1437,6 @@ export class ConnectivityTestsComponent implements OnInit, AfterViewInit {
     // Fetch detailed test information from API
     this.connectivityTestsService.getConnectivityTest(this.projectId, test.name).subscribe({
       next: (detailedTest) => {
-        console.log('Received detailed test data:', detailedTest);
-        this.selectedTest = detailedTest;
         this.isLoadingTestDetails = false;
         
         // Set default trace selection based on available traces

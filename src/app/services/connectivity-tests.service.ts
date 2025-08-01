@@ -114,20 +114,14 @@ export class ConnectivityTestsService {
   }
 
   getConnectivityTests(projectId: string): Observable<ConnectivityTest[]> {
-    console.log('ConnectivityTestsService.getConnectivityTests called with projectId:', projectId);
-    
     if (!projectId || projectId === 'mock-project') {
-      console.log('Using mock data for connectivity tests');
       return this.getMockTests();
     }
 
     const url = `${this.baseUrl}/projects/${projectId}/locations/global/connectivityTests`;
-    console.log('Making API call to:', url);
     
     return this.http.get<any>(url, { headers: this.getHeaders() }).pipe(
       map(response => {
-        console.log('API response received:', response);
-        
         // Handle different possible response structures
         let tests: GcpConnectivityTest[] = [];
         if (response.connectivityTests) {
@@ -140,9 +134,7 @@ export class ConnectivityTestsService {
           console.log('Unexpected response structure, using empty array');
         }
         
-        console.log('Raw tests from API:', tests);
         const convertedTests = tests.map(test => this.convertGcpTest(test));
-        console.log('Converted tests:', convertedTests);
         return convertedTests;
       }),
       catchError(error => {
@@ -342,8 +334,6 @@ export class ConnectivityTestsService {
   }
 
   private convertGcpTest(gcpTest: any): ConnectivityTest {
-    console.log('Converting GCP test:', gcpTest);
-    
     try {
       const testName = this.extractResourceName(gcpTest.name);
       const protocol = (gcpTest.protocol || 'unknown').toLowerCase();
@@ -372,7 +362,6 @@ export class ConnectivityTestsService {
         displayName: gcpTest.displayName || testName
       };
       
-      console.log('Converted test result:', convertedTest);
       return convertedTest;
     } catch (error) {
       console.error('Error converting GCP test:', error, gcpTest);
@@ -392,8 +381,6 @@ export class ConnectivityTestsService {
 
   private formatEndpoint(endpoint: any): string {
     if (!endpoint) return 'Unknown';
-    
-    console.log('Formatting endpoint:', endpoint);
     
     // Handle different endpoint types
     if (endpoint.ipAddress) return endpoint.ipAddress;

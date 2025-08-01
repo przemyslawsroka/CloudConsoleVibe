@@ -1052,15 +1052,15 @@ export class CreateConnectivityTestComponent implements OnInit {
       { value: 'myIpAddress', label: 'My IP address', requiresDetails: false },
       { value: 'cloudShell', label: 'Cloud Shell', requiresDetails: false },
       { value: 'cloudConsoleSsh', label: 'Cloud Console SSH-in-browser', requiresDetails: false },
-      { value: 'compute-gke', label: 'Compute & GKE...', isCategory: true },
+      { value: 'gceInstance', label: 'VM instance', requiresDetails: true, detailsType: 'instance' },
+      { value: 'gke', label: 'GKE...', isCategory: true },
       { value: 'serverless', label: 'Serverless...', isCategory: true },
       { value: 'data-services', label: 'Managed Data Services...', isCategory: true },
       { value: 'cicd', label: 'CI/CD...', isCategory: true },
       { value: 'network', label: 'Network...', isCategory: true }
     ],
     categories: {
-      'compute-gke': [
-        { value: 'gceInstance', label: 'VM instance', requiresDetails: true, detailsType: 'instance' },
+      'gke': [
         { value: 'gkeWorkload', label: 'GKE workload', requiresDetails: true, detailsType: 'workload' },
         { value: 'gkePod', label: 'GKE pod', requiresDetails: true, detailsType: 'workload' },
         { value: 'gkeCluster', label: 'GKE cluster control plane', requiresDetails: true, detailsType: 'cluster' }
@@ -1093,14 +1093,14 @@ export class CreateConnectivityTestComponent implements OnInit {
       { value: 'googleApis', label: 'Google APIs (via Private Access)', requiresDetails: true, detailsType: 'service' },
       { value: 'application', label: 'Application Endpoints...', isCategory: true },
       { value: 'cicd', label: 'CI/CD...', isCategory: true },
-      { value: 'compute-gke', label: 'Compute & GKE...', isCategory: true },
+      { value: 'gceInstance', label: 'VM instance', requiresDetails: true, detailsType: 'instance' },
+      { value: 'gke', label: 'GKE...', isCategory: true },
       { value: 'data-services', label: 'Managed Data Services...', isCategory: true },
       { value: 'network', label: 'Network...', isCategory: true },
       { value: 'serverless', label: 'Serverless...', isCategory: true }
     ],
     categories: {
-      'compute-gke': [
-        { value: 'gceInstance', label: 'VM instance', requiresDetails: true, detailsType: 'instance' },
+      'gke': [
         { value: 'gkeCluster', label: 'GKE cluster control plane', requiresDetails: true, detailsType: 'cluster' },
         { value: 'gkeWorkload', label: 'GKE workload', requiresDetails: true, detailsType: 'workload' },
         { value: 'gkePod', label: 'GKE pod', requiresDetails: true, detailsType: 'workload' },
@@ -1115,15 +1115,15 @@ export class CreateConnectivityTestComponent implements OnInit {
       ],
       'application': [
         { value: 'appHubService', label: 'AppHub Service', requiresDetails: true, detailsType: 'service' },
-        { value: 'iapResource', label: 'IAP-protected resource', requiresDetails: true, detailsType: 'instance' }
+        { value: 'iapResource', label: 'IAP-protected resource', requiresDetails: true, detailsType: 'instance' },
+        { value: 'loadBalancer', label: 'Load Balancer', requiresDetails: true, detailsType: 'instance' },
+        { value: 'pscEndpoint', label: 'PSC endpoint', requiresDetails: true, detailsType: 'instance' }
       ],
       'cicd': [
         { value: 'cloudBuild', label: 'Cloud Build private worker', requiresDetails: true, detailsType: 'service' }
       ],
       'network': [
-        { value: 'loadBalancer', label: 'Load Balancer', requiresDetails: true, detailsType: 'instance' },
-        { value: 'subnetwork', label: 'Subnetwork', requiresDetails: true, detailsType: 'custom' },
-        { value: 'pscEndpoint', label: 'PSC endpoint', requiresDetails: true, detailsType: 'instance' }
+        { value: 'subnetwork', label: 'Subnetwork', requiresDetails: true, detailsType: 'custom' }
       ],
       'data-services': [
         { value: 'alloyDb', label: 'Alloy DB instance', requiresDetails: true, detailsType: 'instance' },
@@ -1325,8 +1325,8 @@ export class CreateConnectivityTestComponent implements OnInit {
     this.testForm.get('sourceIpType')?.valueChanges.subscribe(ipType => {
       // Don't apply IP type validation for endpoint types that don't use IP types
       const sourceEndpointType = this.testForm.get('sourceEndpointType')?.value;
-      if (sourceEndpointType === 'myIpAddress' || sourceEndpointType === 'cloudShell' || sourceEndpointType === 'cloudConsoleSsh') {
-        return; // Skip IP type validation for these endpoint types
+      if (sourceEndpointType !== 'ipAddress') {
+        return; // IP type validation is only for 'ipAddress' endpoint type
       }
 
       // Clear previous validators
@@ -1618,11 +1618,9 @@ export class CreateConnectivityTestComponent implements OnInit {
       
       // Auto-set destination for Cloud Console SSH-in-browser
       if (value === 'cloudConsoleSsh') {
-        this.selectedDestinationCategory = 'compute-gke';
         // Reset destination details first, then set new values
         this.resetDestinationDetails();
         this.testForm.patchValue({
-          destinationCategory: 'compute-gke',
           destinationEndpointType: 'gceInstance',
           destinationPort: 22
         }, { emitEvent: false }); // Don't emit events during auto-setup
