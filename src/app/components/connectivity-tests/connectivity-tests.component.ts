@@ -1,5 +1,5 @@
-import { Component, OnInit, AfterViewInit, ChangeDetectorRef, ViewChild } from '@angular/core';
-import { MatDialog } from '@angular/material/dialog';
+import { Component, OnInit, AfterViewInit, ChangeDetectorRef, ViewChild, Inject } from '@angular/core';
+import { MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatSort } from '@angular/material/sort';
@@ -1351,17 +1351,75 @@ export class ConnectivityTestsComponent implements OnInit, AfterViewInit {
     const selectedTests = this.selection.selected;
     if (selectedTests.length === 0) return;
 
-    // Mock delete implementation
-    selectedTests.forEach(test => {
-      const index = this.connectivityTests.indexOf(test);
-      if (index > -1) {
-        this.connectivityTests.splice(index, 1);
+    if (!this.projectId) {
+      this.snackBar.open('No project selected', 'Close', { duration: 3000 });
+      return;
+    }
+
+    // Confirm deletion with Material dialog
+    const confirmMessage = selectedTests.length === 1 
+      ? `Are you sure you want to delete the connectivity test "${selectedTests[0].name}"?`
+      : `Are you sure you want to delete ${selectedTests.length} connectivity tests?`;
+    
+    const dialogRef = this.dialog.open(DeleteConfirmationDialog, {
+      width: '400px',
+      data: { 
+        message: confirmMessage,
+        title: 'Delete Connectivity Tests'
       }
     });
-    
-    this.dataSource.data = [...this.connectivityTests];
-    this.selection.clear();
-    this.snackBar.open(`Deleted ${selectedTests.length} connectivity test(s)`, 'Close', { duration: 3000 });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (!result) return;
+
+      // Track deletion progress
+      let deletedCount = 0;
+      let failedCount = 0;
+      const totalCount = selectedTests.length;
+
+      // Delete each test via API
+      selectedTests.forEach(test => {
+        this.connectivityTestsService.deleteConnectivityTest(this.projectId!, test.name).subscribe({
+          next: () => {
+            // Remove from local array on successful deletion
+            const index = this.connectivityTests.indexOf(test);
+            if (index > -1) {
+              this.connectivityTests.splice(index, 1);
+            }
+            
+            deletedCount++;
+            
+            // Update UI and show final message when all deletions are processed
+            if (deletedCount + failedCount === totalCount) {
+              this.dataSource.data = [...this.connectivityTests];
+              this.selection.clear();
+              
+              if (failedCount === 0) {
+                this.snackBar.open(`Successfully deleted ${deletedCount} connectivity test(s)`, 'Close', { duration: 3000 });
+              } else {
+                this.snackBar.open(`Deleted ${deletedCount} test(s), failed to delete ${failedCount} test(s)`, 'Close', { duration: 5000 });
+              }
+            }
+          },
+          error: (error) => {
+            console.error(`Failed to delete connectivity test "${test.name}":`, error);
+            failedCount++;
+            
+            // Update UI and show final message when all deletions are processed
+            if (deletedCount + failedCount === totalCount) {
+              this.dataSource.data = [...this.connectivityTests];
+              this.selection.clear();
+              
+              if (deletedCount === 0) {
+                this.snackBar.open(`Failed to delete ${failedCount} connectivity test(s)`, 'Close', { duration: 5000 });
+              } else {
+                this.snackBar.open(`Deleted ${deletedCount} test(s), failed to delete ${failedCount} test(s)`, 'Close', { duration: 5000 });
+              }
+            }
+          }
+        });
+      });
+    });
   }
 
   viewTestDetails(test: ConnectivityTest) {
@@ -1453,4 +1511,44 @@ export class ConnectivityTestsComponent implements OnInit, AfterViewInit {
         this.selection.clear() :
         this.dataSource.data.forEach(row => this.selection.select(row));
   }
+}
+
+@Component({
+  selector: 'delete-confirmation-dialog',
+  template: `
+    <h2 mat-dialog-title>{{ data.title }}</h2>
+    <mat-dialog-content>
+      <p>{{ data.message }}</p>
+      <p><small>This action cannot be undone.</small></p>
+    </mat-dialog-content>
+    <mat-dialog-actions align="end">
+      <button mat-button [mat-dialog-close]="false">Cancel</button>
+      <button mat-raised-button color="warn" [mat-dialog-close]="true">Delete</button>
+    </mat-dialog-actions>
+  `,
+  styles: [`
+    mat-dialog-content {
+      padding: 20px 0;
+    }
+    
+    mat-dialog-content p {
+      margin: 0 0 12px 0;
+      color: var(--text-color);
+    }
+    
+    mat-dialog-content small {
+      color: var(--text-secondary-color);
+      font-style: italic;
+    }
+    
+    mat-dialog-actions {
+      padding: 16px 0 8px 0;
+    }
+  `]
+})
+export class DeleteConfirmationDialog {
+  constructor(
+    public dialogRef: MatDialogRef<DeleteConfirmationDialog>,
+    @Inject(MAT_DIALOG_DATA) public data: { title: string; message: string }
+  ) {}
 } 

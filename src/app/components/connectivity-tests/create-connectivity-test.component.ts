@@ -1213,7 +1213,8 @@ export class CreateConnectivityTestComponent implements OnInit {
   }
 
   private loadAvailableProjects() {
-    this.projectService.projects$.subscribe({
+    // First, explicitly load projects like the project picker does
+    this.projectService.loadProjects().subscribe({
       next: (projects: Project[]) => {
         this.availableProjects = projects.map((project: Project) => ({
           value: project.id,
@@ -1227,9 +1228,37 @@ export class CreateConnectivityTestComponent implements OnInit {
             sourceProject: currentProject.id
           }, { emitEvent: false });
         }
+        
+        console.log(`📋 Loaded ${projects.length} projects for connectivity test`);
       },
       error: (error: any) => {
-        console.error('Error loading projects:', error);
+        console.error('❌ Error loading projects for connectivity test:', error);
+      }
+    });
+    
+    // Also subscribe to future project updates
+    this.projectService.projects$.subscribe({
+      next: (projects: Project[]) => {
+        // Only update if we actually have projects (avoid clearing the list)
+        if (projects.length > 0) {
+          this.availableProjects = projects.map((project: Project) => ({
+            value: project.id,
+            displayName: `${project.name} (${project.id})`
+          }));
+          
+          // Update current project selection if form is empty or project changed
+          const currentProject = this.projectService.getCurrentProject();
+          const currentSourceProject = this.testForm.get('sourceProject')?.value;
+          
+          if (currentProject && (!currentSourceProject || currentSourceProject !== currentProject.id)) {
+            this.testForm.patchValue({
+              sourceProject: currentProject.id
+            }, { emitEvent: false });
+          }
+        }
+      },
+      error: (error: any) => {
+        console.error('❌ Error in projects subscription for connectivity test:', error);
       }
     });
   }
@@ -1294,6 +1323,12 @@ export class CreateConnectivityTestComponent implements OnInit {
 
     // Add conditional validation for source IP type
     this.testForm.get('sourceIpType')?.valueChanges.subscribe(ipType => {
+      // Don't apply IP type validation for endpoint types that don't use IP types
+      const sourceEndpointType = this.testForm.get('sourceEndpointType')?.value;
+      if (sourceEndpointType === 'myIpAddress' || sourceEndpointType === 'cloudShell' || sourceEndpointType === 'cloudConsoleSsh') {
+        return; // Skip IP type validation for these endpoint types
+      }
+
       // Clear previous validators
       this.testForm.get('sourceConnectionType')?.clearValidators();
       this.testForm.get('sourceConnectionResource')?.clearValidators();
@@ -1464,11 +1499,30 @@ export class CreateConnectivityTestComponent implements OnInit {
       case 'cloudBuild':
         this.testForm.get('sourceService')?.setValidators([Validators.required]);
         break;
-      // myIpAddress and cloudShell don't require additional validation
+      case 'myIpAddress':
+      case 'cloudShell':
+      case 'cloudConsoleSsh':
+        // These don't require additional validation - they use automatic IP detection or predefined sources
+        // Explicitly clear all VPC-related validators
+        this.testForm.get('sourceIpType')?.clearValidators();
+        this.testForm.get('sourceProject')?.clearValidators();
+        this.testForm.get('sourceVpcNetwork')?.clearValidators();
+        this.testForm.get('sourceConnectionType')?.clearValidators();
+        this.testForm.get('sourceConnectionResource')?.clearValidators();
+        
+        // Clear all VPC-related values
+        this.testForm.patchValue({
+          sourceIpType: '',
+          sourceProject: '',
+          sourceVpcNetwork: '',
+          sourceConnectionType: '',
+          sourceConnectionResource: ''
+        }, { emitEvent: false });
+        break;
     }
 
     // Update validity for all source controls
-    ['sourceIp', 'sourceIpType', 'sourceConnectionType', 'sourceConnectionResource', 'sourceInstance', 'sourceDomain', 'sourceService', 'sourceCluster', 'sourceWorkload'].forEach(controlName => {
+    ['sourceIp', 'sourceIpType', 'sourceConnectionType', 'sourceConnectionResource', 'sourceProject', 'sourceVpcNetwork', 'sourceInstance', 'sourceDomain', 'sourceService', 'sourceCluster', 'sourceWorkload'].forEach(controlName => {
       this.testForm.get(controlName)?.updateValueAndValidity({ emitEvent: false });
     });
   }
@@ -2205,6 +2259,7 @@ export class CreateConnectivityTestComponent implements OnInit {
           }
           break;
         case 'myIpAddress':
+          source.ipAddress = this.userIpAddress;
           source.type = 'my-ip-address';
           break;
         case 'cloudShell':

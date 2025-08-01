@@ -337,7 +337,8 @@ export class CreateConnectivityTestDialogComponent implements OnInit {
   }
 
   private loadAvailableProjects() {
-    this.projectService.projects$.subscribe({
+    // First, explicitly load projects like the project picker does
+    this.projectService.loadProjects().subscribe({
       next: (projects: Project[]) => {
         this.availableProjects = projects.map((project: Project) => ({
           value: project.id,
@@ -352,9 +353,48 @@ export class CreateConnectivityTestDialogComponent implements OnInit {
             destinationProject: currentProject.id
           }, { emitEvent: false });
         }
+        
+        console.log(`📋 Loaded ${projects.length} projects for connectivity test dialog`);
       },
       error: (error: any) => {
-        console.error('Error loading projects:', error);
+        console.error('❌ Error loading projects for connectivity test dialog:', error);
+      }
+    });
+    
+    // Also subscribe to future project updates
+    this.projectService.projects$.subscribe({
+      next: (projects: Project[]) => {
+        // Only update if we actually have projects (avoid clearing the list)
+        if (projects.length > 0) {
+          this.availableProjects = projects.map((project: Project) => ({
+            value: project.id,
+            displayName: `${project.name} (${project.id})`
+          }));
+          
+          // Update current project selection if form is empty or project changed
+          const currentProject = this.projectService.getCurrentProject();
+          const currentSourceProject = this.testForm.get('sourceProject')?.value;
+          const currentDestinationProject = this.testForm.get('destinationProject')?.value;
+          
+          if (currentProject) {
+            const updateValues: any = {};
+            
+            if (!currentSourceProject || currentSourceProject !== currentProject.id) {
+              updateValues.sourceProject = currentProject.id;
+            }
+            
+            if (!currentDestinationProject || currentDestinationProject !== currentProject.id) {
+              updateValues.destinationProject = currentProject.id;
+            }
+            
+            if (Object.keys(updateValues).length > 0) {
+              this.testForm.patchValue(updateValues, { emitEvent: false });
+            }
+          }
+        }
+      },
+      error: (error: any) => {
+        console.error('❌ Error in projects subscription for connectivity test dialog:', error);
       }
     });
   }
