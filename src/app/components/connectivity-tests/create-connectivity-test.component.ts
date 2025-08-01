@@ -311,16 +311,16 @@ interface EndpointHierarchy {
                 </mat-form-field>
               </div>
 
-              <!-- Cloud SQL Instance -->
-              <div *ngIf="isSourceEndpointType('cloudSqlInstance')">
+              <!-- Data Services (Alloy DB, Cloud SQL, etc.) -->
+              <div *ngIf="isSourceEndpointTypeOneOf(['alloyDb', 'cloudSqlInstance'])">
                 <mat-form-field appearance="outline" class="full-width">
-                  <mat-label>Cloud SQL instance *</mat-label>
+                  <mat-label>{{getSourceDataServiceLabel()}} *</mat-label>
                   <mat-select formControlName="sourceInstance">
-                    <mat-option value="sql-instance-1">sql-instance-1</mat-option>
-                    <mat-option value="sql-instance-2">sql-instance-2</mat-option>
+                    <mat-option value="instance-1">instance-1</mat-option>
+                    <mat-option value="instance-2">instance-2</mat-option>
                   </mat-select>
                   <mat-error *ngIf="testForm.get('sourceInstance')?.hasError('required')">
-                    Cloud SQL instance is required
+                    {{getSourceDataServiceLabel()}} is required
                   </mat-error>
                 </mat-form-field>
               </div>
@@ -582,8 +582,8 @@ interface EndpointHierarchy {
                 </mat-form-field>
               </div>
 
-              <!-- Data Services (SQL, Spanner, Bigtable, etc.) -->
-              <div *ngIf="isDestinationEndpointTypeOneOf(['cloudSqlInstance', 'cloudSpanner', 'cloudBigtable', 'filestore', 'redisInstance', 'redisCluster'])">
+              <!-- Data Services (Alloy DB, SQL, Spanner, Bigtable, etc.) -->
+              <div *ngIf="isDestinationEndpointTypeOneOf(['alloyDb', 'cloudSqlInstance', 'cloudSpanner', 'cloudBigtable', 'filestore', 'redisInstance', 'redisCluster'])">
                 <mat-form-field appearance="outline" class="full-width">
                   <mat-label>{{getDestinationServiceLabel()}} *</mat-label>
                   <mat-select formControlName="destinationInstance">
@@ -982,6 +982,7 @@ export class CreateConnectivityTestComponent implements OnInit {
         { value: 'appEngine', label: 'App Engine', requiresDetails: true, detailsType: 'service' }
       ],
       'data-services': [
+        { value: 'alloyDb', label: 'Alloy DB instance', requiresDetails: true, detailsType: 'instance' },
         { value: 'cloudSqlInstance', label: 'Cloud SQL instance', requiresDetails: true, detailsType: 'instance' }
       ],
       'cicd': [
@@ -1035,6 +1036,7 @@ export class CreateConnectivityTestComponent implements OnInit {
         { value: 'pscEndpoint', label: 'PSC endpoint', requiresDetails: true, detailsType: 'instance' }
       ],
       'data-services': [
+        { value: 'alloyDb', label: 'Alloy DB instance', requiresDetails: true, detailsType: 'instance' },
         { value: 'cloudSqlInstance', label: 'Cloud SQL instance', requiresDetails: true, detailsType: 'instance' },
         { value: 'cloudSpanner', label: 'Cloud Spanner instance', requiresDetails: true, detailsType: 'instance' },
         { value: 'cloudBigtable', label: 'Cloud Bigtable instance', requiresDetails: true, detailsType: 'instance' },
@@ -1344,6 +1346,7 @@ export class CreateConnectivityTestComponent implements OnInit {
         this.testForm.get('sourceIpType')?.setValidators([Validators.required]);
         break;
       case 'gceInstance':
+      case 'alloyDb':
       case 'cloudSqlInstance':
       case 'subnetwork':
         this.testForm.get('sourceInstance')?.setValidators([Validators.required]);
@@ -1386,6 +1389,7 @@ export class CreateConnectivityTestComponent implements OnInit {
         ]);
         break;
       case 'gceInstance':
+      case 'alloyDb':
       case 'cloudSqlInstance':
       case 'cloudSpanner':
       case 'cloudBigtable':
@@ -1576,6 +1580,7 @@ export class CreateConnectivityTestComponent implements OnInit {
   getDestinationServiceLabel(): string {
     const endpointType = this.testForm.get('destinationEndpointType')?.value;
     switch (endpointType) {
+      case 'alloyDb': return 'Alloy DB instance';
       case 'cloudSqlInstance': return 'Cloud SQL instance';
       case 'cloudSpanner': return 'Cloud Spanner instance';
       case 'cloudBigtable': return 'Cloud Bigtable instance';
@@ -1583,6 +1588,15 @@ export class CreateConnectivityTestComponent implements OnInit {
       case 'redisInstance': return 'Redis Instance';
       case 'redisCluster': return 'Redis Cluster';
       default: return 'Service';
+    }
+  }
+
+  getSourceDataServiceLabel(): string {
+    const endpointType = this.testForm.get('sourceEndpointType')?.value;
+    switch (endpointType) {
+      case 'alloyDb': return 'Alloy DB instance';
+      case 'cloudSqlInstance': return 'Cloud SQL instance';
+      default: return 'Data service';
     }
   }
 
@@ -1809,6 +1823,10 @@ export class CreateConnectivityTestComponent implements OnInit {
         const functionName = this.extractResourceName(formValue.sourceService);
         return functionName ? `cf-${functionName}` : '';
       
+      case 'alloyDb':
+        const alloyDbInstanceName = this.extractResourceName(formValue.sourceInstance);
+        return alloyDbInstanceName ? `alloydb-${alloyDbInstanceName}` : '';
+      
       case 'cloudSqlInstance':
         const sqlInstanceName = this.extractResourceName(formValue.sourceInstance);
         return sqlInstanceName ? `sql-${sqlInstanceName}` : '';
@@ -1866,6 +1884,10 @@ export class CreateConnectivityTestComponent implements OnInit {
       case 'iapResource':
         const iapResourceName = this.extractResourceName(formValue.destinationInstance);
         return iapResourceName ? `iap-${iapResourceName}` : '';
+      
+      case 'alloyDb':
+        const alloyDbName = this.extractResourceName(formValue.destinationInstance);
+        return alloyDbName ? `alloydb-${alloyDbName}` : '';
       
       case 'cloudSqlInstance':
         const sqlInstanceName = this.extractResourceName(formValue.destinationInstance);
@@ -2017,6 +2039,9 @@ export class CreateConnectivityTestComponent implements OnInit {
           source.service = formValue.sourceService;
           source.serviceType = formValue.sourceEndpointType;
           break;
+        case 'alloyDb':
+          source.alloyDb = formValue.sourceInstance;
+          break;
         case 'cloudSqlInstance':
           source.cloudSqlInstance = formValue.sourceInstance;
           break;
@@ -2077,6 +2102,7 @@ export class CreateConnectivityTestComponent implements OnInit {
           destination.service = formValue.destinationService;
           destination.serviceType = formValue.destinationEndpointType;
           break;
+        case 'alloyDb':
         case 'cloudSqlInstance':
         case 'cloudSpanner':
         case 'cloudBigtable':
