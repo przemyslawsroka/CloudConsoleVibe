@@ -442,6 +442,56 @@ interface EndpointHierarchy {
                 </mat-form-field>
               </div>
 
+              <!-- GKE Workload/Pod -->
+              <div *ngIf="isDestinationEndpointTypeOneOf(['gkeWorkload', 'gkePod'])">
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Cluster *</mat-label>
+                  <mat-select formControlName="destinationCluster">
+                    <mat-option value="gke-cluster-1">gke-cluster-1</mat-option>
+                    <mat-option value="gke-cluster-2">gke-cluster-2</mat-option>
+                  </mat-select>
+                  <mat-error *ngIf="testForm.get('destinationCluster')?.hasError('required')">
+                    Cluster is required
+                  </mat-error>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>{{getDestinationWorkloadLabel()}} *</mat-label>
+                  <mat-select formControlName="destinationWorkload">
+                    <mat-option value="workload-1">workload-1</mat-option>
+                    <mat-option value="workload-2">workload-2</mat-option>
+                  </mat-select>
+                  <mat-error *ngIf="testForm.get('destinationWorkload')?.hasError('required')">
+                    {{getDestinationWorkloadLabel()}} is required
+                  </mat-error>
+                </mat-form-field>
+              </div>
+
+              <!-- GKE Service -->
+              <div *ngIf="isDestinationEndpointType('gkeService')">
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Cluster *</mat-label>
+                  <mat-select formControlName="destinationCluster">
+                    <mat-option value="gke-cluster-1">gke-cluster-1</mat-option>
+                    <mat-option value="gke-cluster-2">gke-cluster-2</mat-option>
+                  </mat-select>
+                  <mat-error *ngIf="testForm.get('destinationCluster')?.hasError('required')">
+                    Cluster is required
+                  </mat-error>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Service *</mat-label>
+                  <mat-select formControlName="destinationService">
+                    <mat-option value="service-1">service-1</mat-option>
+                    <mat-option value="service-2">service-2</mat-option>
+                  </mat-select>
+                  <mat-error *ngIf="testForm.get('destinationService')?.hasError('required')">
+                    Service is required
+                  </mat-error>
+                </mat-form-field>
+              </div>
+
               <!-- Serverless Services (Cloud Run, Functions, App Engine, etc.) -->
               <div *ngIf="isDestinationEndpointTypeOneOf(['cloudRun', 'cloudRunJobs', 'cloudFunctionV1', 'cloudRunFunction', 'appEngine'])">
                 <mat-form-field appearance="outline" class="full-width">
@@ -947,7 +997,10 @@ export class CreateConnectivityTestComponent implements OnInit {
     categories: {
       'compute-gke': [
         { value: 'gceInstance', label: 'VM instance', requiresDetails: true, detailsType: 'instance' },
-        { value: 'gkeCluster', label: 'GKE cluster control plane', requiresDetails: true, detailsType: 'cluster' }
+        { value: 'gkeCluster', label: 'GKE cluster control plane', requiresDetails: true, detailsType: 'cluster' },
+        { value: 'gkeWorkload', label: 'GKE workload', requiresDetails: true, detailsType: 'workload' },
+        { value: 'gkePod', label: 'GKE pod', requiresDetails: true, detailsType: 'workload' },
+        { value: 'gkeService', label: 'GKE service', requiresDetails: true, detailsType: 'service' }
       ],
       'serverless': [
         { value: 'cloudRun', label: 'Cloud Run Service', requiresDetails: true, detailsType: 'service' },
@@ -1319,8 +1372,22 @@ export class CreateConnectivityTestComponent implements OnInit {
       case 'gkeCluster':
         this.testForm.get('destinationCluster')?.setValidators([Validators.required]);
         break;
+      case 'gkeWorkload':
+      case 'gkePod':
+        this.testForm.get('destinationCluster')?.setValidators([Validators.required]);
+        this.testForm.get('destinationWorkload')?.setValidators([Validators.required]);
+        break;
+      case 'gkeService':
+        this.testForm.get('destinationCluster')?.setValidators([Validators.required]);
+        this.testForm.get('destinationService')?.setValidators([Validators.required]);
+        break;
       case 'googleApis':
       case 'appHubService':
+      case 'cloudRun':
+      case 'cloudRunJobs':
+      case 'cloudFunctionV1':
+      case 'cloudRunFunction':
+      case 'appEngine':
         this.testForm.get('destinationService')?.setValidators([Validators.required]);
         break;
     }
@@ -1515,6 +1582,10 @@ export class CreateConnectivityTestComponent implements OnInit {
 
   getWorkloadLabel(): string {
     return this.getCurrentSourceEndpointType() === 'gkeWorkload' ? 'Workload' : 'Pod';
+  }
+
+  getDestinationWorkloadLabel(): string {
+    return this.getCurrentDestinationEndpointType() === 'gkeWorkload' ? 'Workload' : 'Pod';
   }
 
   getProtocol(): string {
