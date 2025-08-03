@@ -375,14 +375,30 @@ interface EndpointHierarchy {
               <!-- Subnetwork -->
               <div *ngIf="isSourceEndpointType('subnetwork')">
                 <mat-form-field appearance="outline" class="full-width">
-                  <mat-label>Subnetwork *</mat-label>
-                  <mat-select formControlName="sourceInstance">
-                    <mat-option value="subnet-1">subnet-1</mat-option>
-                    <mat-option value="subnet-2">subnet-2</mat-option>
+                  <mat-label>Select Project *</mat-label>
+                  <mat-select formControlName="sourceNetworkProject">
+                    <mat-option *ngFor="let project of availableProjects" [value]="project.value">
+                      {{project.displayName}}
+                    </mat-option>
                   </mat-select>
-                  <mat-error *ngIf="testForm.get('sourceInstance')?.hasError('required')">
-                    Subnetwork is required
-                  </mat-error>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Select VPC Network *</mat-label>
+                  <mat-select formControlName="sourceNetworkVpc">
+                    <mat-option *ngFor="let network of availableVpcNetworks" [value]="network.value">
+                      {{network.displayName}}
+                    </mat-option>
+                  </mat-select>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Select Subnetwork *</mat-label>
+                  <mat-select formControlName="sourceNetworkSubnet">
+                    <mat-option *ngFor="let subnetwork of availableSubnetworks" [value]="subnetwork.value">
+                      {{subnetwork.displayName}}
+                    </mat-option>
+                  </mat-select>
                 </mat-form-field>
               </div>
             </div>
@@ -586,14 +602,30 @@ interface EndpointHierarchy {
               <!-- Subnetwork -->
               <div *ngIf="isDestinationEndpointType('subnetwork')">
                 <mat-form-field appearance="outline" class="full-width">
-                  <mat-label>Subnetwork *</mat-label>
-                  <mat-select formControlName="destinationInstance">
-                    <mat-option value="subnet-1">subnet-1</mat-option>
-                    <mat-option value="subnet-2">subnet-2</mat-option>
+                  <mat-label>Select Project *</mat-label>
+                  <mat-select formControlName="destinationNetworkProject">
+                    <mat-option *ngFor="let project of availableProjects" [value]="project.value">
+                      {{project.displayName}}
+                    </mat-option>
                   </mat-select>
-                  <mat-error *ngIf="testForm.get('destinationInstance')?.hasError('required')">
-                    Subnetwork is required
-                  </mat-error>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Select VPC Network *</mat-label>
+                  <mat-select formControlName="destinationNetworkVpc">
+                    <mat-option *ngFor="let network of availableVpcNetworks" [value]="network.value">
+                      {{network.displayName}}
+                    </mat-option>
+                  </mat-select>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Select Subnetwork *</mat-label>
+                  <mat-select formControlName="destinationNetworkSubnet">
+                    <mat-option *ngFor="let subnetwork of destinationSubnetworks" [value]="subnetwork.value">
+                      {{subnetwork.displayName}}
+                    </mat-option>
+                  </mat-select>
                 </mat-form-field>
               </div>
 
@@ -1043,6 +1075,8 @@ export class CreateConnectivityTestComponent implements OnInit {
   testForm: FormGroup;
   availableProjects: ProjectOption[] = [];
   availableVpcNetworks: VpcNetworkOption[] = [];
+  availableSubnetworks: any[] = [];
+  destinationSubnetworks: any[] = [];
   isCreating = false;
 
   // Source endpoint hierarchy
@@ -1057,7 +1091,7 @@ export class CreateConnectivityTestComponent implements OnInit {
       { value: 'serverless', label: 'Serverless...', isCategory: true },
       { value: 'data-services', label: 'Managed Data Services...', isCategory: true },
       { value: 'cicd', label: 'CI/CD...', isCategory: true },
-      { value: 'network', label: 'Network...', isCategory: true }
+      { value: 'subnetwork', label: 'Subnetwork', requiresDetails: true, detailsType: 'custom' }
     ],
     categories: {
       'gke': [
@@ -1078,9 +1112,6 @@ export class CreateConnectivityTestComponent implements OnInit {
       ],
       'cicd': [
         { value: 'cloudBuild', label: 'Cloud Build private worker', requiresDetails: true, detailsType: 'service' }
-      ],
-      'network': [
-        { value: 'subnetwork', label: 'Subnetwork', requiresDetails: true, detailsType: 'custom' }
       ]
     }
   };
@@ -1097,7 +1128,7 @@ export class CreateConnectivityTestComponent implements OnInit {
       { value: 'data-services', label: 'Managed Data Services...', isCategory: true },
       { value: 'application', label: 'Application Endpoints...', isCategory: true },
       { value: 'cicd', label: 'CI/CD...', isCategory: true },
-      { value: 'network', label: 'Network...', isCategory: true }
+      { value: 'subnetwork', label: 'Subnetwork', requiresDetails: true, detailsType: 'custom' }
     ],
     categories: {
       'gke': [
@@ -1121,9 +1152,6 @@ export class CreateConnectivityTestComponent implements OnInit {
       ],
       'cicd': [
         { value: 'cloudBuild', label: 'Cloud Build private worker', requiresDetails: true, detailsType: 'service' }
-      ],
-      'network': [
-        { value: 'subnetwork', label: 'Subnetwork', requiresDetails: true, detailsType: 'custom' }
       ],
       'data-services': [
         { value: 'alloyDb', label: 'Alloy DB instance', requiresDetails: true, detailsType: 'instance' },
@@ -1183,6 +1211,12 @@ export class CreateConnectivityTestComponent implements OnInit {
       sourceService: [''],
       sourceCluster: [''],
       sourceWorkload: [''],
+      sourceNetworkProject: [''],
+      sourceNetworkVpc: [''],
+      sourceNetworkSubnet: [''],
+      destinationNetworkProject: [''],
+      destinationNetworkVpc: [''],
+      destinationNetworkSubnet: [''],
       sourceIpType: ['gcp-vpc', Validators.required],
       sourceConnectionType: ['vpn-tunnel'],
       sourceConnectionResource: [''],
@@ -1210,6 +1244,28 @@ export class CreateConnectivityTestComponent implements OnInit {
     
     // Load user's IP address when component initializes
     this.loadUserIpAddress();
+
+    const currentProject = this.projectService.getCurrentProject();
+    if (currentProject) {
+      this.testForm.patchValue({ 
+        sourceNetworkProject: currentProject.id,
+        destinationNetworkProject: currentProject.id 
+      });
+    }
+  }
+
+  loadVpcNetworksForProject(projectId: string) {
+    // Mock implementation
+    if (projectId) {
+      this.availableVpcNetworks = [
+        { value: 'default', displayName: 'default' },
+        { value: 'vpc-network-1', displayName: 'vpc-network-1' }
+      ];
+    } else {
+      this.availableVpcNetworks = [];
+    }
+    this.availableSubnetworks = [];
+    this.testForm.patchValue({ networkVpc: '', networkSubnet: '' });
   }
 
   private loadAvailableProjects() {
@@ -1420,15 +1476,28 @@ export class CreateConnectivityTestComponent implements OnInit {
     this.testForm.get('destinationEndpointType')?.updateValueAndValidity();
     this.testForm.get('protocol')?.updateValueAndValidity();
 
-    // Set up name generation
-    this.setupNameGeneration();
+    this.testForm.get('networkProject')?.valueChanges.subscribe(projectId => {
+      this.loadVpcNetworksForProject(projectId);
+    });
+
+    this.testForm.get('networkVpc')?.valueChanges.subscribe(vpcNetwork => {
+      this.loadSubnetworksForVpc(vpcNetwork);
+    });
+
+    this.testForm.get('destinationNetworkProject')?.valueChanges.subscribe(projectId => {
+      this.loadVpcNetworksForProject(projectId); // Assuming same VPCs for simplicity
+    });
+
+    this.testForm.get('destinationNetworkVpc')?.valueChanges.subscribe(vpcNetwork => {
+      this.loadDestinationSubnetworksForVpc(vpcNetwork);
+    });
   }
 
   private setupNameGeneration() {
     // Watch for changes that should trigger name generation
     const fieldsToWatch = [
-      'sourceEndpointType', 'sourceIp', 'sourceIpType', 'sourceConnectionType', 'sourceConnectionResource', 'sourceInstance', 'sourceDomain', 'sourceService', 'sourceCluster', 'sourceWorkload',
-      'destinationEndpointType', 'destinationIp', 'destinationInstance', 'destinationDomain', 'destinationService', 'destinationCluster', 'destinationWorkload'
+      'sourceEndpointType', 'sourceIp', 'sourceIpType', 'sourceConnectionType', 'sourceConnectionResource', 'sourceInstance', 'sourceDomain', 'sourceService', 'sourceCluster', 'sourceWorkload', 'sourceNetworkSubnet',
+      'destinationEndpointType', 'destinationIp', 'destinationInstance', 'destinationDomain', 'destinationService', 'destinationCluster', 'destinationWorkload', 'destinationNetworkSubnet'
     ];
 
     fieldsToWatch.forEach(fieldName => {
@@ -1698,18 +1767,25 @@ export class CreateConnectivityTestComponent implements OnInit {
       sourceConnectionType: '',
       sourceConnectionResource: '',
       sourceProject: currentProject ? currentProject.id : '',
-      sourceVpcNetwork: ''
+      sourceVpcNetwork: '',
+      sourceNetworkProject: currentProject ? currentProject.id : '',
+      sourceNetworkVpc: '',
+      sourceNetworkSubnet: ''
     });
   }
 
   resetDestinationDetails() {
+    const currentProject = this.projectService.getCurrentProject();
     this.testForm.patchValue({
       destinationIp: '',
       destinationInstance: '',
       destinationDomain: '',
       destinationService: '',
       destinationCluster: '',
-      destinationWorkload: ''
+      destinationWorkload: '',
+      destinationNetworkProject: currentProject ? currentProject.id : '',
+      destinationNetworkVpc: '',
+      destinationNetworkSubnet: ''
     });
   }
 
@@ -1995,7 +2071,7 @@ export class CreateConnectivityTestComponent implements OnInit {
         return sqlInstanceName ? `sql-${sqlInstanceName}` : '';
       
       case 'subnetwork':
-        const subnetName = this.extractResourceName(formValue.sourceInstance);
+        const subnetName = this.extractResourceName(formValue.sourceNetworkSubnet);
         return subnetName ? `subnet-${subnetName}` : '';
       
       default:
@@ -2033,7 +2109,7 @@ export class CreateConnectivityTestComponent implements OnInit {
         return lbName ? `lb-${lbName}` : '';
       
       case 'subnetwork':
-        const subnetName = this.extractResourceName(formValue.destinationInstance);
+        const subnetName = this.extractResourceName(formValue.destinationNetworkSubnet);
         return subnetName ? `subnet-${subnetName}` : '';
       
       case 'pscEndpoint':
@@ -2244,6 +2320,40 @@ export class CreateConnectivityTestComponent implements OnInit {
     ];
     
     return resourceTypes.includes(endpointType);
+  }
+
+  loadSubnetworksForVpc(vpcNetwork: string) {
+    // Mock implementation
+    if (vpcNetwork === 'default') {
+      this.availableSubnetworks = [
+        { value: 'default-us-central1', displayName: 'default-us-central1' },
+        { value: 'default-europe-west1', displayName: 'default-europe-west1' }
+      ];
+    } else if (vpcNetwork === 'vpc-network-1') {
+      this.availableSubnetworks = [
+        { value: 'subnet-a', displayName: 'subnet-a' },
+        { value: 'subnet-b', displayName: 'subnet-b' }
+      ];
+    } else {
+      this.availableSubnetworks = [];
+    }
+  }
+
+  loadDestinationSubnetworksForVpc(vpcNetwork: string) {
+    // Mock implementation
+    if (vpcNetwork === 'default') {
+      this.destinationSubnetworks = [
+        { value: 'default-us-central1', displayName: 'default-us-central1' },
+        { value: 'default-europe-west1', displayName: 'default-europe-west1' }
+      ];
+    } else if (vpcNetwork === 'vpc-network-1') {
+      this.destinationSubnetworks = [
+        { value: 'subnet-c', displayName: 'subnet-c' },
+        { value: 'subnet-d', displayName: 'subnet-d' }
+      ];
+    } else {
+      this.destinationSubnetworks = [];
+    }
   }
 
   onCancel() {
