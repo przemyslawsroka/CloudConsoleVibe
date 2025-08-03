@@ -6,6 +6,8 @@ import { HttpClient } from '@angular/common/http';
 import { ConnectivityTestsService, ConnectivityTestRequest } from '../../services/connectivity-tests.service';
 import { ProjectService, Project } from '../../services/project.service';
 import { ResourceLoaderService, ResourceOption, EndpointType } from '../../services/resource-loader.service';
+import { AuthService } from '../../services/auth.service';
+import { ComputeEngineService } from '../../services/compute-engine.service';
 
 interface ProjectOption {
   value: string;
@@ -1195,7 +1197,9 @@ export class CreateConnectivityTestComponent implements OnInit {
     private http: HttpClient,
     private connectivityTestsService: ConnectivityTestsService,
     private projectService: ProjectService,
-    private resourceLoaderService: ResourceLoaderService
+    private resourceLoaderService: ResourceLoaderService,
+    private authService: AuthService,
+    private computeEngineService: ComputeEngineService
   ) {
     this.testForm = this.fb.group({
       displayName: ['', [
@@ -1255,17 +1259,38 @@ export class CreateConnectivityTestComponent implements OnInit {
   }
 
   loadVpcNetworksForProject(projectId: string) {
-    // Mock implementation
-    if (projectId) {
-      this.availableVpcNetworks = [
-        { value: 'default', displayName: 'default' },
-        { value: 'vpc-network-1', displayName: 'vpc-network-1' }
-      ];
-    } else {
-      this.availableVpcNetworks = [];
+    if (this.authService.isDemoMode()) {
+      // Demo mode: use mock data
+      if (projectId) {
+        this.availableVpcNetworks = [
+          { value: 'default', displayName: 'default' },
+          { value: 'vpc-network-1', displayName: 'vpc-network-1' }
+        ];
+      } else {
+        this.availableVpcNetworks = [];
+      }
+      this.availableSubnetworks = [];
+      this.testForm.patchValue({ sourceNetworkVpc: '', sourceNetworkSubnet: '' }, { emitEvent: false });
+      return;
     }
+
+    // Production mode: use Compute Engine API
+    this.computeEngineService.getNetworks().subscribe({
+      next: (networks: any) => {
+        this.availableVpcNetworks = networks.items.map((network: any) => ({
+          value: network.name,
+          displayName: network.name
+        }));
+      },
+      error: (error: any) => {
+        console.error('Error loading VPC networks:', error);
+        this.availableVpcNetworks = [];
+        this.snackBar.open('Failed to load VPC networks.', 'Close', { duration: 5000 });
+      }
+    });
+
     this.availableSubnetworks = [];
-    this.testForm.patchValue({ networkVpc: '', networkSubnet: '' });
+    this.testForm.patchValue({ sourceNetworkVpc: '', sourceNetworkSubnet: '' }, { emitEvent: false });
   }
 
   private loadAvailableProjects() {
@@ -1339,7 +1364,7 @@ export class CreateConnectivityTestComponent implements OnInit {
         this.userIpAddress = response.ip;
         this.isLoadingUserIp = false;
       },
-      error: (error) => {
+      error: (error: any) => {
         console.error('Error loading user IP address:', error);
         this.userIpAddress = null;
         this.isLoadingUserIp = false;
@@ -2258,7 +2283,7 @@ export class CreateConnectivityTestComponent implements OnInit {
         this.isLoadingSourceResources = false;
         console.log(`Loaded ${resources.length} source resources for ${endpointType}`, resources);
       },
-      error: (error) => {
+      error: (error: any) => {
         console.error(`Error loading source resources for ${endpointType}:`, error);
         this.sourceResourceError = `Failed to load ${endpointType} resources`;
         this.isLoadingSourceResources = false;
@@ -2283,7 +2308,7 @@ export class CreateConnectivityTestComponent implements OnInit {
         this.isLoadingDestinationResources = false;
         console.log(`Loaded ${resources.length} destination resources for ${endpointType}`, resources);
       },
-      error: (error) => {
+      error: (error: any) => {
         console.error(`Error loading destination resources for ${endpointType}:`, error);
         this.destinationResourceError = `Failed to load ${endpointType} resources`;
         this.isLoadingDestinationResources = false;
@@ -2323,37 +2348,89 @@ export class CreateConnectivityTestComponent implements OnInit {
   }
 
   loadSubnetworksForVpc(vpcNetwork: string) {
-    // Mock implementation
-    if (vpcNetwork === 'default') {
-      this.availableSubnetworks = [
-        { value: 'default-us-central1', displayName: 'default-us-central1' },
-        { value: 'default-europe-west1', displayName: 'default-europe-west1' }
-      ];
-    } else if (vpcNetwork === 'vpc-network-1') {
-      this.availableSubnetworks = [
-        { value: 'subnet-a', displayName: 'subnet-a' },
-        { value: 'subnet-b', displayName: 'subnet-b' }
-      ];
-    } else {
-      this.availableSubnetworks = [];
+    if (this.authService.isDemoMode()) {
+      // Demo mode: use improved mock data
+      if (vpcNetwork === 'default') {
+        this.availableSubnetworks = [
+          { value: 'default-us-central1', displayName: 'default-us-central1' },
+          { value: 'default-europe-west1', displayName: 'default-europe-west1' }
+        ];
+      } else if (vpcNetwork === 'vpc-network-1') {
+        this.availableSubnetworks = [
+          { value: 'subnet-a', displayName: 'subnet-a' },
+          { value: 'subnet-b', displayName: 'subnet-b' }
+        ];
+      } else {
+        this.availableSubnetworks = [];
+      }
+      this.testForm.patchValue({ sourceNetworkSubnet: '' }, { emitEvent: false });
+      return;
     }
+
+    // Production mode: use Compute Engine API
+    // Note: This requires knowing the region. For simplicity, we'll iterate through common regions.
+    // A more robust solution would involve a region selector or fetching all aggregated subnetworks.
+    const regions = ['us-central1', 'europe-west1', 'asia-east1']; // Example regions
+    this.availableSubnetworks = [];
+    
+    // In a real scenario, you'd likely make a more targeted API call, possibly to an aggregated list
+    // or based on a selected region.
+    regions.forEach(region => {
+      this.computeEngineService.getSubnetworks(region, vpcNetwork).subscribe({
+        next: (subnetworks: any) => {
+          const mappedSubnetworks = subnetworks.items.map((subnetwork: any) => ({
+            value: subnetwork.name,
+            displayName: `${subnetwork.name} (${subnetwork.ipCidrRange})`
+          }));
+          this.availableSubnetworks = this.availableSubnetworks.concat(mappedSubnetworks);
+        },
+        error: (error: any) => {
+          console.error(`Error loading subnetworks for region ${region}:`, error);
+        }
+      });
+    });
+    this.testForm.patchValue({ sourceNetworkSubnet: '' }, { emitEvent: false });
   }
 
   loadDestinationSubnetworksForVpc(vpcNetwork: string) {
-    // Mock implementation
-    if (vpcNetwork === 'default') {
-      this.destinationSubnetworks = [
-        { value: 'default-us-central1', displayName: 'default-us-central1' },
-        { value: 'default-europe-west1', displayName: 'default-europe-west1' }
-      ];
-    } else if (vpcNetwork === 'vpc-network-1') {
-      this.destinationSubnetworks = [
-        { value: 'subnet-c', displayName: 'subnet-c' },
-        { value: 'subnet-d', displayName: 'subnet-d' }
-      ];
-    } else {
-      this.destinationSubnetworks = [];
+    if (this.authService.isDemoMode()) {
+      // Demo mode: use improved mock data
+      if (vpcNetwork === 'default') {
+        this.destinationSubnetworks = [
+          { value: 'default-us-central1', displayName: 'default-us-central1' },
+          { value: 'default-europe-west1', displayName: 'default-europe-west1' }
+        ];
+      } else if (vpcNetwork === 'vpc-network-1') {
+        this.destinationSubnetworks = [
+          { value: 'subnet-c', displayName: 'subnet-c' },
+          { value: 'subnet-d', displayName: 'subnet-d' }
+        ];
+      } else {
+        this.destinationSubnetworks = [];
+      }
+      this.testForm.patchValue({ destinationNetworkSubnet: '' }, { emitEvent: false });
+      return;
     }
+
+    // Production mode: use Compute Engine API
+    const regions = ['us-central1', 'europe-west1', 'asia-east1']; // Example regions
+    this.destinationSubnetworks = [];
+    
+    regions.forEach(region => {
+      this.computeEngineService.getSubnetworks(region, vpcNetwork).subscribe({
+        next: (subnetworks: any) => {
+          const mappedSubnetworks = subnetworks.items.map((subnetwork: any) => ({
+            value: subnetwork.name,
+            displayName: `${subnetwork.name} (${subnetwork.ipCidrRange})`
+          }));
+          this.destinationSubnetworks = this.destinationSubnetworks.concat(mappedSubnetworks);
+        },
+        error: (error: any) => {
+          console.error(`Error loading destination subnetworks for region ${region}:`, error);
+        }
+      });
+    });
+    this.testForm.patchValue({ destinationNetworkSubnet: '' }, { emitEvent: false });
   }
 
   onCancel() {
