@@ -60,6 +60,7 @@ import { CreateInstanceGroupComponent } from './components/instance-groups/creat
 import { CloudStorageBucketsComponent } from './components/cloud-storage-buckets/cloud-storage-buckets.component';
 import { CloudStorageBucketDetailsComponent } from './components/cloud-storage-bucket-details/cloud-storage-bucket-details.component';
 import { CreateConnectivityTestComponent } from './components/connectivity-tests/create-connectivity-test.component';
+import { PrivateServiceConnectComponent } from './components/private-service-connect/private-service-connect.component';
 
 const routes: Routes = [
   { path: '', redirectTo: '/vpc', pathMatch: 'full' },
@@ -105,6 +106,7 @@ const routes: Routes = [
   { path: 'dns-management', component: DnsManagementComponent, canActivate: [AuthGuard] },
   { path: 'connectivity-tests', component: ConnectivityTestsComponent, canActivate: [AuthGuard] },
   { path: 'connectivity-tests/create', component: CreateConnectivityTestComponent, canActivate: [AuthGuard] },
+  { path: 'private-service-connect', component: PrivateServiceConnectComponent, canActivate: [AuthGuard] },
   { path: 'cloud-armor-policies', component: CloudArmorPoliciesComponent, canActivate: [AuthGuard] },
   { path: 'tls-inspection-policies', component: TlsInspectionPoliciesComponent, canActivate: [AuthGuard] },
   { path: 'address-groups', component: AddressGroupsComponent, canActivate: [AuthGuard] },

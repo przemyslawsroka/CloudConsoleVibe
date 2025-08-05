@@ -404,7 +404,8 @@ export class AppComponent implements OnInit {
         { name: 'Load balancing', route: '/load-balancing', icon: 'balance' },
         { name: 'Cloud CDN', route: '/cloud-cdn', icon: 'cached' },
         { name: 'Cloud DNS', route: '/dns-management', icon: 'dns' },
-        { name: 'Cloud NAT', route: '/cloud-nat', icon: 'nat' }
+        { name: 'Cloud NAT', route: '/cloud-nat', icon: 'nat' },
+        { name: 'Private Service Connect', route: '/private-service-connect', icon: 'link' }
       ]
     },
     {

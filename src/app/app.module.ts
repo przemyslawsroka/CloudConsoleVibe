@@ -131,10 +131,14 @@ import { InstanceGroupsComponent } from './components/instance-groups/instance-g
 import { CreateInstanceGroupComponent } from './components/instance-groups/create-instance-group.component';
 import { CloudStorageBucketsComponent } from './components/cloud-storage-buckets/cloud-storage-buckets.component';
 import { CloudStorageBucketDetailsComponent } from './components/cloud-storage-bucket-details/cloud-storage-bucket-details.component';
+import { PrivateServiceConnectComponent } from './components/private-service-connect/private-service-connect.component';
+import { ConnectEndpointDialogComponent } from './components/private-service-connect/connect-endpoint-dialog.component';
+import { PublishServiceDialogComponent } from './components/private-service-connect/publish-service-dialog.component';
 import { ComputeEngineService } from './services/compute-engine.service';
 import { InstanceTemplatesService } from './services/instance-templates.service';
 import { InstanceGroupsService } from './services/instance-groups.service';
 import { CloudStorageService } from './services/cloud-storage.service';
+import { PrivateServiceConnectService } from './services/private-service-connect.service';
 
 @NgModule({
   declarations: [
@@ -219,7 +223,10 @@ import { CloudStorageService } from './services/cloud-storage.service';
     InstanceGroupsComponent,
     CreateInstanceGroupComponent,
     CloudStorageBucketsComponent,
-    CloudStorageBucketDetailsComponent
+    CloudStorageBucketDetailsComponent,
+    PrivateServiceConnectComponent,
+    ConnectEndpointDialogComponent,
+    PublishServiceDialogComponent
   ],
   imports: [
     BrowserModule,
@@ -247,7 +254,7 @@ import { CloudStorageService } from './services/cloud-storage.service';
     TextFieldModule,
     MatStepperModule
   ],
-  providers: [AuthService, GoogleAnalyticsService, VpcService, TPPIService, PacketMirroringService, NetworkHealthMonitorService, AppNetaService, CloudNatService, GkeClusterService, GeminiAiService, GlobalFrontendService, SecureWebProxyService, UrlListsService, ComputeEngineService, InstanceTemplatesService, InstanceGroupsService, CloudStorageService, InternalRangesService],
+  providers: [AuthService, GoogleAnalyticsService, VpcService, TPPIService, PacketMirroringService, NetworkHealthMonitorService, AppNetaService, CloudNatService, GkeClusterService, GeminiAiService, GlobalFrontendService, SecureWebProxyService, UrlListsService, ComputeEngineService, InstanceTemplatesService, InstanceGroupsService, CloudStorageService, InternalRangesService, PrivateServiceConnectService],
   bootstrap: [AppComponent]
 })
 export class AppModule { } 
