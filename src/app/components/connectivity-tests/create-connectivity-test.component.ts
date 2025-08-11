@@ -727,6 +727,11 @@ interface EndpointHierarchy {
               <input matInput formControlName="displayName" 
                      placeholder="Auto-generated based on source and destination"
                      (input)="onTestNameManualEdit()">
+              <button mat-icon-button matSuffix type="button" 
+                      (click)="refreshTestName()" 
+                      matTooltip="Refresh auto-generated name">
+                <mat-icon>refresh</mat-icon>
+              </button>
               <mat-hint *ngIf="!userHasEditedName">Automatically generated from source and destination selection</mat-hint>
               <mat-hint *ngIf="userHasEditedName">Custom name - lowercase letters, numbers, hyphens allowed</mat-hint>
               <mat-error *ngIf="testForm.get('displayName')?.hasError('required')">
@@ -1519,6 +1524,8 @@ export class CreateConnectivityTestComponent implements OnInit {
   }
 
   private setupNameGeneration() {
+    console.log('Setting up name generation in main component');
+    
     // Watch for changes that should trigger name generation
     const fieldsToWatch = [
       'sourceEndpointType', 'sourceIp', 'sourceIpType', 'sourceConnectionType', 'sourceConnectionResource', 'sourceInstance', 'sourceDomain', 'sourceService', 'sourceCluster', 'sourceWorkload', 'sourceNetworkSubnet',
@@ -1526,9 +1533,18 @@ export class CreateConnectivityTestComponent implements OnInit {
     ];
 
     fieldsToWatch.forEach(fieldName => {
-      this.testForm.get(fieldName)?.valueChanges.subscribe(() => {
-        this.updateTestName();
+      this.testForm.get(fieldName)?.valueChanges.subscribe((value) => {
+        console.log(`Field ${fieldName} changed to:`, value);
+        console.log('userHasEditedName:', this.userHasEditedName);
+        this.forceUpdateTestName();
       });
+    });
+
+    // Also watch the entire form for changes as a fallback
+    this.testForm.valueChanges.subscribe(() => {
+      console.log('Form values changed, forcing name update');
+      console.log('Current form values:', this.testForm.value);
+      this.forceUpdateTestName();
     });
 
     // Special handling for destination instance changes to ensure SSH-in-browser scenarios work
@@ -1543,7 +1559,10 @@ export class CreateConnectivityTestComponent implements OnInit {
     });
 
     // Initial name generation
-    this.updateTestName();
+    setTimeout(() => {
+      console.log('Initial name generation');
+      this.updateTestName();
+    }, 100);
   }
 
   private clearSourceValidators() {
@@ -2219,22 +2238,33 @@ export class CreateConnectivityTestComponent implements OnInit {
     const sourceId = this.generateSourceIdentifier();
     const destId = this.generateDestinationIdentifier();
     
+    console.log('generateConnectivityTestName - sourceId:', sourceId, 'destId:', destId);
+    console.log('Current form values:', this.testForm.value);
+    console.log('User IP address:', this.userIpAddress);
+    
     if (!sourceId || !destId) {
+      console.log('Missing source or destination identifier, not generating name');
       return ''; // Don't generate name until both source and destination are specified
     }
     
     const timestamp = this.generateTimestamp();
     const rawName = `${sourceId}--to--${destId}--${timestamp}`;
     
-    return this.sanitizeName(rawName);
+    const sanitizedName = this.sanitizeName(rawName);
+    console.log('Final sanitized name:', sanitizedName);
+    
+    return sanitizedName;
   }
 
   public updateTestName(): void {
     if (this.userHasEditedName) {
+      console.log('Skipping name update - user has manually edited');
       return; // Don't auto-generate if user has manually edited the name
     }
     
     const generatedName = this.generateConnectivityTestName();
+    console.log('Generated name:', generatedName);
+    
     if (!generatedName) {
       // Clear the display name if a name can't be generated yet
       // This prevents showing a stale or incomplete name
@@ -2242,7 +2272,30 @@ export class CreateConnectivityTestComponent implements OnInit {
       return;
     }
     
+    console.log('Setting displayName to:', generatedName);
     this.testForm.patchValue({ displayName: generatedName }, { emitEvent: false });
+  }
+
+  public forceUpdateTestName(): void {
+    // Force update regardless of user edit status (for field changes)
+    const generatedName = this.generateConnectivityTestName();
+    console.log('Force updating test name to:', generatedName);
+    
+    if (!generatedName) {
+      // Only clear if user hasn't manually edited
+      if (!this.userHasEditedName) {
+        this.testForm.patchValue({ displayName: '' }, { emitEvent: false });
+      }
+      return;
+    }
+    
+    // Only update if user hasn't manually edited the name
+    if (!this.userHasEditedName) {
+      console.log('Force setting displayName to:', generatedName);
+      this.testForm.patchValue({ displayName: generatedName }, { emitEvent: false });
+    } else {
+      console.log('Not updating - user has manually edited name');
+    }
   }
 
   onTestNameManualEdit(): void {
@@ -2263,6 +2316,13 @@ export class CreateConnectivityTestComponent implements OnInit {
         }
       }
     }, 10);
+  }
+
+  refreshTestName(): void {
+    // Force refresh the test name by temporarily resetting the manual edit flag
+    console.log('Manual refresh triggered');
+    this.userHasEditedName = false;
+    this.updateTestName();
   }
 
   // Resource loading methods
