@@ -481,6 +481,14 @@ export class AppComponent implements OnInit {
       ]
     },
     {
+      name: 'Serverless',
+      icon: 'bolt',
+      expanded: false,
+      items: [
+        { name: 'Cloud Run', route: '/cloud-run/services', icon: 'directions_run' }
+      ]
+    },
+    {
       name: 'Storage',
       icon: 'storage',
       expanded: false,

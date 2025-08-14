@@ -61,6 +61,7 @@ import { CloudStorageBucketsComponent } from './components/cloud-storage-buckets
 import { CloudStorageBucketDetailsComponent } from './components/cloud-storage-bucket-details/cloud-storage-bucket-details.component';
 import { CreateConnectivityTestComponent } from './components/connectivity-tests/create-connectivity-test.component';
 import { PrivateServiceConnectComponent } from './components/private-service-connect/private-service-connect.component';
+import { CloudRunServicesComponent } from './components/cloud-run-services/cloud-run-services.component';
 
 const routes: Routes = [
   { path: '', redirectTo: '/vpc', pathMatch: 'full' },
@@ -153,6 +154,7 @@ const routes: Routes = [
   { path: 'instance-groups/create', component: CreateInstanceGroupComponent, canActivate: [AuthGuard] },
   { path: 'cloud-storage/buckets', component: CloudStorageBucketsComponent, canActivate: [AuthGuard] },
   { path: 'cloud-storage/buckets/:bucketName', component: CloudStorageBucketDetailsComponent, canActivate: [AuthGuard] },
+  { path: 'cloud-run/services', component: CloudRunServicesComponent, canActivate: [AuthGuard] },
   {
     path: 'monitoring',
     loadChildren: () => import('./components/monitoring/monitoring.module').then(m => m.MonitoringModule),

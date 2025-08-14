@@ -20,6 +20,11 @@
     margin: 0 auto;
   }
 
+  .header-content.full-width {
+    max-width: none;
+    margin: 0;
+  }
+
   .header-text {
     flex: 1;
   }

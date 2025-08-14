@@ -6,7 +6,7 @@ import { Component, Input } from '@angular/core';
     <div class="gcp-page-layout">
       <!-- Page Header -->
       <div class="page-header" *ngIf="title || subtitle || hasHeaderActions">
-        <div class="header-content">
+        <div class="header-content" [class.full-width]="noPadding">
           <div class="header-text">
             <h1 class="page-title" *ngIf="title">{{ title }}</h1>
             <p class="page-subtitle" *ngIf="subtitle">{{ subtitle }}</p>

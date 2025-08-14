@@ -134,6 +134,7 @@ import { CloudStorageBucketDetailsComponent } from './components/cloud-storage-b
 import { PrivateServiceConnectComponent } from './components/private-service-connect/private-service-connect.component';
 import { ConnectEndpointDialogComponent } from './components/private-service-connect/connect-endpoint-dialog.component';
 import { PublishServiceDialogComponent } from './components/private-service-connect/publish-service-dialog.component';
+import { CloudRunServicesComponent } from './components/cloud-run-services/cloud-run-services.component';
 import { ComputeEngineService } from './services/compute-engine.service';
 import { InstanceTemplatesService } from './services/instance-templates.service';
 import { InstanceGroupsService } from './services/instance-groups.service';
@@ -226,7 +227,8 @@ import { PrivateServiceConnectService } from './services/private-service-connect
     CloudStorageBucketDetailsComponent,
     PrivateServiceConnectComponent,
     ConnectEndpointDialogComponent,
-    PublishServiceDialogComponent
+    PublishServiceDialogComponent,
+    CloudRunServicesComponent
   ],
   imports: [
     BrowserModule,

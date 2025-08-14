@@ -103,9 +103,12 @@ app.use('/api/v1/dashboard', dashboardRoutes);
 app.use('/api/v1/monitoring', monitoringRoutes);
 
 // Proxy routes for Google Cloud APIs (maintain compatibility)
-// Temporarily disabled to simplify deployment
-// app.use('/api/logging', require('./routes/proxy/logging'));
-// app.use('/api/compute', require('./routes/proxy/compute'));
+// Enable proxies when BACKEND_ENABLE_PROXIES=true to avoid local CORS issues
+if (process.env.BACKEND_ENABLE_PROXIES === 'true') {
+  app.use('/api/logging', require('./routes/proxy/logging'));
+  app.use('/api/compute', require('./routes/proxy/compute'));
+  app.use('/api/cloudrun', require('./routes/proxy/cloudrun'));
+}
 
 // Error handling middleware
 app.use((err, req, res, next) => {

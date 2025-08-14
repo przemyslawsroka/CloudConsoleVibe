@@ -18,6 +18,12 @@ export interface CloudRunServiceData {
   annotations: { [key: string]: string };
   labels: { [key: string]: string };
   spec: CloudRunServiceSpec;
+  // Extra fields used for UI list (may be derived/estimated)
+  deploymentType?: 'service' | 'function' | 'job' | 'unknown';
+  requestsPerSecond?: number;
+  authentication?: 'Public access' | 'Require authentication' | 'Unknown';
+  ingress?: string;
+  deployedBy?: string;
 }
 
 export interface CloudRunJob {
@@ -155,7 +161,8 @@ export interface VolumeMount {
   providedIn: 'root'
 })
 export class CloudRunService {
-  private readonly baseUrl = 'https://run.googleapis.com/v1';
+  // Prefer Admin API v2 which supports aggregated listing via locations/-
+  private readonly baseUrlV2 = 'https://run.googleapis.com/v2';
 
   constructor(
     private http: HttpClient,
@@ -173,13 +180,23 @@ export class CloudRunService {
     }
 
     const project = this.getCurrentProject();
-    const locations = ['us-central1', 'us-east1', 'europe-west1', 'asia-east1']; // Common regions
-    
-    // Get services from all locations
-    const requests = locations.map(location => this.getServicesFromLocation(project, location));
-    
-    return of([]).pipe( // For now, return empty array and fall back to mock
-      catchError(() => of(this.getMockServices()))
+    if (!project) {
+      return of([]);
+    }
+
+    // Aggregated list across all locations using v2
+    const url = `${this.baseUrlV2}/projects/${project}/locations/-/services`;
+    const headers = this.getHeaders();
+
+    return this.http.get<any>(url, { headers }).pipe(
+      map(response => {
+        const items: any[] = response.services || response.items || [];
+        return items.map((svc: any) => this.transformServiceV2(svc));
+      }),
+      catchError(error => {
+        console.error('Error fetching Cloud Run services:', error);
+        return of(this.getMockServices());
+      })
     );
   }
 
@@ -205,15 +222,13 @@ export class CloudRunService {
    * Get services from a specific location
    */
   private getServicesFromLocation(projectId: string, location: string): Observable<CloudRunServiceData[]> {
-    const url = `${this.baseUrl}/namespaces/${projectId}/services`;
+    const url = `${this.baseUrlV2}/projects/${projectId}/locations/${location}/services`;
     const headers = this.getHeaders();
 
     return this.http.get<any>(url, { headers }).pipe(
       map(response => {
-        if (response.items) {
-          return response.items.map((item: any) => this.transformService(item));
-        }
-        return [];
+        const items: any[] = response.services || response.items || [];
+        return items.map((item: any) => this.transformServiceV2(item));
       }),
       catchError(error => {
         console.error(`Error fetching Cloud Run services from ${location}:`, error);
@@ -226,6 +241,7 @@ export class CloudRunService {
    * Transform GCP API response to our CloudRunServiceData interface
    */
   private transformService(gcpService: any): CloudRunServiceData {
+    // v1 fallback (rarely used now)
     return {
       name: gcpService.metadata?.name || '',
       namespace: gcpService.metadata?.namespace || '',
@@ -243,6 +259,55 @@ export class CloudRunService {
         traffic: gcpService.spec?.traffic || []
       }
     };
+  }
+
+  private transformServiceV2(svc: any): CloudRunServiceData {
+    const namePath: string = svc.name || '';
+    const locationMatch = namePath.match(/projects\/[^/]+\/locations\/([^/]+)\/services\//);
+    const location = locationMatch ? locationMatch[1] : 'unknown';
+    const deploymentType = this.detectDeploymentType(svc);
+
+    const traffic: TrafficAllocation[] = (svc.traffic || []).map((t: any) => ({
+      revisionName: t.revision || t.revisionName || '',
+      percent: t.percent || 0,
+      tag: t.tag
+    }));
+
+    const transformed: CloudRunServiceData = {
+      name: (namePath.split('/').pop()) || svc.displayName || '',
+      namespace: this.getCurrentProject(),
+      location,
+      status: svc.uri ? 'READY' : 'UNKNOWN',
+      url: svc.uri,
+      traffic,
+      latestRevision: svc.latestCreatedRevision || '',
+      creationTimestamp: svc.createTime || '',
+      updateTimestamp: svc.updateTime || '',
+      annotations: svc.annotations || {},
+      labels: { deploymentType, ...(svc.labels || {}) },
+      spec: {
+        template: svc.template || {},
+        traffic
+      },
+      deploymentType: (deploymentType as any) || 'service',
+      authentication: (svc.ingress && svc.ingress.toLowerCase() === 'ingress-all') ? 'Public access' : 'Unknown',
+      ingress: svc.ingress || 'All',
+      deployedBy: svc.creator || svc.annotations?.['run.googleapis.com/creator']
+    };
+
+    return transformed;
+  }
+
+  private detectDeploymentType(svc: any): string {
+    const labels = svc.labels || {};
+    const annotations = svc.annotations || {};
+    if (labels["goog-managed-by"] === 'cloudfunctions' || labels["cloud.googleapis.com/location"] && labels["deployment"] === 'function') {
+      return 'function';
+    }
+    if (annotations['run.googleapis.com/creator']) {
+      return 'service';
+    }
+    return 'service';
   }
 
   /**
