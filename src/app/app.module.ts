@@ -70,6 +70,8 @@ import { DnsManagementComponent } from './components/dns-management/dns-manageme
 import { CreateZoneDialogComponent } from './components/dns-management/create-zone-dialog.component';
 import { ConnectivityTestsComponent, DeleteConfirmationDialog } from './components/connectivity-tests/connectivity-tests.component';
 import { CreateConnectivityTestComponent } from './components/connectivity-tests/create-connectivity-test.component';
+import { SourceEndpointComponent } from './components/connectivity-tests/source-endpoint/source-endpoint.component';
+import { DestinationEndpointComponent } from './components/connectivity-tests/destination-endpoint/destination-endpoint.component';
 import { CreateConnectivityTestDialogComponent } from './components/connectivity-tests/create-connectivity-test-dialog.component';
 import { CloudArmorPoliciesComponent } from './components/cloud-armor-policies/cloud-armor-policies.component';
 import { CreateCloudArmorPolicyDialogComponent } from './components/cloud-armor-policies/create-cloud-armor-policy-dialog.component';
@@ -172,6 +174,8 @@ import { PrivateServiceConnectService } from './services/private-service-connect
     ConnectivityTestsComponent,
     DeleteConfirmationDialog,
     CreateConnectivityTestComponent,
+    SourceEndpointComponent,
+    DestinationEndpointComponent,
     CreateConnectivityTestDialogComponent,
     CloudArmorPoliciesComponent,
     CreateCloudArmorPolicyDialogComponent,

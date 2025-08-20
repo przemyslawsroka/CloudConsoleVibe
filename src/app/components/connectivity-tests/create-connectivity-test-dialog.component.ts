@@ -1,5 +1,5 @@
 import { Component, Inject, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ControlContainer, FormGroupDirective } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { HttpClient } from '@angular/common/http';
 import { ConnectivityTestRequest } from '../../services/connectivity-tests.service';
@@ -16,6 +16,12 @@ interface ProjectOption {
 
 @Component({
   selector: 'app-create-connectivity-test-dialog',
+  viewProviders: [
+    {
+      provide: ControlContainer,
+      useExisting: FormGroupDirective,
+    },
+  ],
   template: `
     <h2 mat-dialog-title>Create Connectivity Test</h2>
     
@@ -58,13 +64,13 @@ interface ProjectOption {
         </mat-form-field>
 
         <!-- Source section -->
-        <div class="form-section">
+        <div class="form-section" formGroupName="source">
           <h3>Source</h3>
           
           <!-- Source endpoint type -->
           <mat-form-field appearance="outline" class="full-width">
             <mat-label>Source endpoint</mat-label>
-            <mat-select formControlName="sourceEndpointType">
+            <mat-select formControlName="endpointType">
               <mat-option value="myIpAddress">My IP address</mat-option>
               <mat-option value="ipAddress">IP address</mat-option>
               <mat-option value="gceInstance">Compute Engine instance</mat-option>
@@ -75,7 +81,7 @@ interface ProjectOption {
           </mat-form-field>
 
           <!-- My IP Address -->
-          <div *ngIf="testForm.get('sourceEndpointType')?.value === 'myIpAddress'" class="info-message">
+          <div *ngIf="testForm.get('source.endpointType')?.value === 'myIpAddress'" class="info-message">
             <mat-icon>info</mat-icon>
             <div class="ip-address-content">
               <div *ngIf="isLoadingUserIp" class="loading-ip">
@@ -96,25 +102,25 @@ interface ProjectOption {
           </div>
 
           <!-- Source IP address -->
-          <div *ngIf="testForm.get('sourceEndpointType')?.value === 'ipAddress'">
+          <div *ngIf="testForm.get('source.endpointType')?.value === 'ipAddress'">
             <mat-form-field appearance="outline" class="full-width">
               <mat-label>Source IP address *</mat-label>
-              <input matInput formControlName="sourceIp" placeholder="Example: 192.0.2.1">
-              <mat-error *ngIf="testForm.get('sourceIp')?.hasError('required')">
+              <input matInput formControlName="ipAddress" placeholder="Example: 192.0.2.1">
+              <mat-error *ngIf="testForm.get('source.ipAddress')?.hasError('required')">
                 Source IP address is required
               </mat-error>
-              <mat-error *ngIf="testForm.get('sourceIp')?.hasError('pattern')">
+              <mat-error *ngIf="testForm.get('source.ipAddress')?.hasError('pattern')">
                 Please enter a valid IP address
               </mat-error>
             </mat-form-field>
 
-            <mat-checkbox formControlName="sourceIsGoogleCloudIp" class="google-cloud-checkbox">
+            <mat-checkbox formControlName="isGoogleCloudIp" class="google-cloud-checkbox">
               This is an IP address used in Google Cloud.
             </mat-checkbox>
 
             <mat-form-field appearance="outline" class="full-width" style="margin-top: 16px;">
                                   <mat-label>VPC Network Project</mat-label>
-              <mat-select formControlName="sourceProject">
+              <mat-select formControlName="project">
                 <mat-option *ngFor="let project of availableProjects" [value]="project.value">
                   {{project.displayName}}
                 </mat-option>
@@ -126,15 +132,15 @@ interface ProjectOption {
           </div>
 
           <!-- Source GCE Instance -->
-          <div *ngIf="testForm.get('sourceEndpointType')?.value === 'gceInstance'">
+          <div *ngIf="testForm.get('source.endpointType')?.value === 'gceInstance'">
             <mat-form-field appearance="outline" class="full-width">
               <mat-label>Source instance *</mat-label>
-              <mat-select formControlName="sourceInstance">
+              <mat-select formControlName="instance">
                 <mat-option value="batch-jobs-eu">batch-jobs-eu</mat-option>
                 <mat-option value="batch-jobs-us">batch-jobs-us</mat-option>
                 <mat-option value="browse-group-eu-yzql">browse-group-eu-yzql</mat-option>
               </mat-select>
-              <mat-error *ngIf="testForm.get('sourceInstance')?.hasError('required')">
+              <mat-error *ngIf="testForm.get('source.instance')?.hasError('required')">
                 Source instance is required
               </mat-error>
             </mat-form-field>
@@ -142,13 +148,13 @@ interface ProjectOption {
         </div>
 
         <!-- Destination section -->
-        <div class="form-section">
+        <div class="form-section" formGroupName="destination">
           <h3>Destination</h3>
           
           <!-- Destination endpoint type -->
           <mat-form-field appearance="outline" class="full-width">
             <mat-label>Destination endpoint</mat-label>
-            <mat-select formControlName="destinationEndpointType">
+            <mat-select formControlName="endpointType">
               <mat-option value="ipAddress">IP address</mat-option>
               <mat-option value="gceInstance">Compute Engine instance</mat-option>
               <mat-option value="gkeCluster">GKE cluster</mat-option>
@@ -158,25 +164,25 @@ interface ProjectOption {
           </mat-form-field>
 
           <!-- Destination IP address -->
-          <div *ngIf="testForm.get('destinationEndpointType')?.value === 'ipAddress'">
+          <div *ngIf="testForm.get('destination.endpointType')?.value === 'ipAddress'">
             <mat-form-field appearance="outline" class="full-width">
               <mat-label>Destination IP address *</mat-label>
-              <input matInput formControlName="destinationIp" placeholder="Example: 192.0.2.1">
-              <mat-error *ngIf="testForm.get('destinationIp')?.hasError('required')">
+              <input matInput formControlName="ipAddress" placeholder="Example: 192.0.2.1">
+              <mat-error *ngIf="testForm.get('destination.ipAddress')?.hasError('required')">
                 Destination IP address is required
               </mat-error>
-              <mat-error *ngIf="testForm.get('destinationIp')?.hasError('pattern')">
+              <mat-error *ngIf="testForm.get('destination.ipAddress')?.hasError('pattern')">
                 Please enter a valid IP address
               </mat-error>
             </mat-form-field>
 
-            <mat-checkbox formControlName="destinationIsGoogleCloudIp" class="google-cloud-checkbox">
+            <mat-checkbox formControlName="isGoogleCloudIp" class="google-cloud-checkbox">
               This is an IP address used in Google Cloud.
             </mat-checkbox>
 
             <mat-form-field appearance="outline" class="full-width" style="margin-top: 16px;">
                                   <mat-label>VPC Network Project</mat-label>
-              <mat-select formControlName="destinationProject">
+              <mat-select formControlName="project">
                 <mat-option *ngFor="let project of availableProjects" [value]="project.value">
                   {{project.displayName}}
                 </mat-option>
@@ -188,15 +194,15 @@ interface ProjectOption {
           </div>
 
           <!-- Destination GCE Instance -->
-          <div *ngIf="testForm.get('destinationEndpointType')?.value === 'gceInstance'">
+          <div *ngIf="testForm.get('destination.endpointType')?.value === 'gceInstance'">
             <mat-form-field appearance="outline" class="full-width">
               <mat-label>Destination instance *</mat-label>
-              <mat-select formControlName="destinationInstance">
+              <mat-select formControlName="instance">
                 <mat-option value="batch-jobs-eu">batch-jobs-eu</mat-option>
                 <mat-option value="batch-jobs-us">batch-jobs-us</mat-option>
                 <mat-option value="browse-group-eu-yzql">browse-group-eu-yzql</mat-option>
               </mat-select>
-              <mat-error *ngIf="testForm.get('destinationInstance')?.hasError('required')">
+              <mat-error *ngIf="testForm.get('destination.instance')?.hasError('required')">
                 Destination instance is required
               </mat-error>
             </mat-form-field>
@@ -206,11 +212,11 @@ interface ProjectOption {
           <mat-form-field appearance="outline" class="full-width" 
                           *ngIf="testForm.get('protocol')?.value === 'tcp' || testForm.get('protocol')?.value === 'udp'">
             <mat-label>Destination port *</mat-label>
-            <input matInput type="number" formControlName="destinationPort" placeholder="80">
-            <mat-error *ngIf="testForm.get('destinationPort')?.hasError('required')">
+            <input matInput type="number" formControlName="port" placeholder="80">
+            <mat-error *ngIf="testForm.get('destination.port')?.hasError('required')">
               Destination port is required for TCP/UDP protocols
             </mat-error>
-            <mat-error *ngIf="testForm.get('destinationPort')?.hasError('min') || testForm.get('destinationPort')?.hasError('max')">
+            <mat-error *ngIf="testForm.get('destination.port')?.hasError('min') || testForm.get('destination.port')?.hasError('max')">
               Port must be between 1 and 65535
             </mat-error>
           </mat-form-field>
@@ -390,17 +396,21 @@ export class CreateConnectivityTestDialogComponent implements OnInit {
         Validators.pattern(/^[a-z0-9\-]+$/)
       ]],
       protocol: ['tcp', Validators.required],
-      sourceEndpointType: ['myIpAddress', Validators.required], // Default to My IP address
-      sourceIp: [''],
-      sourceInstance: [''],
-      sourceIsGoogleCloudIp: [false],
-      sourceProject: [''],
-      destinationEndpointType: ['ipAddress', Validators.required], // Default to IP address
-      destinationIp: [''],
-      destinationInstance: [''],
-      destinationIsGoogleCloudIp: [false],
-      destinationProject: [''],
-      destinationPort: [80, [Validators.min(1), Validators.max(65535)]],
+      source: this.fb.group({
+        endpointType: ['myIpAddress', Validators.required],
+        ipAddress: [''],
+        instance: [''],
+        isGoogleCloudIp: [false],
+        project: ['']
+      }),
+      destination: this.fb.group({
+        endpointType: ['ipAddress', Validators.required],
+        ipAddress: [''],
+        instance: [''],
+        isGoogleCloudIp: [false],
+        project: [''],
+        port: [80, [Validators.min(1), Validators.max(65535)]]
+      }),
       roundTrip: [false],
       description: ['']
     });
@@ -414,8 +424,8 @@ export class CreateConnectivityTestDialogComponent implements OnInit {
     
     // Trigger initial validation for default values
     setTimeout(() => {
-      this.testForm.get('sourceEndpointType')?.updateValueAndValidity();
-      this.testForm.get('destinationEndpointType')?.updateValueAndValidity();
+      this.testForm.get('source.endpointType')?.updateValueAndValidity();
+      this.testForm.get('destination.endpointType')?.updateValueAndValidity();
     }, 0);
   }
 
@@ -432,8 +442,8 @@ export class CreateConnectivityTestDialogComponent implements OnInit {
         const currentProject = this.projectService.getCurrentProject();
         if (currentProject) {
           this.testForm.patchValue({
-            sourceProject: currentProject.id,
-            destinationProject: currentProject.id
+            source: { project: currentProject.id },
+            destination: { project: currentProject.id }
           }, { emitEvent: false });
         }
         
@@ -456,21 +466,21 @@ export class CreateConnectivityTestDialogComponent implements OnInit {
           
           // Update current project selection if form is empty or project changed
           const currentProject = this.projectService.getCurrentProject();
-          const currentSourceProject = this.testForm.get('sourceProject')?.value;
-          const currentDestinationProject = this.testForm.get('destinationProject')?.value;
+          const currentSourceProject = this.testForm.get('source.project')?.value;
+          const currentDestinationProject = this.testForm.get('destination.project')?.value;
           
           if (currentProject) {
-            const updateValues: any = {};
+            const updateValues: any = { source: {}, destination: {} };
             
             if (!currentSourceProject || currentSourceProject !== currentProject.id) {
-              updateValues.sourceProject = currentProject.id;
+              updateValues.source.project = currentProject.id;
             }
             
             if (!currentDestinationProject || currentDestinationProject !== currentProject.id) {
-              updateValues.destinationProject = currentProject.id;
+              updateValues.destination.project = currentProject.id;
             }
             
-            if (Object.keys(updateValues).length > 0) {
+            if (Object.keys(updateValues.source).length > 0 || Object.keys(updateValues.destination).length > 0) {
               this.testForm.patchValue(updateValues, { emitEvent: false });
             }
           }
@@ -486,18 +496,18 @@ export class CreateConnectivityTestDialogComponent implements OnInit {
     const ipPattern = /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
 
     // Source endpoint validation
-    this.testForm.get('sourceEndpointType')?.valueChanges.subscribe(type => {
+    this.testForm.get('source.endpointType')?.valueChanges.subscribe(type => {
       this.updateSourceValidation(type, ipPattern);
     });
 
     // Destination endpoint validation
-    this.testForm.get('destinationEndpointType')?.valueChanges.subscribe(type => {
+    this.testForm.get('destination.endpointType')?.valueChanges.subscribe(type => {
       this.updateDestinationValidation(type, ipPattern);
     });
 
     // Protocol change validation
     this.testForm.get('protocol')?.valueChanges.subscribe(protocol => {
-      const portControl = this.testForm.get('destinationPort');
+      const portControl = this.testForm.get('destination.port');
       if (protocol === 'tcp' || protocol === 'udp') {
         portControl?.setValidators([Validators.required, Validators.min(1), Validators.max(65535)]);
       } else {
@@ -507,13 +517,14 @@ export class CreateConnectivityTestDialogComponent implements OnInit {
     });
 
     // Trigger initial validation
-    this.updateSourceValidation(this.testForm.get('sourceEndpointType')?.value, ipPattern);
-    this.updateDestinationValidation(this.testForm.get('destinationEndpointType')?.value, ipPattern);
+    this.updateSourceValidation(this.testForm.get('source.endpointType')?.value, ipPattern);
+    this.updateDestinationValidation(this.testForm.get('destination.endpointType')?.value, ipPattern);
   }
 
   private updateSourceValidation(type: string, ipPattern: RegExp) {
-    const sourceIpControl = this.testForm.get('sourceIp');
-    const sourceInstanceControl = this.testForm.get('sourceInstance');
+    const sourceGroup = this.testForm.get('source') as FormGroup;
+    const sourceIpControl = sourceGroup.get('ipAddress');
+    const sourceInstanceControl = sourceGroup.get('instance');
     
     // Clear all validators first
     sourceIpControl?.clearValidators();
@@ -533,8 +544,9 @@ export class CreateConnectivityTestDialogComponent implements OnInit {
   }
 
   private updateDestinationValidation(type: string, ipPattern: RegExp) {
-    const destIpControl = this.testForm.get('destinationIp');
-    const destInstanceControl = this.testForm.get('destinationInstance');
+    const destGroup = this.testForm.get('destination') as FormGroup;
+    const destIpControl = destGroup.get('ipAddress');
+    const destInstanceControl = destGroup.get('instance');
     
     // Clear all validators first
     destIpControl?.clearValidators();
@@ -570,32 +582,32 @@ export class CreateConnectivityTestDialogComponent implements OnInit {
       
       // Build source endpoint
       const source: any = {};
-      if (formValue.sourceEndpointType === 'ipAddress') {
-        source.ipAddress = formValue.sourceIp;
-        if (formValue.sourceProject) {
-          source.projectId = formValue.sourceProject;
+      if (formValue.source.endpointType === 'ipAddress') {
+        source.ipAddress = formValue.source.ipAddress;
+        if (formValue.source.project) {
+          source.projectId = formValue.source.project;
         }
-      } else if (formValue.sourceEndpointType === 'myIpAddress') {
+      } else if (formValue.source.endpointType === 'myIpAddress') {
         source.ipAddress = this.userIpAddress;
         source.type = 'my-ip-address';
-      } else if (formValue.sourceEndpointType === 'gceInstance') {
-        source.instance = formValue.sourceInstance;
+      } else if (formValue.source.endpointType === 'gceInstance') {
+        source.instance = formValue.source.instance;
       }
 
       // Build destination endpoint
       const destination: any = {};
-      if (formValue.destinationEndpointType === 'ipAddress') {
-        destination.ipAddress = formValue.destinationIp;
-        if (formValue.destinationProject) {
-          destination.projectId = formValue.destinationProject;
+      if (formValue.destination.endpointType === 'ipAddress') {
+        destination.ipAddress = formValue.destination.ipAddress;
+        if (formValue.destination.project) {
+          destination.projectId = formValue.destination.project;
         }
-      } else if (formValue.destinationEndpointType === 'gceInstance') {
-        destination.instance = formValue.destinationInstance;
+      } else if (formValue.destination.endpointType === 'gceInstance') {
+        destination.instance = formValue.destination.instance;
       }
       
       // Add port for TCP/UDP
-      if ((formValue.protocol === 'tcp' || formValue.protocol === 'udp') && formValue.destinationPort) {
-        destination.port = formValue.destinationPort;
+      if ((formValue.protocol === 'tcp' || formValue.protocol === 'udp') && formValue.destination.port) {
+        destination.port = formValue.destination.port;
       }
 
       const testData: ConnectivityTestRequest = {
@@ -619,8 +631,8 @@ export class CreateConnectivityTestDialogComponent implements OnInit {
   private setupNameGeneration() {
     // Watch for changes in ALL relevant fields - be very aggressive
     const fieldsToWatch = [
-      'sourceEndpointType', 'sourceIp', 'sourceInstance',
-      'destinationEndpointType', 'destinationIp', 'destinationInstance', 'destinationPort'
+      'source.endpointType', 'source.ipAddress', 'source.instance',
+      'destination.endpointType', 'destination.ipAddress', 'destination.instance', 'destination.port'
     ];
 
     fieldsToWatch.forEach(fieldName => {
@@ -628,7 +640,7 @@ export class CreateConnectivityTestDialogComponent implements OnInit {
         console.log(`Field ${fieldName} changed to:`, value);
         
         // Special handling for source endpoint type changes
-        if (fieldName === 'sourceEndpointType' && value === 'myIpAddress') {
+        if (fieldName === 'source.endpointType' && value === 'myIpAddress') {
           // If switching to "My IP address" and we don't have the IP yet, load it
           if (!this.userIpAddress && !this.isLoadingUserIp) {
             this.loadUserIpAddress();
@@ -726,12 +738,14 @@ export class CreateConnectivityTestDialogComponent implements OnInit {
   }
 
   private generateSourceIdentifier(): string {
-    const endpointType = this.testForm.get('sourceEndpointType')?.value;
-    const formValue = this.testForm.value;
+    const sourceGroup = this.testForm.get('source') as FormGroup;
+    if (!sourceGroup) return '';
+    const endpointType = sourceGroup.get('endpointType')?.value;
+    const formValue = sourceGroup.value;
 
     switch (endpointType) {
       case 'ipAddress':
-        const sourceIp = formValue.sourceIp;
+        const sourceIp = formValue.ipAddress;
         return sourceIp ? `ip-${sourceIp.replace(/\./g, '-')}` : '';
       
       case 'myIpAddress':
@@ -739,19 +753,19 @@ export class CreateConnectivityTestDialogComponent implements OnInit {
         return this.userIpAddress ? 'my-ip' : '';
       
       case 'gceInstance':
-        const instanceName = this.extractResourceName(formValue.sourceInstance);
+        const instanceName = this.extractResourceName(formValue.instance);
         return instanceName ? `vm-${instanceName}` : '';
       
       case 'gkeCluster':
-        const clusterName = this.extractResourceName(formValue.sourceCluster);
+        const clusterName = this.extractResourceName(formValue.cluster);
         return clusterName ? `gke-${clusterName}` : '';
       
       case 'cloudSqlInstance':
-        const sqlName = this.extractResourceName(formValue.sourceInstance);
+        const sqlName = this.extractResourceName(formValue.instance);
         return sqlName ? `sql-${sqlName}` : '';
       
       case 'forwardingRule':
-        const ruleName = this.extractResourceName(formValue.sourceInstance);
+        const ruleName = this.extractResourceName(formValue.instance);
         return ruleName ? `lb-${ruleName}` : '';
       
       default:
@@ -760,28 +774,30 @@ export class CreateConnectivityTestDialogComponent implements OnInit {
   }
 
   private generateDestinationIdentifier(): string {
-    const endpointType = this.testForm.get('destinationEndpointType')?.value;
-    const formValue = this.testForm.value;
+    const destGroup = this.testForm.get('destination') as FormGroup;
+    if (!destGroup) return '';
+    const endpointType = destGroup.get('endpointType')?.value;
+    const formValue = destGroup.value;
 
     switch (endpointType) {
       case 'ipAddress':
-        const destIp = formValue.destinationIp;
+        const destIp = formValue.ipAddress;
         return destIp ? `ip-${destIp.replace(/\./g, '-')}` : '';
       
       case 'gceInstance':
-        const instanceName = this.extractResourceName(formValue.destinationInstance);
+        const instanceName = this.extractResourceName(formValue.instance);
         return instanceName ? `vm-${instanceName}` : '';
       
       case 'gkeCluster':
-        const clusterName = this.extractResourceName(formValue.destinationCluster);
+        const clusterName = this.extractResourceName(formValue.cluster);
         return clusterName ? `gke-${clusterName}` : '';
       
       case 'cloudSqlInstance':
-        const sqlName = this.extractResourceName(formValue.destinationInstance);
+        const sqlName = this.extractResourceName(formValue.instance);
         return sqlName ? `sql-${sqlName}` : '';
       
       case 'forwardingRule':
-        const ruleName = this.extractResourceName(formValue.destinationInstance);
+        const ruleName = this.extractResourceName(formValue.instance);
         return ruleName ? `lb-${ruleName}` : '';
       
       default:
@@ -828,7 +844,7 @@ export class CreateConnectivityTestDialogComponent implements OnInit {
     this.isLoadingUserIp = true;
     this.userIpAddress = null;
     
-    this.http.get<{ip: string}>('https://api.ipify.org?format=json').subscribe({
+    this.http.get<{ip: string}>('/api/ipify').subscribe({
       next: (response) => {
         console.log('User IP loaded:', response.ip);
         this.userIpAddress = response.ip;

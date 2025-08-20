@@ -18,6 +18,12 @@
     "changeOrigin": true,
     "logLevel": "debug"
   },
+  "/api/ipify": {
+    "target": "http://localhost:8080",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug"
+  },
   "/appneta-api/**": {
     "target": "https://demo.pm.appneta.com",
     "secure": true,

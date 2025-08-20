@@ -108,6 +108,7 @@ if (process.env.BACKEND_ENABLE_PROXIES === 'true') {
   app.use('/api/logging', require('./routes/proxy/logging'));
   app.use('/api/compute', require('./routes/proxy/compute'));
   app.use('/api/cloudrun', require('./routes/proxy/cloudrun'));
+  app.use('/api/ipify', require('./routes/proxy/ipify'));
 }
 
 // Error handling middleware
