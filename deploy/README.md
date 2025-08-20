@@ -4,41 +4,40 @@ This directory contains all the utility and deployment scripts for the CloudCons
 
 ## 🚀 Deployment Scripts
 
-### `deploy-full-stack.sh`
+### `deploy-all.sh`
 **Purpose:** Complete full-stack deployment including frontend and backend services.
 ```bash
-./scripts/deploy-full-stack.sh
+./deploy/deploy-all.sh
 ```
-- Builds and deploys both frontend and backend
-- Sets up Cloud Run services
-- Configures environment variables
-- Runs post-deployment verification
+- Deploys the backend service.
+- Deploys the frontend service.
+- Configures CORS on the backend to allow requests from the frontend.
+- Generates a configuration file for the monitoring agent.
 
-### `deploy.sh`
+### `deploy-backend.sh`
+**Purpose:** Backend-only deployment to Cloud Run.
+```bash
+./deploy/deploy-backend.sh
+```
+- Builds and deploys the backend service.
+- Sets up the Cloud Run service for the backend.
+
+### `deploy-frontend.sh`
 **Purpose:** Frontend-only deployment to Cloud Run.
 ```bash
-./scripts/deploy.sh
+./deploy/deploy-frontend.sh
 ```
-- Builds Angular application
-- Creates Docker image
-- Deploys to Cloud Run
-- Updates service configuration
-
-### `deploy-cloudbuild.sh`
-**Purpose:** Deployment using Google Cloud Build.
-```bash
-./scripts/deploy-cloudbuild.sh
-```
-- Triggers Cloud Build pipeline
-- Uses cloudbuild.yaml configuration
-- Automated build and deployment process
+- Fetches the backend URL.
+- Updates frontend configuration to point to the backend.
+- Builds and deploys the frontend service.
+- Sets up the Cloud Run service for the frontend.
 
 ## ⚙️ Setup Scripts
 
 ### `setup-dev-environment.sh`
 **Purpose:** Sets up local development environment.
 ```bash
-./scripts/setup-dev-environment.sh
+./deploy/setup-dev-environment.sh
 ```
 - Installs dependencies
 - Configures environment files
@@ -48,34 +47,12 @@ This directory contains all the utility and deployment scripts for the CloudCons
 ### `setup-iam.sh`
 **Purpose:** Configures Google Cloud IAM permissions.
 ```bash
-./scripts/setup-iam.sh
+./deploy/setup-iam.sh
 ```
 - Creates service accounts
 - Assigns necessary roles
 - Sets up IAM policies
 - Configures Cloud Run permissions
-
-## 🔍 Verification Scripts
-
-### `verify-setup.sh`
-**Purpose:** Verifies development environment setup.
-```bash
-./scripts/verify-setup.sh
-```
-- Checks environment configuration
-- Validates API key setup
-- Tests local development server
-- Verifies dependencies
-
-### `verify-production-deployment.sh`
-**Purpose:** Verifies production deployment status.
-```bash
-./scripts/verify-production-deployment.sh
-```
-- Checks Cloud Run service status
-- Validates environment variables
-- Tests production endpoints
-- Verifies SSL certificates
 
 ## 📋 Prerequisites
 
@@ -90,17 +67,17 @@ Before running any scripts, ensure you have:
 
 ### Making Scripts Executable
 ```bash
-chmod +x scripts/*.sh
+chmod +x deploy/*.sh
 ```
 
 ### Running from Project Root
 All scripts should be run from the project root directory:
 ```bash
 # Good
-./scripts/deploy.sh
+./deploy/deploy-all.sh
 
 # Avoid
-cd scripts && ./deploy.sh
+cd deploy && ./deploy-all.sh
 ```
 
 ### Environment Variables
@@ -117,20 +94,13 @@ export REGION="us-central1"
 - **Backup important data** before running deployment scripts
 - **Check permissions** if scripts fail with access errors
 
-## 🔄 Script Dependencies
-
-```
-setup-dev-environment.sh → verify-setup.sh
-setup-iam.sh → deploy.sh → verify-production-deployment.sh
-```
-
 ## 📝 Troubleshooting
 
 ### Common Issues
 
 1. **Permission Denied**
    ```bash
-   chmod +x scripts/script-name.sh
+   chmod +x deploy/script-name.sh
    ```
 
 2. **Google Cloud Authentication**
