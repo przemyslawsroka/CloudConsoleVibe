@@ -138,7 +138,7 @@ export class ResourceLoaderService {
   /**
    * Load VM instances from Compute Engine API
    */
-  private loadVmInstances(): Observable<ResourceOption[]> {
+  loadVmInstances(): Observable<ResourceOption[]> {
     return this.computeService.loadInstances().pipe(
       map((instances: VmInstance[]) => 
         instances.map(instance => {

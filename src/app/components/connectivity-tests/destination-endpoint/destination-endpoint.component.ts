@@ -97,8 +97,10 @@ import { ComputeEngineService } from '../../../services/compute-engine.service';
             <mat-label>Destination instance *</mat-label>
             <mat-select formControlName="instance" (selectionChange)="onResourceChange()">
               <mat-option *ngIf="isLoadingDestinationResources" disabled>
-                <mat-spinner diameter="16" style="display: inline-block; margin-right: 8px;"></mat-spinner>
-                Loading instances...
+                <div class="loading-option">
+                  <mat-spinner diameter="16"></mat-spinner>
+                  <span>Loading instances...</span>
+                </div>
               </mat-option>
               <mat-option *ngIf="destinationResourceError && !isLoadingDestinationResources" disabled>
                 {{destinationResourceError}}
@@ -300,19 +302,37 @@ export class DestinationEndpointComponent implements OnInit, OnDestroy {
     this.destinationResourceError = null;
     this.destinationResourceOptions = [];
 
-    this.resourceLoaderService.loadResources(endpointType)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (resources: ResourceOption[]) => {
-          this.destinationResourceOptions = resources;
-          this.isLoadingDestinationResources = false;
-        },
-        error: (error: any) => {
-          console.error(`Error loading destination resources for ${endpointType}:`, error);
-          this.destinationResourceError = `Failed to load ${endpointType} resources`;
-          this.isLoadingDestinationResources = false;
-        }
-      });
+    if (endpointType === 'gceInstance') {
+      this.resourceLoaderService.loadVmInstances()
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: (resources: ResourceOption[]) => {
+            console.log('Loaded destination resources:', resources);
+            this.destinationResourceOptions = resources;
+            this.isLoadingDestinationResources = false;
+          },
+          error: (error: any) => {
+            console.error(`Error loading destination resources for ${endpointType}:`, error);
+            this.destinationResourceError = `Failed to load ${endpointType} resources`;
+            this.isLoadingDestinationResources = false;
+          }
+        });
+    } else {
+      this.resourceLoaderService.loadResources(endpointType)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: (resources: ResourceOption[]) => {
+            console.log('Loaded destination resources:', resources);
+            this.destinationResourceOptions = resources;
+            this.isLoadingDestinationResources = false;
+          },
+          error: (error: any) => {
+            console.error(`Error loading destination resources for ${endpointType}:`, error);
+            this.destinationResourceError = `Failed to load ${endpointType} resources`;
+            this.isLoadingDestinationResources = false;
+          }
+        });
+    }
   }
 
   private requiresResourceSelection(endpointType: EndpointType): boolean {

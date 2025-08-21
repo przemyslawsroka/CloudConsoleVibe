@@ -14,6 +14,9 @@ export interface VmInstance {
   internalIp?: string;
   externalIp?: string;
   creationTimestamp?: string;
+  networkInterfaces?: any[];
+  disks?: any[];
+  scheduling?: any;
 }
 
 export interface InstanceOperation {
@@ -43,7 +46,93 @@ export class ComputeEngineService {
   public loading$ = this.loadingSubject.asObservable();
   public error$ = this.errorSubject.asObservable();
 
-  private mockInstances: VmInstance[] = [];
+  private mockInstances: VmInstance[] = [
+    {
+      id: '1234567890123456789',
+      name: 'demo-web-server-1',
+      zone: 'projects/demo-project/zones/us-central1-a',
+      machineType: 'projects/demo-project/zones/us-central1-a/machineTypes/e2-medium',
+      status: 'RUNNING',
+      internalIp: '10.128.0.2',
+      externalIp: '34.134.123.45',
+      creationTimestamp: '2024-01-15T10:30:00.000-08:00',
+      networkInterfaces: [
+        { network: 'projects/demo-project/global/networks/default', subnetwork: 'projects/demo-project/regions/us-central1/subnetworks/default' }
+      ],
+      disks: [
+        { boot: true, diskSizeGb: '10', type: 'PERSISTENT' }
+      ],
+      scheduling: { preemptible: false }
+    },
+    {
+      id: '2345678901234567890',
+      name: 'demo-database-server',
+      zone: 'projects/demo-project/zones/us-central1-b',
+      machineType: 'projects/demo-project/zones/us-central1-b/machineTypes/n2-standard-2',
+      status: 'RUNNING',
+      internalIp: '10.128.1.3',
+      externalIp: '35.202.67.89',
+      creationTimestamp: '2024-01-10T14:20:00.000-08:00',
+      networkInterfaces: [
+        { network: 'projects/demo-project/global/networks/demo-vpc-1', subnetwork: 'projects/demo-project/regions/us-central1/subnetworks/demo-subnet-1' }
+      ],
+      disks: [
+        { boot: true, diskSizeGb: '50', type: 'PERSISTENT' }
+      ],
+      scheduling: { preemptible: false }
+    },
+    {
+      id: '3456789012345678901',
+      name: 'demo-app-server',
+      zone: 'projects/demo-project/zones/us-east1-a',
+      machineType: 'projects/demo-project/zones/us-east1-a/machineTypes/c2-standard-4',
+      status: 'STOPPED',
+      internalIp: '10.142.0.5',
+      externalIp: '',
+      creationTimestamp: '2024-01-08T09:15:00.000-08:00',
+      networkInterfaces: [
+        { network: 'projects/demo-project/global/networks/demo-vpc-2', subnetwork: 'projects/demo-project/regions/us-east1/subnetworks/demo-subnet-2' }
+      ],
+      disks: [
+        { boot: true, diskSizeGb: '20', type: 'PERSISTENT' }
+      ],
+      scheduling: { preemptible: true }
+    },
+    {
+      id: '4567890123456789012',
+      name: 'demo-monitoring-vm',
+      zone: 'projects/demo-project/zones/europe-west1-b',
+      machineType: 'projects/demo-project/zones/europe-west1-b/machineTypes/e2-small',
+      status: 'RUNNING',
+      internalIp: '10.132.0.7',
+      externalIp: '34.78.123.200',
+      creationTimestamp: '2024-01-05T16:45:00.000-08:00',
+      networkInterfaces: [
+        { network: 'projects/demo-project/global/networks/default', subnetwork: 'projects/demo-project/regions/europe-west1/subnetworks/default' }
+      ],
+      disks: [
+        { boot: true, diskSizeGb: '10', type: 'PERSISTENT' }
+      ],
+      scheduling: { preemptible: false }
+    },
+    {
+      id: '5678901234567890123',
+      name: 'demo-backup-server',
+      zone: 'projects/demo-project/zones/asia-southeast1-a',
+      machineType: 'projects/demo-project/zones/asia-southeast1-a/machineTypes/n1-standard-1',
+      status: 'PROVISIONING',
+      internalIp: '10.148.0.9',
+      externalIp: '',
+      creationTimestamp: '2024-01-20T08:00:00.000-08:00',
+      networkInterfaces: [
+        { network: 'projects/demo-project/global/networks/default', subnetwork: 'projects/demo-project/regions/asia-southeast1/subnetworks/default' }
+      ],
+      disks: [
+        { boot: true, diskSizeGb: '25', type: 'PERSISTENT' }
+      ],
+      scheduling: { preemptible: false }
+    }
+  ];
 
   constructor(
     private http: HttpClient,
@@ -53,16 +142,42 @@ export class ComputeEngineService {
 
   loadInstances(): Observable<VmInstance[]> {
     const project = this.projectService.getCurrentProject();
-    if (!project) return of([]);
+    if (!project) {
+      this.instancesSubject.next([]);
+      return of([]);
+    }
+
+    this.loadingSubject.next(true);
+    this.errorSubject.next(null);
 
     if (this.authService.isDemoMode()) {
+      console.log('🎯 ComputeEngine Service - Loading mock instances:', this.mockInstances.length);
+      this.instancesSubject.next(this.mockInstances);
+      this.loadingSubject.next(false);
       return of(this.mockInstances);
     }
     
     const url = `${this.baseUrl}/projects/${project.id}/aggregated/instances`;
     return this.http.get<any>(url, { headers: this.getAuthHeaders() }).pipe(
-      map(response => response.items['vms-and-instances']?.instances || []),
-      catchError(this.handleError)
+      map(response => {
+        const instances: VmInstance[] = [];
+        if (response.items) {
+          for (const key in response.items) {
+            if (response.items[key].instances) {
+              instances.push(...response.items[key].instances);
+            }
+          }
+        }
+        console.log('🎯 ComputeEngine Service - Loaded real instances:', instances.length);
+        this.instancesSubject.next(instances);
+        return instances;
+      }),
+      tap(() => this.loadingSubject.next(false)),
+      catchError(error => {
+        this.loadingSubject.next(false);
+        this.errorSubject.next(error.message || 'Failed to load instances');
+        return this.handleError(error);
+      })
     );
   }
   

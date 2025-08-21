@@ -733,6 +733,23 @@ export class VmInstancesComponent implements OnInit, OnDestroy, AfterViewInit {
     this.multiCloudService.error$
       .pipe(takeUntil(this.destroy$))
       .subscribe(error => this.error = error);
+
+    this.dataSource.filterPredicate = (data: TableVmInstance, filter: string) => {
+      try {
+        const searchTerm = JSON.parse(filter);
+        const matchesSearch = !searchTerm.search ||
+          data.name.toLowerCase().includes(searchTerm.search) ||
+          this.searchInLabels(data, searchTerm.search);
+        
+        const matchesZone = searchTerm.zone === 'all' || data.displayZone === searchTerm.zone;
+        const matchesStatus = searchTerm.status === 'all' || data.status === searchTerm.status;
+
+        return matchesSearch && matchesZone && matchesStatus;
+      } catch (error) {
+        console.warn('Filter parse error:', error);
+        return true; // Show all data if filter parsing fails
+      }
+    };
   }
 
   private setupFilterListeners() {
@@ -843,18 +860,11 @@ export class VmInstancesComponent implements OnInit, OnDestroy, AfterViewInit {
     const selectedZone = this.zoneFilterControl.value || 'all';
     const selectedStatus = this.statusFilterControl.value || 'all';
 
-    this.dataSource.filterPredicate = (data: TableVmInstance, filter: string) => {
-      const matchesSearch = !searchTerm || 
-        data.name.toLowerCase().includes(searchTerm) ||
-        this.searchInLabels(data, searchTerm);
-
-      const matchesZone = selectedZone === 'all' || data.displayZone === selectedZone;
-      const matchesStatus = selectedStatus === 'all' || data.status === selectedStatus;
-
-      return matchesSearch && matchesZone && matchesStatus;
-    };
-
-    this.dataSource.filter = Math.random().toString(); // Trigger filtering
+    this.dataSource.filter = JSON.stringify({
+      search: searchTerm,
+      zone: selectedZone,
+      status: selectedStatus
+    });
   }
 
   ngAfterViewInit() {
