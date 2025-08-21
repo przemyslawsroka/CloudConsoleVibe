@@ -102,14 +102,14 @@ app.use('/api/v1/metrics', metricsRoutes);
 app.use('/api/v1/dashboard', dashboardRoutes);
 app.use('/api/v1/monitoring', monitoringRoutes);
 
-// Proxy routes for Google Cloud APIs (maintain compatibility)
-// Enable proxies when BACKEND_ENABLE_PROXIES=true to avoid local CORS issues
-if (process.env.BACKEND_ENABLE_PROXIES === 'true') {
-  app.use('/api/logging', require('./routes/proxy/logging'));
-  app.use('/api/compute', require('./routes/proxy/compute'));
-  app.use('/api/cloudrun', require('./routes/proxy/cloudrun'));
-  app.use('/api/ipify', require('./routes/proxy/ipify'));
-}
+// Proxy routes for Google Cloud APIs (enabled by default)
+app.use('/api/logging', require('./routes/proxy/logging'));
+app.use('/api/compute', require('./routes/proxy/compute'));
+app.use('/api/cloudrun', require('./routes/proxy/cloudrun'));
+app.use('/api/ipify', require('./routes/proxy/ipify'));
+
+// Debug: Log that ipify route is loaded
+console.log('✅ IPify route loaded at /api/ipify');
 
 // Error handling middleware
 app.use((err, req, res, next) => {

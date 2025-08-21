@@ -164,7 +164,7 @@ export class DestinationEndpointComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.form = this.parentForm.form;
+    this.form = this.parentForm.form.get('destination') as FormGroup;
     this.loadAvailableProjects();
     this.setupFormSubscriptions();
   }
@@ -315,6 +315,7 @@ export class DestinationEndpointComponent implements OnInit, OnDestroy {
   }
 
   getProtocol(): string {
-    return this.form.get('protocol')?.value || '';
+    // Protocol control lives on the root form, not within the destination group
+    return (this.parentForm.form.get('protocol')?.value as string) || '';
   }
 }

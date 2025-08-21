@@ -841,8 +841,8 @@ export class CreateVmInstanceComponent implements OnInit, OnDestroy {
     this.computeEngineService.getNetworks()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (response) => {
-          this.availableNetworks = response.items || [];
+        next: (networks) => {
+          this.availableNetworks = networks || [];
           // Set default network if available
           if (this.availableNetworks.length > 0) {
             const defaultNetwork = this.availableNetworks.find(n => n.name === 'default') || this.availableNetworks[0];
@@ -865,11 +865,11 @@ export class CreateVmInstanceComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.computeEngineService.getSubnetworks(region, networkName)
+    this.computeEngineService.getSubnetworks(region)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (response) => {
-          this.availableSubnetworks = response.items || [];
+        next: (subnetworks) => {
+          this.availableSubnetworks = subnetworks || [];
           // Set default subnetwork if available
           if (this.availableSubnetworks.length > 0) {
             const defaultSubnet = this.availableSubnetworks.find(s => s.name === 'default') || this.availableSubnetworks[0];

@@ -844,7 +844,7 @@ export class CreateConnectivityTestDialogComponent implements OnInit {
     this.isLoadingUserIp = true;
     this.userIpAddress = null;
     
-    this.http.get<{ip: string}>('/api/ipify').subscribe({
+    this.http.get<{ip: string}>('https://api.ipify.org?format=json').subscribe({
       next: (response) => {
         console.log('User IP loaded:', response.ip);
         this.userIpAddress = response.ip;

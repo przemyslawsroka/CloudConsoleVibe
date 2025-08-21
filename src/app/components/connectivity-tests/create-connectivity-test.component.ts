@@ -198,7 +198,7 @@ export class CreateConnectivityTestComponent implements OnInit, OnDestroy {
   }
 
   private loadUserIpAddress() {
-    this.http.get('/api/ipify')
+    this.http.get<{ip: string}>('https://api.ipify.org?format=json')
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response: any) => {

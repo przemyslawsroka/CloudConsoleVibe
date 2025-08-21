@@ -286,6 +286,18 @@ app.get('/api/v1/jobs/:jobId/status', (req, res) => {
   });
 });
 
+// IPify endpoint for getting user's public IP
+app.get('/api/ipify', async (req, res) => {
+  try {
+    const axios = require('axios');
+    const response = await axios.get('https://api.ipify.org?format=json');
+    res.json(response.data);
+  } catch (error) {
+    logger.error('Error fetching IP from ipify:', error);
+    res.status(500).json({ error: 'Failed to fetch IP address' });
+  }
+});
+
 // Error handling
 app.use((err, req, res, next) => {
   logger.error('Unhandled error:', err);

@@ -115,15 +115,15 @@ export class MultiCloudVmService {
 
   private transformGCPInstance(gcpInstance: VmInstance): MultiCloudVmInstance {
     return {
-      id: gcpInstance.id,
+      id: gcpInstance.id || 'unknown',
       name: gcpInstance.name,
       provider: 'gcp',
       region: this.extractZoneName(gcpInstance.zone),
       instanceType: this.extractMachineTypeName(gcpInstance.machineType),
       status: this.normalizeGCPStatus(gcpInstance.status),
-      internalIp: gcpInstance.internalIp,
-      externalIp: gcpInstance.externalIp,
-      createdAt: gcpInstance.creationTimestamp,
+      internalIp: gcpInstance.internalIp || '',
+      externalIp: gcpInstance.externalIp || undefined,
+      createdAt: gcpInstance.creationTimestamp || new Date().toISOString(),
       providerData: { gcp: gcpInstance },
       statusColor: this.getGCPStatusColor(gcpInstance.status),
       displayRegion: this.extractZoneName(gcpInstance.zone),
