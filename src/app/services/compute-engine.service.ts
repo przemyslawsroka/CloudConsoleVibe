@@ -71,7 +71,11 @@ export class ComputeEngineService {
     if (!project) return of([]);
 
     if (this.authService.isDemoMode()) {
-      return of([]);
+      const mockNetworks = [
+        { name: 'demo-vpc-1', description: 'Default VPC network for demo' },
+        { name: 'demo-vpc-2', description: 'Secondary VPC network for testing' }
+      ];
+      return of(mockNetworks);
     }
 
     const url = `${this.baseUrl}/projects/${project.id}/global/networks`;
@@ -86,7 +90,26 @@ export class ComputeEngineService {
     if (!project) return of([]);
 
     if (this.authService.isDemoMode()) {
-      return of([]);
+      // Mock data for demo mode
+      const mockTunnels = [
+        {
+          name: 'demo-vpn-tunnel-1',
+          description: 'Demo VPN Tunnel to On-Premises',
+          region: region,
+          peerIp: '203.0.113.1',
+          sharedSecret: 'demo-secret',
+          status: 'ESTABLISHED'
+        },
+        {
+          name: 'demo-vpn-tunnel-2',
+          description: 'Demo VPN Tunnel to Branch Office',
+          region: region,
+          peerIp: '203.0.113.2',
+          sharedSecret: 'demo-secret-2',
+          status: 'ESTABLISHED'
+        }
+      ];
+      return of(mockTunnels);
     }
 
     const url = `${this.baseUrl}/projects/${project.id}/regions/${region}/vpnTunnels`;
@@ -101,7 +124,28 @@ export class ComputeEngineService {
     if (!project) return of([]);
 
     if (this.authService.isDemoMode()) {
-      return of([]);
+      // Mock data for demo mode
+      const mockAttachments = [
+        {
+          name: 'demo-interconnect-1',
+          description: 'Demo Interconnect to Data Center',
+          region: region,
+          type: 'DEDICATED',
+          state: 'ACTIVE',
+          mtu: 1440,
+          edgeAvailabilityDomain: 'AVAILABILITY_DOMAIN_1'
+        },
+        {
+          name: 'demo-interconnect-2',
+          description: 'Demo Interconnect to Branch Office',
+          region: region,
+          type: 'PARTNER',
+          state: 'ACTIVE',
+          mtu: 1440,
+          edgeAvailabilityDomain: 'AVAILABILITY_DOMAIN_2'
+        }
+      ];
+      return of(mockAttachments);
     }
 
     const url = `${this.baseUrl}/projects/${project.id}/regions/${region}/interconnectAttachments`;

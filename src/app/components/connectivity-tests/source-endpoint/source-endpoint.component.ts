@@ -356,6 +356,15 @@ export class SourceEndpointComponent implements OnInit, OnDestroy {
       .subscribe(connectionType => {
         this.loadConnectionResources(connectionType);
       });
+
+    this.form.get('project')?.valueChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        const connectionType = this.form.get('connectionType')?.value;
+        if (connectionType) {
+          this.loadConnectionResources(connectionType);
+        }
+      });
   }
 
   onSourceEndpointTypeChange(value: string) {

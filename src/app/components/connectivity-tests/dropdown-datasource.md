@@ -9,9 +9,9 @@ This document outlines the datasources for the dynamic dropdowns on the "Create 
 | **VPC Network Project**       | `ProjectService`           | `loadProjects()`           | `https://cloudresourcemanager.googleapis.com/v1/projects`        | Implemented           |
 | **VPC Network**               | `ComputeEngineService`     | `getVpcNetworks()`         | `https://compute.googleapis.com/compute/v1/projects/{projectId}/global/networks` | Using Mock Data       |
 | **Connection Project**        | `ProjectService`           | `loadProjects()`           | `https://cloudresourcemanager.googleapis.com/v1/projects`        | Implemented           |
-| **Resource (VPN Tunnel)**     | `ComputeEngineService`     | `getVpnTunnels()`          | `https://compute.googleapis.com/compute/v1/projects/{projectId}/regions/{region}/vpnTunnels` | Not Implemented       |
-| **Resource (Interconnect)**   | `ComputeEngineService`     | `getInterconnects()`       | `https://compute.googleapis.com/compute/v1/projects/{projectId}/global/interconnects` | Not Implemented       |
-| **Resource (NCC Router)**     | `NetworkConnectivityService` | `getNccRouters()`        | `https://networkconnectivity.googleapis.com/v1/projects/{projectId}/locations/global/hubs` | Not Implemented       |
+| **Resource (VPN Tunnel)**     | `ComputeEngineService`     | `getVpnTunnels()`          | `https://compute.googleapis.com/compute/v1/projects/{projectId}/regions/{region}/vpnTunnels` | Implemented           |
+| **Resource (Interconnect)**   | `ComputeEngineService`     | `getInterconnects()`       | `https://compute.googleapis.com/compute/v1/projects/{projectId}/global/interconnects` | Implemented           |
+| **Resource (NCC Router)**     | `NetworkConnectivityService` | `getNccRouters()`        | `https://networkconnectivity.googleapis.com/v1/projects/{projectId}/locations/global/hubs` | Implemented           |
 | **Source Instance**           | `ResourceLoaderService`    | `loadVmInstances()`        | `https://compute.googleapis.com/compute/v1/projects/{projectId}/aggregated/instances` | Implemented (via `ComputeEngineService`) |
 | **GKE Cluster**               | `ResourceLoaderService`    | `loadGkeClusters()`        | `https://container.googleapis.com/v1/projects/{projectId}/locations/-/clusters` | Implemented (via `GkeClusterService`) |
 | **Cloud Run Service**         | `ResourceLoaderService`    | `loadCloudRunServices()`   | `https://run.googleapis.com/v1/projects/{projectId}/locations/-/services` | Implemented (via `CloudRunService`) |

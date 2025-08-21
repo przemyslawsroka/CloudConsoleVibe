@@ -46,7 +46,7 @@ export class NetworkConnectivityService {
       {
         name: 'projects/my-project/locations/global/hubs/my-hub',
         description: 'Test NCC Router',
-        state: 'ACTIVE',
+          state: 'ACTIVE',
         spokeCount: 3
       }
     ];
@@ -60,7 +60,7 @@ export class NetworkConnectivityService {
       {
         name: 'my-hub',
         description: 'Test hub',
-        state: 'ACTIVE',
+      state: 'ACTIVE',
         spokeCount: 2,
         routingVpcs: ['projects/my-project/global/networks/my-vpc']
       }
@@ -81,8 +81,8 @@ export class NetworkConnectivityService {
         name: 'my-spoke',
         hub: hubName || 'my-hub',
         description: 'Test spoke',
-        state: 'ACTIVE',
-        linkedVpcNetwork: {
+          state: 'ACTIVE',
+          linkedVpcNetwork: {
           uri: 'projects/my-project/global/networks/my-vpc'
         }
       }
@@ -114,4 +114,4 @@ export class NetworkConnectivityService {
     console.log('Deleting spoke:', spokeName);
     return of({ success: true });
   }
-}
+} 
