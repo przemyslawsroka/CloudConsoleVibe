@@ -11,6 +11,7 @@ export class ConnectivityTestNameService {
     const destId = this.generateDestinationIdentifier(formData);
     
     if (!sourceId || !destId) {
+      console.log('Name generation failed: Source or destination identifier is missing.', { sourceId, destId });
       return ''; // Don't generate name until both source and destination are specified
     }
     
@@ -21,9 +22,9 @@ export class ConnectivityTestNameService {
   }
 
   private generateSourceIdentifier(formData: ConnectivityTestFormData, userIpAddress?: string): string {
-    switch (formData.sourceEndpointType) {
+    switch (formData.source.endpointType) {
       case 'ipAddress':
-        return formData.sourceIp ? `ip-${formData.sourceIp.replace(/\./g, '-')}` : '';
+        return formData.source.ip ? `ip-${formData.source.ip.replace(/\./g, '-')}` : '';
       
       case 'myIpAddress':
         return 'my-ip';
@@ -35,39 +36,39 @@ export class ConnectivityTestNameService {
         return 'console-ssh';
       
       case 'gceInstance':
-        const instanceName = this.extractResourceName(formData.sourceInstance);
+        const instanceName = this.extractResourceName(formData.source.instance);
         return instanceName ? `vm-${instanceName}` : '';
       
       case 'gkeWorkload':
-        const workloadName = this.extractResourceName(formData.sourceWorkload);
+        const workloadName = this.extractResourceName(formData.source.workload);
         return workloadName ? `gke-wl-${workloadName}` : '';
       
       case 'gkePod':
-        const podName = this.extractResourceName(formData.sourceWorkload);
+        const podName = this.extractResourceName(formData.source.workload);
         return podName ? `gke-pod-${podName}` : '';
       
       case 'gkeCluster':
-        const clusterName = this.extractResourceName(formData.sourceCluster);
+        const clusterName = this.extractResourceName(formData.source.cluster);
         return clusterName ? `gke-cluster-${clusterName}` : '';
       
       case 'cloudRun':
-        const runServiceName = this.extractResourceName(formData.sourceService);
+        const runServiceName = this.extractResourceName(formData.source.service);
         return runServiceName ? `cr-${runServiceName}` : '';
       
       case 'cloudFunction':
-        const functionName = this.extractResourceName(formData.sourceService);
+        const functionName = this.extractResourceName(formData.source.service);
         return functionName ? `cf-${functionName}` : '';
       
       case 'alloyDb':
-        const alloyDbInstanceName = this.extractResourceName(formData.sourceInstance);
+        const alloyDbInstanceName = this.extractResourceName(formData.source.instance);
         return alloyDbInstanceName ? `alloydb-${alloyDbInstanceName}` : '';
       
       case 'cloudSqlInstance':
-        const sqlInstanceName = this.extractResourceName(formData.sourceInstance);
+        const sqlInstanceName = this.extractResourceName(formData.source.instance);
         return sqlInstanceName ? `sql-${sqlInstanceName}` : '';
       
       case 'subnetwork':
-        const subnetName = this.extractResourceName(formData.sourceNetworkSubnet);
+        const subnetName = this.extractResourceName(formData.source.networkSubnet);
         return subnetName ? `subnet-${subnetName}` : '';
       
       default:
@@ -76,70 +77,70 @@ export class ConnectivityTestNameService {
   }
 
   private generateDestinationIdentifier(formData: ConnectivityTestFormData): string {
-    switch (formData.destinationEndpointType) {
+    switch (formData.destination.endpointType) {
       case 'ipAddress':
-        return formData.destinationIp ? `ip-${formData.destinationIp.replace(/\./g, '-')}` : '';
+        return formData.destination.ip ? `ip-${formData.destination.ip.replace(/\./g, '-')}` : '';
       
       case 'domainName':
-        return formData.destinationDomain ? `domain-${formData.destinationDomain.replace(/\./g, '-')}` : '';
+        return formData.destination.domain ? `domain-${formData.destination.domain.replace(/\./g, '-')}` : '';
       
       case 'googleApis':
-        return formData.destinationService ? `google-apis-${this.extractResourceName(formData.destinationService)}` : 'google-apis';
+        return formData.destination.service ? `google-apis-${this.extractResourceName(formData.destination.service)}` : 'google-apis';
       
       case 'gceInstance':
-        const instanceName = this.extractResourceName(formData.destinationInstance);
+        const instanceName = this.extractResourceName(formData.destination.instance);
         return instanceName ? `vm-${instanceName}` : '';
       
       case 'gkeCluster':
-        const clusterName = this.extractResourceName(formData.destinationCluster);
+        const clusterName = this.extractResourceName(formData.destination.cluster);
         return clusterName ? `gke-cluster-${clusterName}` : '';
       
       case 'loadBalancer':
-        const lbName = this.extractResourceName(formData.destinationInstance);
+        const lbName = this.extractResourceName(formData.destination.instance);
         return lbName ? `lb-${lbName}` : '';
       
       case 'subnetwork':
-        const subnetName = this.extractResourceName(formData.destinationNetworkSubnet);
+        const subnetName = this.extractResourceName(formData.destination.networkSubnet);
         return subnetName ? `subnet-${subnetName}` : '';
       
       case 'pscEndpoint':
-        const pscName = this.extractResourceName(formData.destinationInstance);
+        const pscName = this.extractResourceName(formData.destination.instance);
         return pscName ? `psc-${pscName}` : '';
       
       case 'appHubService':
-        const appHubName = this.extractResourceName(formData.destinationService);
+        const appHubName = this.extractResourceName(formData.destination.service);
         return appHubName ? `apphub-${appHubName}` : '';
       
       case 'iapResource':
-        const iapResourceName = this.extractResourceName(formData.destinationInstance);
+        const iapResourceName = this.extractResourceName(formData.destination.instance);
         return iapResourceName ? `iap-${iapResourceName}` : '';
       
       case 'alloyDb':
-        const alloyDbName = this.extractResourceName(formData.destinationInstance);
+        const alloyDbName = this.extractResourceName(formData.destination.instance);
         return alloyDbName ? `alloydb-${alloyDbName}` : '';
       
       case 'cloudSqlInstance':
-        const sqlInstanceName = this.extractResourceName(formData.destinationInstance);
+        const sqlInstanceName = this.extractResourceName(formData.destination.instance);
         return sqlInstanceName ? `sql-${sqlInstanceName}` : '';
       
       case 'cloudSpanner':
-        const spannerName = this.extractResourceName(formData.destinationInstance);
+        const spannerName = this.extractResourceName(formData.destination.instance);
         return spannerName ? `spanner-${spannerName}` : '';
       
       case 'cloudBigtable':
-        const bigtableName = this.extractResourceName(formData.destinationInstance);
+        const bigtableName = this.extractResourceName(formData.destination.instance);
         return bigtableName ? `bigtable-${bigtableName}` : '';
       
       case 'filestore':
-        const filestoreName = this.extractResourceName(formData.destinationInstance);
+        const filestoreName = this.extractResourceName(formData.destination.instance);
         return filestoreName ? `filestore-${filestoreName}` : '';
       
       case 'redisInstance':
-        const redisInstanceName = this.extractResourceName(formData.destinationInstance);
+        const redisInstanceName = this.extractResourceName(formData.destination.instance);
         return redisInstanceName ? `redis-${redisInstanceName}` : '';
       
       case 'redisCluster':
-        const redisClusterName = this.extractResourceName(formData.destinationInstance);
+        const redisClusterName = this.extractResourceName(formData.destination.instance);
         return redisClusterName ? `redis-cluster-${redisClusterName}` : '';
       
       default:

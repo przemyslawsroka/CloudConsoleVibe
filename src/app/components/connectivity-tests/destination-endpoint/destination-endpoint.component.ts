@@ -5,11 +5,13 @@ import { takeUntil } from 'rxjs/operators';
 import { 
   EndpointHierarchy, 
   EndpointOption, 
-  ProjectOption 
+  ProjectOption,
+  VpcNetworkOption
 } from '../shared/connectivity-test.interfaces';
 import { EndpointHierarchyService } from '../shared/endpoint-hierarchy.service';
 import { ResourceLoaderService, ResourceOption, EndpointType } from '../../../services/resource-loader.service';
 import { ProjectService } from '../../../services/project.service';
+import { ComputeEngineService } from '../../../services/compute-engine.service';
 
 @Component({
   selector: 'app-destination-endpoint',
@@ -114,6 +116,34 @@ import { ProjectService } from '../../../services/project.service';
           </mat-form-field>
         </div>
 
+        <!-- Subnetwork -->
+        <div *ngIf="isDestinationEndpointType('subnetwork')">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Project</mat-label>
+            <mat-select formControlName="networkProject">
+              <mat-option *ngFor="let project of availableProjects" [value]="project.value">
+                {{project.displayName}}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>VPC Network</mat-label>
+            <mat-select formControlName="networkVpc">
+              <mat-option *ngFor="let network of availableVpcNetworks" [value]="network.value">
+                {{network.displayName}}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Subnetwork</mat-label>
+            <mat-select formControlName="networkSubnet">
+              <mat-option *ngFor="let subnet of availableSubnetworks" [value]="subnet.name">
+                {{subnet.name}}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+
         <!-- Other endpoint types can be added here -->
       </div>
 
@@ -146,6 +176,8 @@ export class DestinationEndpointComponent implements OnInit, OnDestroy {
   destinationEndpointHierarchy: EndpointHierarchy;
   selectedDestinationCategory: string | null = null;
   availableProjects: ProjectOption[] = [];
+  availableVpcNetworks: VpcNetworkOption[] = [];
+  availableSubnetworks: any[] = [];
   
   // Resource loading
   destinationResourceOptions: ResourceOption[] = [];
@@ -158,7 +190,8 @@ export class DestinationEndpointComponent implements OnInit, OnDestroy {
     private parentForm: FormGroupDirective,
     private endpointHierarchyService: EndpointHierarchyService,
     private resourceLoaderService: ResourceLoaderService,
-    private projectService: ProjectService
+    private projectService: ProjectService,
+    private computeEngineService: ComputeEngineService
   ) {
     this.destinationEndpointHierarchy = this.endpointHierarchyService.getDestinationEndpointHierarchy();
   }
@@ -183,13 +216,25 @@ export class DestinationEndpointComponent implements OnInit, OnDestroy {
       });
 
     // Watch for other relevant field changes
-    ['ip', 'domain', 'instance', 'service', 'port'].forEach(field => {
+    ['ip', 'domain', 'instance', 'service', 'port', 'networkProject', 'networkVpc', 'networkSubnet'].forEach(field => {
       this.form.get(field)?.valueChanges
         .pipe(takeUntil(this.destroy$))
         .subscribe(() => {
           this.endpointChange.emit();
         });
     });
+
+    this.form.get('networkProject')?.valueChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.loadVpcNetworks();
+      });
+
+    this.form.get('networkVpc')?.valueChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.loadSubnetworks();
+      });
   }
 
   onDestinationEndpointTypeChange(value: string) {
@@ -292,6 +337,43 @@ export class DestinationEndpointComponent implements OnInit, OnDestroy {
         error: (error) => {
           console.error('Error loading projects:', error);
         }
+      });
+  }
+
+  private loadVpcNetworks() {
+    const projectId = this.form.get('networkProject')?.value;
+    if (!projectId) {
+      this.availableVpcNetworks = [];
+      return;
+    }
+
+    this.computeEngineService.getVpcNetworks()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(networks => {
+        this.availableVpcNetworks = networks.map(network => ({
+          value: network.name,
+          displayName: network.name
+        }));
+      });
+  }
+
+  private loadSubnetworks() {
+    const projectId = this.form.get('networkProject')?.value;
+    const networkName = this.form.get('networkVpc')?.value;
+
+    if (!projectId || !networkName) {
+      this.availableSubnetworks = [];
+      return;
+    }
+
+    // Assuming getSubnetworks can be called with a region.
+    // This might need adjustment based on your service implementation.
+    const region = 'us-central1'; // Or determine dynamically
+
+    this.computeEngineService.getSubnetworks(region)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(subnetworks => {
+        this.availableSubnetworks = subnetworks;
       });
   }
 

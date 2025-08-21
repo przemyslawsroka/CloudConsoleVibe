@@ -170,6 +170,9 @@ export class CreateConnectivityTestComponent implements OnInit, OnDestroy {
         service: [''],
         cluster: [''],
         workload: [''],
+        networkProject: [''],
+        networkVpc: [''],
+        networkSubnet: [''],
         port: [80, [Validators.min(1), Validators.max(65535)]]
       }),
       roundTrip: [true]
@@ -230,7 +233,9 @@ export class CreateConnectivityTestComponent implements OnInit, OnDestroy {
     }
     
     const formData = this.testForm.value as ConnectivityTestFormData;
+    console.log('Form data for name generation:', formData);
     const generatedName = this.nameService.generateConnectivityTestName(formData, this.userIpAddress || undefined);
+    console.log('Generated name:', generatedName);
     
     if (!generatedName) {
       this.testForm.patchValue({ displayName: '' }, { emitEvent: false });
